@@ -8,6 +8,10 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  books         Book[]
+  readingProgress ReadingProgress[]
+  highlights    Highlight[]
+  chapters      Chapter[]
 
   @@unique([email])
   @@map("user")

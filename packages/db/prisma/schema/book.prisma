@@ -1,0 +1,85 @@
+enum FileType {
+  PDF
+  EPUB
+}
+
+enum AIAction {
+  EXPLAIN
+  SUMMARIZE
+  EXTRACT
+}
+
+model Book {
+  id         String    @id @default(cuid())
+  userId     String
+  title      String
+  fileName   String
+  fileUrl    String
+  fileType   FileType
+  coverUrl   String?
+  totalPages Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readingProgress  ReadingProgress[]
+  highlights       Highlight[]
+  chapters         Chapter[]
+
+  @@index([userId])
+  @@map("book")
+}
+
+model ReadingProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  bookId    String
+  position  Json
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@index([bookId])
+  @@map("reading_progress")
+}
+
+model Highlight {
+  id         String    @id @default(cuid())
+  userId     String
+  bookId     String
+  text       String
+  startCfi   String?
+  endCfi     String?
+  pageNumber Int?
+  aiAction   AIAction?
+  aiResponse String?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bookId])
+  @@map("highlight")
+}
+
+model Chapter {
+  id        String   @id @default(cuid())
+  userId    String
+  bookId    String
+  name      String
+  startPage Int
+  endPage   Int
+  order     Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bookId])
+  @@map("chapter")
+}
