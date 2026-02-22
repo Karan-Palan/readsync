@@ -101,7 +101,7 @@ export default function TextSelectionMenu({
 		};
 	}, [handleDocSelectionChange]);
 
-	// ── EPUB / foliate-view selection (bubbled from inside the iframe via paginator.js) ──
+	//  EPUB / foliate-view selection (bubbled from inside the iframe via paginator.js) 
 	useEffect(() => {
 		const handleFoliateSelection = (e: Event) => {
 			const detail = (e as CustomEvent<FoliateSelectionDetail | null>).detail;
