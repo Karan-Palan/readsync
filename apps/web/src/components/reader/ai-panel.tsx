@@ -107,7 +107,7 @@ function DrawerVariant({
 			data-ai-panel="true"
 		>
 			<div
-				className="absolute left-0 top-0 z-10 h-full w-3 cursor-col-resize touch-none select-none hover:bg-primary/20 active:bg-primary/40 transition-colors"
+				className="hover:bg-primary/20 active:bg-primary/40 absolute top-0 left-0 z-10 h-full w-3 cursor-col-resize touch-none transition-colors select-none"
 				onPointerDown={onResizePointerDown}
 				onPointerMove={onResizePointerMove}
 				onPointerUp={onResizePointerUp}
@@ -177,7 +177,7 @@ function BottomSheetVariant({
 				data-ai-panel="true"
 			>
 				<div
-					className="flex touch-none justify-center py-2 cursor-ns-resize"
+					className="flex cursor-ns-resize touch-none justify-center py-2"
 					onTouchStart={onHandleTouchStart}
 					onTouchMove={onHandleTouchMove}
 					onTouchEnd={onHandleTouchEnd}

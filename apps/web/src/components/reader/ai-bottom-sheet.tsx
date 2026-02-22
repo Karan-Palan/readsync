@@ -66,7 +66,7 @@ export default function AIBottomSheet({
 			>
 				{/* Drag handle */}
 				<div
-					className="flex touch-none justify-center py-2 cursor-ns-resize"
+					className="flex cursor-ns-resize touch-none justify-center py-2"
 					onTouchStart={onHandleTouchStart}
 					onTouchMove={onHandleTouchMove}
 					onTouchEnd={onHandleTouchEnd}
@@ -95,4 +95,3 @@ export default function AIBottomSheet({
 		</>
 	);
 }
-

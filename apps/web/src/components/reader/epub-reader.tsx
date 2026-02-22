@@ -114,23 +114,23 @@ export default function EPUBReader({
 				folViewRef.current = view;
 
 				// Track reading progress — deduplicate by CFI so selection events
-			// that cause a re-render don't spuriously trigger a saveProgress call
-			let lastCfi: string | null = null;
-			view.addEventListener("relocate", (e: Event) => {
-				if (!mounted) return;
-				const detail = (e as CustomEvent).detail ?? {};
-				const fraction = typeof detail.fraction === "number" ? detail.fraction : 0;
-				const cfi: string | null = detail.cfi ?? null;
-				// Skip if the position hasn't actually changed
-				if (cfi !== null && cfi === lastCfi) return;
-				lastCfi = cfi;
-				setProgress(Math.round(fraction * 100));
-				onPositionChange({
-					fraction,
-					index: detail.index,
-					cfi,
+				// that cause a re-render don't spuriously trigger a saveProgress call
+				let lastCfi: string | null = null;
+				view.addEventListener("relocate", (e: Event) => {
+					if (!mounted) return;
+					const detail = (e as CustomEvent).detail ?? {};
+					const fraction = typeof detail.fraction === "number" ? detail.fraction : 0;
+					const cfi: string | null = detail.cfi ?? null;
+					// Skip if the position hasn't actually changed
+					if (cfi !== null && cfi === lastCfi) return;
+					lastCfi = cfi;
+					setProgress(Math.round(fraction * 100));
+					onPositionChange({
+						fraction,
+						index: detail.index,
+						cfi,
+					});
 				});
-			});
 
 				// Listen for each section load: apply font size and wire up text-selection
 				view.addEventListener("load", (e: Event) => {
@@ -164,7 +164,9 @@ export default function EPUBReader({
 					doc.addEventListener("touchend", () => {
 						if (!mounted) return;
 						// Small delay so the browser finalises the selection
-						setTimeout(() => { if (mounted) dispatchSelectionEvent(); }, 80);
+						setTimeout(() => {
+							if (mounted) dispatchSelectionEvent();
+						}, 80);
 					});
 
 					function dispatchSelectionEvent() {
@@ -210,9 +212,7 @@ export default function EPUBReader({
 								if (!mounted) return;
 								const sel2 = doc.defaultView?.getSelection();
 								if (!sel2 || sel2.isCollapsed) {
-									window.dispatchEvent(
-										new CustomEvent("foliate-selection", { detail: null }),
-									);
+									window.dispatchEvent(new CustomEvent("foliate-selection", { detail: null }));
 								}
 							}, 150);
 						}
@@ -256,9 +256,7 @@ export default function EPUBReader({
 						g.addEventListener("click", () => {
 							// Find the highlight by CFI
 							const cfi = annotation.value;
-							window.dispatchEvent(
-								new CustomEvent("foliate-highlight-click", { detail: { cfi } }),
-							);
+							window.dispatchEvent(new CustomEvent("foliate-highlight-click", { detail: { cfi } }));
 						});
 						return g;
 					});
@@ -272,13 +270,22 @@ export default function EPUBReader({
 						const p = pos as any;
 						if (!p) return;
 						if (p.cfi) {
-							try { view.goTo(p.cfi); } catch {}
+							try {
+								view.goTo(p.cfi);
+							} catch {}
 						} else if (typeof p.index === "number") {
-							try { view.goTo({ index: p.index }); } catch {}
+							try {
+								view.goTo({ index: p.index });
+							} catch {}
 						} else if (typeof p.fraction === "number") {
 							const sections = view.book?.sections ?? [];
-							const idx = Math.max(0, Math.min(sections.length - 1, Math.floor(p.fraction * sections.length)));
-							try { view.goTo({ index: idx }); } catch {}
+							const idx = Math.max(
+								0,
+								Math.min(sections.length - 1, Math.floor(p.fraction * sections.length)),
+							);
+							try {
+								view.goTo({ index: idx });
+							} catch {}
 						}
 					};
 				}
@@ -389,7 +396,9 @@ export default function EPUBReader({
 		// Remove annotations no longer in highlights
 		for (const cfi of highlightColorMap.current.keys()) {
 			if (!newCfis.has(cfi)) {
-				try { view.deleteAnnotation({ value: cfi }); } catch {}
+				try {
+					view.deleteAnnotation({ value: cfi });
+				} catch {}
 				highlightColorMap.current.delete(cfi);
 			}
 		}
@@ -397,7 +406,9 @@ export default function EPUBReader({
 		// Add new annotations
 		for (const h of highlights) {
 			if (!h.startCfi) continue;
-			try { view.addAnnotation({ value: h.startCfi }); } catch {}
+			try {
+				view.addAnnotation({ value: h.startCfi });
+			} catch {}
 		}
 	}, [highlights, viewReady]);
 

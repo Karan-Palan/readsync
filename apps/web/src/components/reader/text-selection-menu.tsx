@@ -174,7 +174,15 @@ export default function TextSelectionMenu({
 
 			return highlight;
 		},
-		[bookId, selectedText, selectedCfi, fileType, createHighlightMutation, onHighlightCreated, onAIAction],
+		[
+			bookId,
+			selectedText,
+			selectedCfi,
+			fileType,
+			createHighlightMutation,
+			onHighlightCreated,
+			onAIAction,
+		],
 	);
 
 	const handleHighlightColor = useCallback(
@@ -278,12 +286,12 @@ export default function TextSelectionMenu({
 							key={c.id}
 							type="button"
 							onClick={() => handleHighlightColor(c.id)}
-							className={`${c.bg} h-6 w-6 flex-shrink-0 rounded-full border-2 border-transparent transition-transform hover:scale-110 hover:border-border`}
+							className={`${c.bg} hover:border-border h-6 w-6 flex-shrink-0 rounded-full border-2 border-transparent transition-transform hover:scale-110`}
 							title={`Highlight ${c.label}`}
 						/>
 					))}
 
-					<div className="mx-1 h-5 w-px bg-border" />
+					<div className="bg-border mx-1 h-5 w-px" />
 
 					{/* Note */}
 					<button
@@ -340,7 +348,7 @@ export default function TextSelectionMenu({
 						className="hover:bg-accent ml-0.5 rounded-md p-1"
 						title="Dismiss"
 					>
-						<X className="h-3 w-3 text-muted-foreground" />
+						<X className="text-muted-foreground h-3 w-3" />
 					</button>
 				</div>
 			) : (
@@ -349,14 +357,14 @@ export default function TextSelectionMenu({
 					<div className="flex items-center justify-between">
 						<span className="text-xs font-medium">Add a note</span>
 						<button type="button" onClick={dismiss} className="hover:bg-accent rounded p-0.5">
-							<X className="h-3.5 w-3.5 text-muted-foreground" />
+							<X className="text-muted-foreground h-3.5 w-3.5" />
 						</button>
 					</div>
-					<p className="line-clamp-2 rounded bg-muted/50 px-2 py-1 text-xs italic text-muted-foreground">
+					<p className="bg-muted/50 text-muted-foreground line-clamp-2 rounded px-2 py-1 text-xs italic">
 						&ldquo;{selectedText}&rdquo;
 					</p>
 					<textarea
-						className="min-h-[80px] w-full resize-none rounded-md border bg-background p-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+						className="bg-background focus:ring-ring min-h-[80px] w-full resize-none rounded-md border p-2 text-xs focus:ring-2 focus:outline-none"
 						placeholder="Your note…"
 						value={noteText}
 						onChange={(e) => setNoteText(e.target.value)}
@@ -368,7 +376,7 @@ export default function TextSelectionMenu({
 							type="button"
 							onClick={handleNoteSave}
 							disabled={createHighlightMutation.isPending}
-							className="flex flex-1 items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-50"
+							className="bg-primary text-primary-foreground flex flex-1 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
 						>
 							<MessageSquarePlus className="h-3.5 w-3.5" />
 							Save
@@ -386,4 +394,3 @@ export default function TextSelectionMenu({
 		</div>
 	);
 }
-

@@ -9,9 +9,23 @@ interface RSVPModeProps {
 	onFractionChange?: (fraction: number) => void;
 }
 
-export default function RSVPMode({ text, startFraction = 0, onExit, onFractionChange }: RSVPModeProps) {
-	const { words, currentIndex, wpm, setWpm, isPlaying, setIsPlaying, progress, handleTouchStart, handleTouchMove } =
-		useSpeedReading({ text, startFraction, step: 1, onExit, onFractionChange });
+export default function RSVPMode({
+	text,
+	startFraction = 0,
+	onExit,
+	onFractionChange,
+}: RSVPModeProps) {
+	const {
+		words,
+		currentIndex,
+		wpm,
+		setWpm,
+		isPlaying,
+		setIsPlaying,
+		progress,
+		handleTouchStart,
+		handleTouchMove,
+	} = useSpeedReading({ text, startFraction, step: 1, onExit, onFractionChange });
 
 	const currentWord = words[currentIndex] ?? "";
 	const orpIndex = Math.floor(currentWord.length * 0.3);

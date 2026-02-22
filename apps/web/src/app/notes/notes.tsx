@@ -56,10 +56,7 @@ export default function Notes() {
 							{items.map((h) => {
 								const colorClass = getHighlightAccent(h.color);
 								return (
-									<div
-										key={h.id}
-										className={`rounded-lg border-l-4 px-4 py-3 ${colorClass}`}
-									>
+									<div key={h.id} className={`rounded-lg border-l-4 px-4 py-3 ${colorClass}`}>
 										{/* Highlighted text */}
 										<p className="mb-2 text-sm font-medium italic">&ldquo;{h.text}&rdquo;</p>
 
@@ -71,8 +68,11 @@ export default function Notes() {
 										{/* AI response saved as note */}
 										{h.note && h.aiResponse && (
 											<div className="mt-2">
-												<p className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wide">
-													{h.aiAction ? (AI_ACTION_LABELS[h.aiAction as keyof typeof AI_ACTION_LABELS] ?? h.aiAction) : "AI Note"}
+												<p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+													{h.aiAction
+														? (AI_ACTION_LABELS[h.aiAction as keyof typeof AI_ACTION_LABELS] ??
+															h.aiAction)
+														: "AI Note"}
 												</p>
 												<MarkdownContent>{h.note}</MarkdownContent>
 											</div>
@@ -81,8 +81,11 @@ export default function Notes() {
 										{/* AI response (not saved) */}
 										{h.aiResponse && !h.note && (
 											<div className="mt-2">
-												<p className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wide">
-													{h.aiAction ? (AI_ACTION_LABELS[h.aiAction as keyof typeof AI_ACTION_LABELS] ?? h.aiAction) : "AI"}
+												<p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+													{h.aiAction
+														? (AI_ACTION_LABELS[h.aiAction as keyof typeof AI_ACTION_LABELS] ??
+															h.aiAction)
+														: "AI"}
 												</p>
 												<MarkdownContent>{h.aiResponse}</MarkdownContent>
 											</div>

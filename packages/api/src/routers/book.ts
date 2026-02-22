@@ -62,7 +62,9 @@ export const bookRouter = router({
 			const highestFraction = (existing?.highestPosition as any)?.fraction ?? 0;
 			// Advance highestPosition only when reader moves forward
 			const newHighestPosition =
-				currentFraction > highestFraction ? input.position : (existing?.highestPosition ?? input.position);
+				currentFraction > highestFraction
+					? input.position
+					: (existing?.highestPosition ?? input.position);
 
 			return prisma.readingProgress.upsert({
 				where: { userId_bookId: { userId: ctx.session.user.id, bookId: input.bookId } },

@@ -161,7 +161,10 @@ export default function AIChatPanel({
 		const prompt = parts.join("\n\n");
 
 		try {
-			const result = await quickQueryMutation.mutateAsync({ text: prompt.slice(0, 3900), action: "DISCUSS" });
+			const result = await quickQueryMutation.mutateAsync({
+				text: prompt.slice(0, 3900),
+				action: "DISCUSS",
+			});
 			setMessages((prev) => [
 				...prev,
 				{ id: `assistant-${Date.now()}`, role: "assistant", content: result.response },
@@ -229,9 +232,10 @@ export default function AIChatPanel({
 		}
 		if (!responseAreaRef.current) return;
 		const range = sel.getRangeAt(0);
-		const node = range.commonAncestorContainer.nodeType === 1
-			? (range.commonAncestorContainer as Element)
-			: range.commonAncestorContainer.parentElement;
+		const node =
+			range.commonAncestorContainer.nodeType === 1
+				? (range.commonAncestorContainer as Element)
+				: range.commonAncestorContainer.parentElement;
 		if (!node || !responseAreaRef.current.contains(node)) {
 			setSelectionText("");
 			return;
@@ -243,19 +247,31 @@ export default function AIChatPanel({
 		<div className="flex h-full flex-col" data-ai-panel="true">
 			{!chatMode && highlight.text && (
 				<div className="border-b px-4 py-3">
-					<p className="text-muted-foreground line-clamp-3 text-xs italic">&ldquo;{highlight.text}&rdquo;</p>
+					<p className="text-muted-foreground line-clamp-3 text-xs italic">
+						&ldquo;{highlight.text}&rdquo;
+					</p>
 				</div>
 			)}
 
-			<div className="flex-1 overflow-y-auto px-4 py-3" ref={responseAreaRef} onMouseUp={handleSelectionCapture}>
+			<div
+				className="flex-1 overflow-y-auto px-4 py-3"
+				ref={responseAreaRef}
+				onMouseUp={handleSelectionCapture}
+			>
 				<div className="space-y-3">
 					{messages.map((msg) => (
 						<div
 							key={msg.id}
-							className={msg.role === "user" ? "ml-6 rounded-xl border px-3 py-2 text-sm" : "mr-6 rounded-xl border bg-muted/20 px-3 py-2"}
+							className={
+								msg.role === "user"
+									? "ml-6 rounded-xl border px-3 py-2 text-sm"
+									: "bg-muted/20 mr-6 rounded-xl border px-3 py-2"
+							}
 						>
 							{msg.role === "assistant" ? (
-								<MarkdownContent className="prose prose-sm dark:prose-invert max-w-none text-sm">{msg.content}</MarkdownContent>
+								<MarkdownContent className="prose prose-sm dark:prose-invert max-w-none text-sm">
+									{msg.content}
+								</MarkdownContent>
 							) : (
 								<p className="text-sm">{msg.content}</p>
 							)}
@@ -297,7 +313,7 @@ export default function AIChatPanel({
 
 				{latestAssistant && sections.length > 0 && (
 					<div className="mt-4 border-t pt-3">
-						<p className="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wide">
+						<p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
 							Draggable Summary Sections
 						</p>
 						<div className="space-y-2">
@@ -341,7 +357,12 @@ export default function AIChatPanel({
 						value={question}
 						onChange={(e) => setQuestion(e.target.value)}
 						placeholder={chatMode ? "Ask the AI anything…" : "Ask a follow-up about this passage…"}
-						onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askFollowUp(); } }}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" && !e.shiftKey) {
+								e.preventDefault();
+								askFollowUp();
+							}
+						}}
 						rows={2}
 						className="bg-background min-h-10 flex-1 resize-none rounded-md border px-3 py-2 text-sm"
 					/>

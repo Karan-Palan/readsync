@@ -20,11 +20,7 @@ const ACTION_LABEL: Record<string, string> = {
 	DISCUSS: "Discussion",
 };
 
-export default async function NotesPage({
-	params,
-}: {
-	params: Promise<{ bookId: string }>;
-}) {
+export default async function NotesPage({ params }: { params: Promise<{ bookId: string }> }) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session?.user) redirect("/login");
 
@@ -79,13 +75,11 @@ export default async function NotesPage({
 						<div key={h.id} className={`rounded-lg border-l-4 px-4 py-3 ${colorClass}`}>
 							<p className="mb-2 text-sm font-medium italic">&ldquo;{h.text}&rdquo;</p>
 
-							{h.note && !h.aiResponse && (
-								<p className="text-muted-foreground text-sm">{h.note}</p>
-							)}
+							{h.note && !h.aiResponse && <p className="text-muted-foreground text-sm">{h.note}</p>}
 
 							{h.aiResponse && (
 								<div className="mt-2">
-									<p className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wide">
+									<p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
 										{h.aiAction ? (ACTION_LABEL[h.aiAction] ?? h.aiAction) : "AI"}
 									</p>
 									<MarkdownContent>{h.note ?? h.aiResponse}</MarkdownContent>

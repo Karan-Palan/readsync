@@ -13,8 +13,8 @@ const groq = createOpenAI({
 	apiKey: process.env.GROQ_API_KEY,
 });
 
-const SUMMARY_MODEL = groq("openai/gpt-oss-120b");     // heavy model for book summaries
-const GENERAL_MODEL = groq("openai/gpt-oss-20b");       // lighter model for everything else
+const SUMMARY_MODEL = groq("openai/gpt-oss-120b"); // heavy model for book summaries
+const GENERAL_MODEL = groq("openai/gpt-oss-20b"); // lighter model for everything else
 
 const ACTION_PROMPTS = {
 	EXPLAIN:
@@ -81,7 +81,7 @@ export const aiRouter = router({
 		.input(
 			z.object({
 				text: z.string().min(10).max(4000),
-					action: z.enum(["EXPLAIN", "SUMMARIZE", "EXTRACT", "DISCUSS"]),
+				action: z.enum(["EXPLAIN", "SUMMARIZE", "EXTRACT", "DISCUSS"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {

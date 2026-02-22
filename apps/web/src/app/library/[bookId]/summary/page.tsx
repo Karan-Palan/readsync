@@ -6,11 +6,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import MarkdownContent from "@/components/markdown-content";
 
-export default async function SummaryPage({
-	params,
-}: {
-	params: Promise<{ bookId: string }>;
-}) {
+export default async function SummaryPage({ params }: { params: Promise<{ bookId: string }> }) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session?.user) redirect("/login");
 
@@ -54,7 +50,9 @@ export default async function SummaryPage({
 			<h1 className="mb-1 text-2xl font-bold">{book.title}</h1>
 			<p className="text-muted-foreground mb-6 text-sm">AI Summary</p>
 
-			<MarkdownContent className="prose prose-neutral dark:prose-invert max-w-none">{book.summary.content}</MarkdownContent>
+			<MarkdownContent className="prose prose-neutral dark:prose-invert max-w-none">
+				{book.summary.content}
+			</MarkdownContent>
 
 			<p className="text-muted-foreground mt-8 text-xs">
 				Last updated {new Date(book.summary.updatedAt).toLocaleDateString()}

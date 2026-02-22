@@ -76,7 +76,7 @@ export default function Library() {
 			{/* Summaries section */}
 			{booksWithSummary.length > 0 && (
 				<div className="mt-10">
-					<h2 className="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wide">
+					<h2 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wide uppercase">
 						Summaries
 					</h2>
 					<div className={BOOK_GRID}>
@@ -103,7 +103,7 @@ export default function Library() {
 			{/* Notes section */}
 			{booksWithNotes.length > 0 && (
 				<div className="mt-10">
-					<h2 className="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wide">
+					<h2 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wide uppercase">
 						Notes &amp; Highlights
 					</h2>
 					<div className={BOOK_GRID}>
@@ -114,7 +114,7 @@ export default function Library() {
 								className="bg-card hover:bg-accent group relative w-full cursor-pointer overflow-hidden rounded-lg border transition-colors"
 								onClick={() => router.push(`/library/${book.id}/notes` as any)}
 							>
-								<div className="bg-yellow-50 text-yellow-600 dark:bg-yellow-950/20 flex aspect-3/4 items-center justify-center">
+								<div className="flex aspect-3/4 items-center justify-center bg-yellow-50 text-yellow-600 dark:bg-yellow-950/20">
 									<StickyNote className="h-12 w-12 opacity-70" />
 								</div>
 								<div className="p-2">
@@ -131,4 +131,3 @@ export default function Library() {
 		</div>
 	);
 }
-

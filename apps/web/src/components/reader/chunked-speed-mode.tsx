@@ -18,8 +18,17 @@ export default function ChunkedSpeedMode({
 }: ChunkedSpeedModeProps) {
 	const [chunkSize, setChunkSize] = useState(3);
 
-	const { words, currentIndex, wpm, setWpm, isPlaying, setIsPlaying, progress, handleTouchStart, handleTouchMove } =
-		useSpeedReading({ text, startFraction, step: chunkSize, onExit, onFractionChange });
+	const {
+		words,
+		currentIndex,
+		wpm,
+		setWpm,
+		isPlaying,
+		setIsPlaying,
+		progress,
+		handleTouchStart,
+		handleTouchMove,
+	} = useSpeedReading({ text, startFraction, step: chunkSize, onExit, onFractionChange });
 
 	return (
 		<SpeedReadingShell

@@ -50,10 +50,34 @@ export interface HighlightColorDef {
 }
 
 export const HIGHLIGHT_COLORS: HighlightColorDef[] = [
-	{ id: "yellow", bg: "bg-yellow-300", accent: "border-yellow-400 bg-yellow-300/20", label: "Yellow", rgba: "rgba(255,255,0,0.35)" },
-	{ id: "green", bg: "bg-green-300", accent: "border-green-400 bg-green-300/20", label: "Green", rgba: "rgba(0,255,0,0.35)" },
-	{ id: "blue", bg: "bg-blue-300", accent: "border-blue-400 bg-blue-300/20", label: "Blue", rgba: "rgba(0,180,255,0.35)" },
-	{ id: "pink", bg: "bg-pink-300", accent: "border-pink-400 bg-pink-300/20", label: "Pink", rgba: "rgba(255,105,180,0.35)" },
+	{
+		id: "yellow",
+		bg: "bg-yellow-300",
+		accent: "border-yellow-400 bg-yellow-300/20",
+		label: "Yellow",
+		rgba: "rgba(255,255,0,0.35)",
+	},
+	{
+		id: "green",
+		bg: "bg-green-300",
+		accent: "border-green-400 bg-green-300/20",
+		label: "Green",
+		rgba: "rgba(0,255,0,0.35)",
+	},
+	{
+		id: "blue",
+		bg: "bg-blue-300",
+		accent: "border-blue-400 bg-blue-300/20",
+		label: "Blue",
+		rgba: "rgba(0,180,255,0.35)",
+	},
+	{
+		id: "pink",
+		bg: "bg-pink-300",
+		accent: "border-pink-400 bg-pink-300/20",
+		label: "Pink",
+		rgba: "rgba(255,105,180,0.35)",
+	},
 ];
 
 /** Look up a color by id → RGBA. Falls back to yellow. */

@@ -126,15 +126,12 @@ export default function Reader({
 		setHighlights((prev) => [highlight, ...prev]);
 	}, []);
 
-	const handleAIAction = useCallback(
-		(highlight: Highlight, action: AIAction) => {
-			setActiveHighlight(highlight);
-			setAiAction(action);
-			setIsChatMode(false);
-			setIsAIOpen(true);
-		},
-		[],
-	);
+	const handleAIAction = useCallback((highlight: Highlight, action: AIAction) => {
+		setActiveHighlight(highlight);
+		setAiAction(action);
+		setIsChatMode(false);
+		setIsAIOpen(true);
+	}, []);
 
 	const handleCloseAI = useCallback(() => {
 		setIsAIOpen(false);
@@ -199,7 +196,12 @@ export default function Reader({
 			},
 			{
 				onSuccess: (data) => {
-					const pseudo: Highlight = { id: "__summary__", text: bookText.slice(0, 500), aiResponse: data.response, aiAction: "SUMMARIZE" };
+					const pseudo: Highlight = {
+						id: "__summary__",
+						text: bookText.slice(0, 500),
+						aiResponse: data.response,
+						aiAction: "SUMMARIZE",
+					};
 					setActiveHighlight(pseudo);
 					setAiAction("SUMMARIZE");
 					setIsAIOpen(true);
@@ -254,12 +256,12 @@ export default function Reader({
 			{/* Resume dialog */}
 			{showResumeDialog && highestPosition != null && (
 				<div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
-					<div className="bg-card w-full max-w-sm rounded-xl border p-6 shadow-2xl mx-4">
+					<div className="bg-card mx-4 w-full max-w-sm rounded-xl border p-6 shadow-2xl">
 						<h3 className="mb-2 font-semibold">Resume Reading?</h3>
 						<p className="text-muted-foreground mb-4 text-sm">
 							You previously reached{" "}
-							<strong>{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%</strong>
-							. Jump back there?
+							<strong>{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%</strong>. Jump
+							back there?
 						</p>
 						<div className="flex gap-2">
 							<button
