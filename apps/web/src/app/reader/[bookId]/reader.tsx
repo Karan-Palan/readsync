@@ -1,9 +1,10 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Moon, Sparkles, Sun } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import AIBottomSheet from "@/components/reader/ai-bottom-sheet";
@@ -74,6 +75,7 @@ export default function Reader({
 	initialChapters,
 }: ReaderProps) {
 	const router = useRouter();
+	const { theme, setTheme } = useTheme();
 	const [currentMode, setCurrentMode] = useState<ReadingMode>("normal");
 	const [currentPosition, setCurrentPosition] = useState<unknown>(initialProgress);
 	const [highlights, setHighlights] = useState<Highlight[]>(initialHighlights);
@@ -217,6 +219,29 @@ export default function Reader({
 		);
 	}, [book.id, book.title, bookText, summarizeBookMutation]);
 
+	// When exiting RSVP/Chunked, navigate the EPUB/PDF reader to match the fraction reached
+	const handleAltModeExit = useCallback(
+		(mode: "rsvp" | "chunked") => {
+			if (readingFraction > 0 && navigateRef.current) {
+				navigateRef.current({ fraction: readingFraction });
+			}
+			setCurrentMode("normal");
+		},
+		[readingFraction],
+	);
+
+	const handleAltModeFraction = useCallback(
+		(fraction: number) => {
+			setReadingFraction(fraction);
+			// Also save progress to server
+			if (debounceRef.current) clearTimeout(debounceRef.current);
+			debounceRef.current = setTimeout(() => {
+				saveProgressMutation.mutate({ bookId: book.id, position: { fraction }, fraction });
+			}, 2000);
+		},
+		[book.id, saveProgressMutation],
+	);
+
 	// Focus overlay gradient — keeps the center strip bright, dims edges
 	const focusMaskStyle =
 		currentMode === "focus"
@@ -287,6 +312,14 @@ export default function Reader({
 				<div className="flex items-center gap-2">
 					<button
 						type="button"
+						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+						className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors"
+						title="Toggle theme"
+					>
+						{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+					</button>
+					<button
+						type="button"
 						onClick={handleSummarizeBook}
 						disabled={summarizeBookMutation.isPending || !bookText}
 						className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50"
@@ -327,9 +360,11 @@ export default function Reader({
 					<NormalMode
 						book={book}
 						position={currentPosition}
+						highlights={highlights}
 						onPositionChange={onPositionChange}
 						onTextExtracted={setBookText}
 						onCoverExtracted={handleCoverExtracted}
+						onHighlightClick={handleHighlightClick}
 						navigateRef={navigateRef}
 					>
 						<HighlightLayer
@@ -374,7 +409,8 @@ export default function Reader({
 						<RSVPMode
 							text={bookText}
 							startFraction={readingFraction}
-							onExit={() => setCurrentMode("normal")}
+							onExit={() => handleAltModeExit("rsvp")}
+							onFractionChange={handleAltModeFraction}
 						/>
 					</div>
 				)}
@@ -385,7 +421,8 @@ export default function Reader({
 						<ChunkedSpeedMode
 							text={bookText}
 							startFraction={readingFraction}
-							onExit={() => setCurrentMode("normal")}
+							onExit={() => handleAltModeExit("chunked")}
+							onFractionChange={handleAltModeFraction}
 						/>
 					</div>
 				)}

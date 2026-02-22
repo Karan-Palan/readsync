@@ -35,6 +35,7 @@ interface FoliateSelectionDetail {
 	text: string;
 	x: number;
 	y: number;
+	cfi?: string;
 }
 
 const HIGHLIGHT_COLORS = [
@@ -56,6 +57,7 @@ export default function TextSelectionMenu({
 	const [showNoteInput, setShowNoteInput] = useState(false);
 	const [noteText, setNoteText] = useState("");
 	const [pendingHighlight, setPendingHighlight] = useState<Highlight | null>(null);
+	const [selectedCfi, setSelectedCfi] = useState<string | undefined>(undefined);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const selectionSource = useRef<"document" | "foliate" | null>(null);
 
@@ -125,6 +127,7 @@ export default function TextSelectionMenu({
 			if (detail && detail.text.length >= 2) {
 				selectionSource.current = "foliate";
 				setSelectedText(detail.text);
+				setSelectedCfi(detail.cfi);
 				setShowNoteInput(false);
 				setNoteText("");
 				setPendingHighlight(null);
@@ -134,6 +137,7 @@ export default function TextSelectionMenu({
 					if (selectionSource.current === "foliate") {
 						setMenuPosition(null);
 						setSelectedText("");
+						setSelectedCfi(undefined);
 						setShowNoteInput(false);
 						setNoteText("");
 						setPendingHighlight(null);
@@ -166,6 +170,7 @@ export default function TextSelectionMenu({
 				text: selectedText,
 				color,
 				pageNumber,
+				startCfi: selectedCfi,
 			});
 
 			const highlight: Highlight = {
@@ -189,12 +194,13 @@ export default function TextSelectionMenu({
 			// Hide menu but keep reference for note
 			setMenuPosition(null);
 			setSelectedText("");
+			setSelectedCfi(undefined);
 			selectionSource.current = null;
 			window.getSelection()?.removeAllRanges();
 
 			return highlight;
 		},
-		[bookId, selectedText, fileType, createHighlightMutation, onHighlightCreated, onAIAction],
+		[bookId, selectedText, selectedCfi, fileType, createHighlightMutation, onHighlightCreated, onAIAction],
 	);
 
 	const handleHighlightColor = useCallback(
@@ -228,6 +234,7 @@ export default function TextSelectionMenu({
 			text: selectedText,
 			color: "yellow",
 			pageNumber,
+			startCfi: selectedCfi,
 		});
 
 		if (noteText.trim()) {
@@ -249,6 +256,7 @@ export default function TextSelectionMenu({
 		onHighlightCreated(highlight);
 		setMenuPosition(null);
 		setSelectedText("");
+		setSelectedCfi(undefined);
 		setShowNoteInput(false);
 		setNoteText("");
 		selectionSource.current = null;
@@ -256,6 +264,7 @@ export default function TextSelectionMenu({
 	}, [
 		bookId,
 		selectedText,
+		selectedCfi,
 		noteText,
 		fileType,
 		createHighlightMutation,

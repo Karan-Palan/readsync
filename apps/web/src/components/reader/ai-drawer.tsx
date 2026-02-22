@@ -39,30 +39,32 @@ export default function AIDrawer({
 	const dragging = useRef(false);
 	const startX = useRef(0);
 	const startWidth = useRef(0);
+	const handleRef = useRef<HTMLDivElement>(null);
 
 	const onResizePointerDown = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
 			e.preventDefault();
+			e.stopPropagation();
 			dragging.current = true;
 			startX.current = e.clientX;
 			startWidth.current = width;
 
-			const onMove = (ev: PointerEvent) => {
-				if (!dragging.current) return;
-				const delta = startX.current - ev.clientX; // moving left expands
-				const maxW = Math.round(window.innerWidth * 0.85);
-				setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
-			};
-			const onUp = () => {
-				dragging.current = false;
-				window.removeEventListener("pointermove", onMove);
-				window.removeEventListener("pointerup", onUp);
-			};
-			window.addEventListener("pointermove", onMove);
-			window.addEventListener("pointerup", onUp);
+			// Capture pointer to the handle so events fire even when cursor leaves
+			(e.target as HTMLElement).setPointerCapture(e.pointerId);
 		},
 		[width],
 	);
+
+	const onResizePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+		if (!dragging.current) return;
+		const delta = startX.current - e.clientX; // moving left expands
+		const maxW = Math.round(window.innerWidth * 0.85);
+		setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
+	}, []);
+
+	const onResizePointerUp = useCallback(() => {
+		dragging.current = false;
+	}, []);
 
 	return (
 		<div
@@ -70,10 +72,13 @@ export default function AIDrawer({
 			style={{ width, maxWidth: "85vw" }}
 			data-ai-panel="true"
 		>
-			{/* Drag-resize handle — the left edge */}
+			{/* Drag-resize handle — left edge, wide enough to grab easily */}
 			<div
-				className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/50 transition-colors"
+				ref={handleRef}
+				className="absolute left-0 top-0 z-10 h-full w-3 cursor-col-resize touch-none select-none hover:bg-primary/20 active:bg-primary/40 transition-colors"
 				onPointerDown={onResizePointerDown}
+				onPointerMove={onResizePointerMove}
+				onPointerUp={onResizePointerUp}
 				title="Drag to resize"
 			/>
 

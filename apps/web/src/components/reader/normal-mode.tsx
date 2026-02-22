@@ -6,6 +6,14 @@ import type { ReactNode } from "react";
 import EPUBReader from "./epub-reader";
 import PDFReader from "./pdf-reader";
 
+interface EPUBHighlight {
+	id: string;
+	text: string;
+	color?: string | null;
+	startCfi?: string | null;
+	endCfi?: string | null;
+}
+
 interface NormalModeProps {
 	book: {
 		id: string;
@@ -15,9 +23,11 @@ interface NormalModeProps {
 		totalPages: number | null;
 	};
 	position: unknown;
+	highlights?: EPUBHighlight[];
 	onPositionChange: (position: unknown) => void;
 	onTextExtracted: (text: string) => void;
 	onCoverExtracted?: (coverDataUrl: string) => void;
+	onHighlightClick?: (highlight: EPUBHighlight) => void;
 	navigateRef?: React.MutableRefObject<((pos: unknown) => void) | null>;
 	children?: ReactNode;
 }
@@ -30,9 +40,11 @@ interface NormalModeProps {
 export default function NormalMode({
 	book,
 	position,
+	highlights,
 	onPositionChange,
 	onTextExtracted,
 	onCoverExtracted,
+	onHighlightClick,
 	navigateRef,
 	children,
 }: NormalModeProps) {
@@ -54,9 +66,11 @@ export default function NormalMode({
 			<EPUBReader
 				book={book}
 				position={position}
+				highlights={highlights}
 				onPositionChange={onPositionChange}
 				onTextExtracted={onTextExtracted}
 				onCoverExtracted={onCoverExtracted}
+				onHighlightClick={onHighlightClick}
 				navigateRef={navigateRef}
 			>
 				{children}

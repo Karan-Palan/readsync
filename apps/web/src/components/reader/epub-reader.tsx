@@ -11,10 +11,18 @@ type FoliateView = HTMLElement & {
 	prev: () => void;
 	next: () => void;
 	goTo: (dest: string | number | object) => void;
+	getCFI: (index: number, range?: Range) => string;
+	addAnnotation: (annotation: { value: string }, remove?: boolean) => Promise<unknown>;
+	deleteAnnotation: (annotation: { value: string }) => Promise<void>;
+	renderer?: {
+		setStyles?: (css: string) => void;
+		getContents?: () => { index: number; overlayer?: unknown; doc?: Document }[];
+	};
 	book?: {
 		toc?: TocItem[];
 		sections?: Array<{
 			linear?: string;
+			cfi?: string;
 			createDocument?: () => Promise<Document | null>;
 		}>;
 		metadata?: {
@@ -22,7 +30,16 @@ type FoliateView = HTMLElement & {
 			cover?: string | null;
 		};
 	};
+	lastLocation?: { cfi?: string };
 };
+
+interface EPUBHighlight {
+	id: string;
+	text: string;
+	color?: string | null;
+	startCfi?: string | null;
+	endCfi?: string | null;
+}
 
 interface EPUBReaderProps {
 	book: {
@@ -33,9 +50,11 @@ interface EPUBReaderProps {
 		coverUrl?: string | null;
 	};
 	position: unknown;
+	highlights?: EPUBHighlight[];
 	onPositionChange: (position: unknown) => void;
 	onTextExtracted: (text: string) => void;
 	onCoverExtracted?: (coverDataUrl: string) => void;
+	onHighlightClick?: (highlight: EPUBHighlight) => void;
 	/** Populated with a navigate function once the view is ready */
 	navigateRef?: React.MutableRefObject<((pos: unknown) => void) | null>;
 	children?: ReactNode;
@@ -44,9 +63,11 @@ interface EPUBReaderProps {
 export default function EPUBReader({
 	book,
 	position,
+	highlights = [],
 	onPositionChange,
 	onTextExtracted,
 	onCoverExtracted,
+	onHighlightClick,
 	navigateRef,
 	children,
 }: EPUBReaderProps) {
@@ -63,6 +84,8 @@ export default function EPUBReader({
 	const [fontSize, setFontSize] = useState(100);
 	const fontSizeRef = useRef(fontSize);
 	const [progress, setProgress] = useState(0);
+	const highlightColorMap = useRef<Map<string, string>>(new Map());
+	const [viewReady, setViewReady] = useState(false);
 
 	useEffect(() => {
 		if (typeof window === "undefined" || !viewerRef.current) return;
@@ -161,10 +184,22 @@ export default function EPUBReader({
 						// Use the FIRST rect so the menu appears above the TOP of the selection
 						const topRect = rects[0];
 						const offset = getIframeOffset();
+
+						// Get the CFI for this selection so highlights can be anchored
+						let cfi: string | undefined;
+						try {
+							const contents = (view as any).renderer?.getContents?.() ?? [];
+							const match = contents.find((c: any) => c.doc === doc);
+							if (match && typeof match.index === "number") {
+								cfi = (view as any).getCFI(match.index, range);
+							}
+						} catch {}
+
 						window.dispatchEvent(
 							new CustomEvent("foliate-selection", {
 								detail: {
 									text,
+									cfi,
 									x: offset.left + topRect.left + topRect.width / 2,
 									// subtract 8px so the menu bottom lands just above the selection
 									y: offset.top + topRect.top - 8,
@@ -201,6 +236,47 @@ export default function EPUBReader({
 				if (view.book?.toc) {
 					setToc(view.book.toc);
 				}
+
+				// Listen for draw-annotation to render highlights with correct colors
+				view.addEventListener("draw-annotation", (e: Event) => {
+					const { draw, annotation } = (e as CustomEvent).detail ?? {};
+					if (!draw || !annotation) return;
+					const color = highlightColorMap.current.get(annotation.value) ?? "yellow";
+					const colorMap: Record<string, string> = {
+						yellow: "rgba(250, 204, 21, 0.35)",
+						green: "rgba(74, 222, 128, 0.35)",
+						blue: "rgba(96, 165, 250, 0.35)",
+						pink: "rgba(244, 114, 182, 0.35)",
+					};
+					const fill = colorMap[color] ?? colorMap.yellow;
+					// Overlayer.highlight is a static method on the Overlayer class
+					draw((rects: DOMRectList) => {
+						const ns = "http://www.w3.org/2000/svg";
+						const g = document.createElementNS(ns, "g");
+						g.style.opacity = "0.35";
+						for (const { left, top, width, height } of rects) {
+							const rect = document.createElementNS(ns, "rect");
+							rect.setAttribute("x", String(left));
+							rect.setAttribute("y", String(top));
+							rect.setAttribute("width", String(width));
+							rect.setAttribute("height", String(height));
+							rect.setAttribute("fill", fill);
+							g.append(rect);
+						}
+						g.style.cursor = "pointer";
+						g.style.pointerEvents = "auto";
+						g.addEventListener("click", () => {
+							// Find the highlight by CFI
+							const cfi = annotation.value;
+							window.dispatchEvent(
+								new CustomEvent("foliate-highlight-click", { detail: { cfi } }),
+							);
+						});
+						return g;
+					});
+				});
+
+				setViewReady(true);
 
 				// Expose programmatic navigation to the parent
 				if (navigateRef) {
@@ -308,6 +384,46 @@ export default function EPUBReader({
 			}
 		} catch {}
 	}, [fontSize]);
+
+	// Sync annotations whenever highlights change (or view becomes ready)
+	useEffect(() => {
+		const view = folViewRef.current;
+		if (!view || !viewReady) return;
+
+		// Update color map and add/remove annotations as needed
+		const newCfis = new Set<string>();
+		for (const h of highlights) {
+			if (!h.startCfi) continue;
+			newCfis.add(h.startCfi);
+			highlightColorMap.current.set(h.startCfi, h.color ?? "yellow");
+		}
+
+		// Remove annotations no longer in highlights
+		for (const cfi of highlightColorMap.current.keys()) {
+			if (!newCfis.has(cfi)) {
+				try { view.deleteAnnotation({ value: cfi }); } catch {}
+				highlightColorMap.current.delete(cfi);
+			}
+		}
+
+		// Add new annotations
+		for (const h of highlights) {
+			if (!h.startCfi) continue;
+			try { view.addAnnotation({ value: h.startCfi }); } catch {}
+		}
+	}, [highlights, viewReady]);
+
+	// Listen for highlight clicks dispatched from the SVG overlay
+	useEffect(() => {
+		const handler = (e: Event) => {
+			const cfi = (e as CustomEvent).detail?.cfi;
+			if (!cfi || !onHighlightClick) return;
+			const match = highlights.find((h) => h.startCfi === cfi);
+			if (match) onHighlightClick(match);
+		};
+		window.addEventListener("foliate-highlight-click", handler);
+		return () => window.removeEventListener("foliate-highlight-click", handler);
+	}, [highlights, onHighlightClick]);
 
 	const goToTocItem = useCallback((href: string) => {
 		try {

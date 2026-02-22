@@ -6,12 +6,14 @@ interface ChunkedSpeedModeProps {
 	text: string;
 	startFraction?: number;
 	onExit: () => void;
+	onFractionChange?: (fraction: number) => void;
 }
 
 export default function ChunkedSpeedMode({
 	text,
 	startFraction = 0,
 	onExit,
+	onFractionChange,
 }: ChunkedSpeedModeProps) {
 	const words = useMemo(() => text.split(/\s+/).filter((w) => w.length > 0), [text]);
 
@@ -24,6 +26,13 @@ export default function ChunkedSpeedMode({
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	const currentChunk = words.slice(currentIndex, currentIndex + chunkSize).join(" ");
+
+	// Report fraction changes back to parent so progress is synced
+	useEffect(() => {
+		if (words.length > 0 && onFractionChange) {
+			onFractionChange(currentIndex / words.length);
+		}
+	}, [currentIndex, words.length, onFractionChange]);
 
 	useEffect(() => {
 		if (isPlaying) {

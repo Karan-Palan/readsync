@@ -6,9 +6,10 @@ interface RSVPModeProps {
 	text: string;
 	startFraction?: number;
 	onExit: () => void;
+	onFractionChange?: (fraction: number) => void;
 }
 
-export default function RSVPMode({ text, startFraction = 0, onExit }: RSVPModeProps) {
+export default function RSVPMode({ text, startFraction = 0, onExit, onFractionChange }: RSVPModeProps) {
 	const words = useMemo(() => text.split(/\s+/).filter((w) => w.length > 0), [text]);
 
 	const [currentIndex, setCurrentIndex] = useState(() =>
@@ -19,6 +20,13 @@ export default function RSVPMode({ text, startFraction = 0, onExit }: RSVPModePr
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	const currentWord = words[currentIndex] ?? "";
+
+	// Report fraction changes back to parent so progress is synced
+	useEffect(() => {
+		if (words.length > 0 && onFractionChange) {
+			onFractionChange(currentIndex / words.length);
+		}
+	}, [currentIndex, words.length, onFractionChange]);
 
 	// ORP (Optimal Recognition Point) at ~30% of word length
 	const orpIndex = Math.floor(currentWord.length * 0.3);
