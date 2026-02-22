@@ -1,3 +1,3 @@
 {
-  "extends": "@readsync/config/tsconfig.base.json"
+	"extends": "@readsync/config/tsconfig.base.json"
 }
