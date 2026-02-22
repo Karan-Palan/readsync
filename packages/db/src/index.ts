@@ -4,7 +4,7 @@ import { env } from "@readsync/env/server";
 import { PrismaClient } from "../prisma/generated/client";
 
 const adapter = new PrismaPg({
-  connectionString: env.DATABASE_URL,
+	connectionString: env.DATABASE_URL,
 });
 
 const prisma = new PrismaClient({ adapter });

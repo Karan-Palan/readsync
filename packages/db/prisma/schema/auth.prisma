@@ -6,6 +6,8 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  aiCallsThisMonth Int    @default(0)
+  aiUsageResetAt   DateTime @default(now())
   sessions      Session[]
   accounts      Account[]
   books         Book[]
