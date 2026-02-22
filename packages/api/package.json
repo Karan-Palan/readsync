@@ -1,0 +1,27 @@
+{
+  "name": "@readsync/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@readsync/auth": "workspace:*",
+    "@readsync/db": "workspace:*",
+    "@readsync/env": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "dotenv": "catalog:",
+    "next": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@readsync/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
