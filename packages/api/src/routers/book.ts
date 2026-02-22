@@ -13,20 +13,18 @@ export const bookRouter = router({
 		});
 	}),
 
-	get: protectedProcedure
-		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
-			const book = await prisma.book.findUnique({
-				where: { id: input.id },
-				include: { readingProgress: true, highlights: true, chapters: true },
-			});
+	get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+		const book = await prisma.book.findUnique({
+			where: { id: input.id },
+			include: { readingProgress: true, highlights: true, chapters: true },
+		});
 
-			if (!book || book.userId !== ctx.session.user.id) {
-				throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
-			}
+		if (!book || book.userId !== ctx.session.user.id) {
+			throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
+		}
 
-			return book;
-		}),
+		return book;
+	}),
 
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))

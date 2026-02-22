@@ -41,8 +41,8 @@ export default function FocusColumnMode({
 			/>
 
 			{/* Width slider */}
-			<div className="fixed top-14 right-4 z-20 rounded-md border bg-card p-2 shadow-lg">
-				<label className="flex items-center gap-2 text-muted-foreground text-xs">
+			<div className="bg-card fixed top-14 right-4 z-20 rounded-md border p-2 shadow-lg">
+				<label className="text-muted-foreground flex items-center gap-2 text-xs">
 					Width
 					<input
 						type="range"

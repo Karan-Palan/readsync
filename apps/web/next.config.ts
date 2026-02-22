@@ -6,10 +6,7 @@ import type { NextConfig } from "next";
 
 // Copy foliate-js library files to public/ so they can be served as native ES modules.
 // This avoids bundler issues with its dynamic PDF.js imports.
-const foliateJs = path.resolve(
-	__dirname,
-	"../../node_modules/@xincmm/foliate-js",
-);
+const foliateJs = path.resolve(__dirname, "../../node_modules/@xincmm/foliate-js");
 const dest = path.resolve(__dirname, "public/foliate-js");
 
 if (existsSync(foliateJs)) {

@@ -13,24 +13,17 @@ export default function ChunkedSpeedMode({
 	startFraction = 0,
 	onExit,
 }: ChunkedSpeedModeProps) {
-	const words = useMemo(
-		() => text.split(/\s+/).filter((w) => w.length > 0),
-		[text],
-	);
+	const words = useMemo(() => text.split(/\s+/).filter((w) => w.length > 0), [text]);
 
 	const [chunkSize, setChunkSize] = useState(3);
 	const [currentIndex, setCurrentIndex] = useState(() =>
-		Math.floor(
-			startFraction * text.split(/\s+/).filter((w) => w.length > 0).length,
-		),
+		Math.floor(startFraction * text.split(/\s+/).filter((w) => w.length > 0).length),
 	);
 	const [wpm, setWpm] = useState(300);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-	const currentChunk = words
-		.slice(currentIndex, currentIndex + chunkSize)
-		.join(" ");
+	const currentChunk = words.slice(currentIndex, currentIndex + chunkSize).join(" ");
 
 	useEffect(() => {
 		if (isPlaying) {
@@ -79,7 +72,7 @@ export default function ChunkedSpeedMode({
 
 	return (
 		<div
-			className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-background"
+			className="bg-background fixed inset-0 z-30 flex flex-col items-center justify-center"
 			onTouchStart={(e) => {
 				handleTouchStart.current = e.touches[0].clientY;
 			}}
@@ -89,14 +82,14 @@ export default function ChunkedSpeedMode({
 			<button
 				type="button"
 				onClick={onExit}
-				className="absolute top-4 right-4 rounded-md px-3 py-1 text-muted-foreground text-sm hover:text-foreground"
+				className="text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-md px-3 py-1 text-sm"
 			>
 				✕ Exit
 			</button>
 
 			{/* Chunk display */}
 			<div className="flex items-center justify-center px-4">
-				<span className="font-(family-name:--font-literata) text-center text-3xl tracking-wide md:text-5xl">
+				<span className="text-center font-(family-name:--font-literata) text-3xl tracking-wide md:text-5xl">
 					{currentChunk}
 				</span>
 			</div>
@@ -104,9 +97,9 @@ export default function ChunkedSpeedMode({
 			{/* Controls */}
 			<div className="absolute bottom-20 flex flex-col items-center gap-4">
 				{/* Progress bar */}
-				<div className="h-1 w-64 rounded-full bg-muted">
+				<div className="bg-muted h-1 w-64 rounded-full">
 					<div
-						className="h-full rounded-full bg-primary transition-all"
+						className="bg-primary h-full rounded-full transition-all"
 						style={{ width: `${progress}%` }}
 					/>
 				</div>
@@ -115,7 +108,7 @@ export default function ChunkedSpeedMode({
 					<button
 						type="button"
 						onClick={() => setIsPlaying(!isPlaying)}
-						className="rounded-md bg-primary px-6 py-2 font-medium text-primary-foreground text-sm"
+						className="bg-primary text-primary-foreground rounded-md px-6 py-2 text-sm font-medium"
 					>
 						{isPlaying ? "Pause" : "Play"}
 					</button>
@@ -133,7 +126,7 @@ export default function ChunkedSpeedMode({
 							onChange={(e) => setWpm(Number(e.target.value))}
 							className="w-32"
 						/>
-						<span className="w-10 text-right font-medium text-xs">{wpm}</span>
+						<span className="w-10 text-right text-xs font-medium">{wpm}</span>
 					</div>
 
 					<div className="flex items-center gap-2">
@@ -146,7 +139,7 @@ export default function ChunkedSpeedMode({
 							onChange={(e) => setChunkSize(Number(e.target.value))}
 							className="w-16"
 						/>
-						<span className="w-4 font-medium text-xs">{chunkSize}</span>
+						<span className="w-4 text-xs font-medium">{chunkSize}</span>
 					</div>
 				</div>
 			</div>

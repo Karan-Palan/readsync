@@ -80,7 +80,7 @@ export const aiRouter = router({
 			});
 
 			// Increment usage counter
-            // TODO: provide option to add user their own api key
+			// TODO: provide option to add user their own api key
 			await prisma.user.update({
 				where: { id: ctx.session.user.id },
 				data: { aiCallsThisMonth: { increment: 1 } },

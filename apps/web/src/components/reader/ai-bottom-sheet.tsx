@@ -75,30 +75,26 @@ export default function AIBottomSheet({
 			{/* Sheet */}
 			<div
 				ref={sheetRef}
-				className="fixed right-0 bottom-0 left-0 z-50 flex max-h-[70vh] flex-col rounded-t-xl bg-card shadow-xl transition-transform duration-200"
+				className="bg-card fixed right-0 bottom-0 left-0 z-50 flex max-h-[70vh] flex-col rounded-t-xl shadow-xl transition-transform duration-200"
 				onTouchStart={handleTouchStart}
 				onTouchMove={handleTouchMove}
 			>
 				{/* Drag handle */}
 				<div className="flex justify-center py-2">
-					<div className="h-1 w-8 rounded-full bg-muted-foreground/30" />
+					<div className="bg-muted-foreground/30 h-1 w-8 rounded-full" />
 				</div>
 
 				{/* Header */}
 				<div className="flex items-center justify-between px-4 pb-2">
-					<h3 className="font-semibold text-sm">{actionLabel}</h3>
-					<button
-						type="button"
-						onClick={onClose}
-						className="rounded-md p-1 hover:bg-accent"
-					>
+					<h3 className="text-sm font-semibold">{actionLabel}</h3>
+					<button type="button" onClick={onClose} className="hover:bg-accent rounded-md p-1">
 						<X className="h-4 w-4" />
 					</button>
 				</div>
 
 				{/* Highlight preview */}
 				<div className="border-y px-4 py-2">
-					<p className="line-clamp-2 text-muted-foreground text-xs italic">
+					<p className="text-muted-foreground line-clamp-2 text-xs italic">
 						&ldquo;{highlight.text}&rdquo;
 					</p>
 				</div>
@@ -106,19 +102,15 @@ export default function AIBottomSheet({
 				{/* Response */}
 				<div className="flex-1 overflow-y-auto px-4 py-3">
 					{aiMutation.isPending && (
-						<div className="flex items-center gap-2 text-muted-foreground text-sm">
-							<div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+						<div className="text-muted-foreground flex items-center gap-2 text-sm">
+							<div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
 							Thinking...
 						</div>
 					)}
 					{aiMutation.isError && (
-						<p className="text-destructive text-sm">
-							{aiMutation.error.message}
-						</p>
+						<p className="text-destructive text-sm">{aiMutation.error.message}</p>
 					)}
-					{response && (
-						<p className="whitespace-pre-wrap text-sm">{response}</p>
-					)}
+					{response && <p className="text-sm whitespace-pre-wrap">{response}</p>}
 				</div>
 
 				{/* Actions */}
@@ -130,7 +122,7 @@ export default function AIBottomSheet({
 							toast.success("Copied to clipboard");
 						}}
 						disabled={!response}
-						className="flex items-center gap-1 rounded-md px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
+						className="hover:bg-accent flex items-center gap-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
 					>
 						<Copy className="h-3.5 w-3.5" />
 						Copy
@@ -142,7 +134,7 @@ export default function AIBottomSheet({
 							aiMutation.mutate({ highlightId: highlight.id, action });
 						}}
 						disabled={aiMutation.isPending}
-						className="flex items-center gap-1 rounded-md px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
+						className="hover:bg-accent flex items-center gap-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
 					>
 						<RefreshCw className="h-3.5 w-3.5" />
 						Regenerate

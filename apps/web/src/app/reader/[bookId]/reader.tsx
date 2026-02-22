@@ -11,9 +11,7 @@ import AIDrawer from "@/components/reader/ai-drawer";
 import ChapterList from "@/components/reader/chapter-list";
 import ChunkedSpeedMode from "@/components/reader/chunked-speed-mode";
 import HighlightLayer from "@/components/reader/highlight-layer";
-import ReadingModeSelector, {
-	type ReadingMode,
-} from "@/components/reader/reading-mode-selector";
+import ReadingModeSelector, { type ReadingMode } from "@/components/reader/reading-mode-selector";
 import RSVPMode from "@/components/reader/rsvp-mode";
 import TextSelectionMenu from "@/components/reader/text-selection-menu";
 import { trpc } from "@/utils/trpc";
@@ -27,7 +25,7 @@ const NormalMode = dynamic(() => import("@/components/reader/normal-mode"), {
 function ReaderLoading() {
 	return (
 		<div className="flex h-full items-center justify-center">
-			<div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+			<div className="border-primary h-10 w-10 animate-spin rounded-full border-4 border-t-transparent" />
 		</div>
 	);
 }
@@ -73,17 +71,12 @@ export default function Reader({
 }: ReaderProps) {
 	const router = useRouter();
 	const [currentMode, setCurrentMode] = useState<ReadingMode>("normal");
-	const [currentPosition, setCurrentPosition] =
-		useState<unknown>(initialProgress);
+	const [currentPosition, setCurrentPosition] = useState<unknown>(initialProgress);
 	const [highlights, setHighlights] = useState<Highlight[]>(initialHighlights);
 	const [chapters, setChapters] = useState<Chapter[]>(initialChapters);
-	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(
-		null,
-	);
+	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
 	const [isAIOpen, setIsAIOpen] = useState(false);
-	const [aiAction, setAiAction] = useState<
-		"EXPLAIN" | "SUMMARIZE" | "EXTRACT" | null
-	>(null);
+	const [aiAction, setAiAction] = useState<"EXPLAIN" | "SUMMARIZE" | "EXTRACT" | null>(null);
 	const [bookText, setBookText] = useState<string>("");
 	// Fraction 0-1 tracked from EPUB/PDF reader for RSVP/Chunked start position
 	const [readingFraction, setReadingFraction] = useState(0);
@@ -96,12 +89,8 @@ export default function Reader({
 	const [focusWidthPct, setFocusWidthPct] = useState(60);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	const saveProgressMutation = useMutation(
-		trpc.book.saveProgress.mutationOptions(),
-	);
-	const updateCoverMutation = useMutation(
-		trpc.book.updateCover.mutationOptions(),
-	);
+	const saveProgressMutation = useMutation(trpc.book.saveProgress.mutationOptions());
+	const updateCoverMutation = useMutation(trpc.book.updateCover.mutationOptions());
 
 	const handleCoverExtracted = useCallback(
 		(coverDataUrl: string) => {
@@ -173,13 +162,10 @@ export default function Reader({
 		setIsAIOpen(true);
 	}, []);
 
-	const handleChapterCreate = useCallback(
-		(startPage: number, endPage: number) => {
-			setChapterFormDefaults({ startPage, endPage });
-			setIsChapterListOpen(true);
-		},
-		[],
-	);
+	const handleChapterCreate = useCallback((startPage: number, endPage: number) => {
+		setChapterFormDefaults({ startPage, endPage });
+		setIsChapterListOpen(true);
+	}, []);
 
 	// AI shortcut: summarize selected text or current section excerpt
 	const handleQuickAI = useCallback(() => {
@@ -211,27 +197,25 @@ export default function Reader({
 
 	return (
 		// h-dvh: true viewport height that accounts for mobile browser chrome
-		<div className="relative flex h-dvh flex-col overflow-hidden bg-background">
+		<div className="bg-background relative flex h-dvh flex-col overflow-hidden">
 			{/* Top bar */}
 			<header className="flex shrink-0 items-center justify-between border-b px-3 py-2 sm:px-4">
 				<button
 					type="button"
 					onClick={() => router.push("/library" as any)}
-					className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
+					className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"
 				>
 					<ArrowLeft className="h-4 w-4" />
 					<span className="hidden sm:inline">Back</span>
 				</button>
 
-				<h2 className="max-w-[45%] truncate font-medium text-sm sm:max-w-[55%]">
-					{book.title}
-				</h2>
+				<h2 className="max-w-[45%] truncate text-sm font-medium sm:max-w-[55%]">{book.title}</h2>
 
 				<div className="flex items-center gap-2">
 					<button
 						type="button"
 						onClick={handleQuickAI}
-						className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs transition-colors hover:bg-primary/20"
+						className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
 						title="AI: summarise selection or section"
 					>
 						<Sparkles className="h-3.5 w-3.5" />
@@ -240,7 +224,7 @@ export default function Reader({
 					<button
 						type="button"
 						onClick={() => setIsChapterListOpen(!isChapterListOpen)}
-						className="text-muted-foreground text-sm hover:text-foreground"
+						className="text-muted-foreground hover:text-foreground text-sm"
 					>
 						<span className="hidden sm:inline">Chapters</span>
 						<span className="text-xs sm:hidden">Ch.</span>
@@ -282,7 +266,7 @@ export default function Reader({
 						/>
 
 						{/* Width control — positioned top-right, above overlay */}
-						<div className="absolute top-2 right-3 z-20 flex items-center gap-2 rounded-lg border bg-card/90 px-3 py-1.5 shadow-md backdrop-blur">
+						<div className="bg-card/90 absolute top-2 right-3 z-20 flex items-center gap-2 rounded-lg border px-3 py-1.5 shadow-md backdrop-blur">
 							<span className="text-muted-foreground text-xs">Width</span>
 							<input
 								type="range"
@@ -293,7 +277,7 @@ export default function Reader({
 								onChange={(e) => setFocusWidthPct(Number(e.target.value))}
 								className="w-20 sm:w-28"
 							/>
-							<span className="w-7 text-right font-mono text-muted-foreground text-xs">
+							<span className="text-muted-foreground w-7 text-right font-mono text-xs">
 								{focusWidthPct}%
 							</span>
 						</div>
@@ -302,7 +286,7 @@ export default function Reader({
 
 				{/*  RSVP: full-screen overlay so NormalMode stays mounted below  */}
 				{currentMode === "rsvp" && (
-					<div className="absolute inset-0 z-30 bg-background">
+					<div className="bg-background absolute inset-0 z-30">
 						<RSVPMode
 							text={bookText}
 							startFraction={readingFraction}
@@ -313,7 +297,7 @@ export default function Reader({
 
 				{/*  Chunked: same pattern as RSVP  */}
 				{currentMode === "chunked" && (
-					<div className="absolute inset-0 z-30 bg-background">
+					<div className="bg-background absolute inset-0 z-30">
 						<ChunkedSpeedMode
 							text={bookText}
 							startFraction={readingFraction}
@@ -360,11 +344,7 @@ export default function Reader({
 								onClose={handleCloseAI}
 								onResponseReceived={(id, response) => {
 									setHighlights((prev) =>
-										prev.map((h) =>
-											h.id === id
-												? { ...h, aiAction, aiResponse: response }
-												: h,
-										),
+										prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
 									);
 								}}
 							/>
@@ -376,11 +356,7 @@ export default function Reader({
 								onClose={handleCloseAI}
 								onResponseReceived={(id, response) => {
 									setHighlights((prev) =>
-										prev.map((h) =>
-											h.id === id
-												? { ...h, aiAction, aiResponse: response }
-												: h,
-										),
+										prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
 									);
 								}}
 							/>
@@ -390,10 +366,7 @@ export default function Reader({
 			</div>
 
 			{/*  Mode selector bar  */}
-			<ReadingModeSelector
-				currentMode={currentMode}
-				onModeChange={setCurrentMode}
-			/>
+			<ReadingModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
 		</div>
 	);
 }

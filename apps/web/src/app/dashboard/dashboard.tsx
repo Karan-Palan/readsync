@@ -13,8 +13,7 @@ export default function Dashboard({
 }) {
 	const privateData = useQuery(trpc.privateData.queryOptions());
 
-	const hasProSubscription =
-		(customerState?.activeSubscriptions?.length ?? 0) > 0;
+	const hasProSubscription = (customerState?.activeSubscriptions?.length ?? 0) > 0;
 	console.log("Active subscriptions:", customerState?.activeSubscriptions);
 
 	return (
@@ -26,9 +25,7 @@ export default function Dashboard({
 					Manage Subscription
 				</Button>
 			) : (
-				<Button
-					onClick={async () => await authClient.checkout({ slug: "pro" })}
-				>
+				<Button onClick={async () => await authClient.checkout({ slug: "pro" })}>
 					Upgrade to Pro
 				</Button>
 			)}

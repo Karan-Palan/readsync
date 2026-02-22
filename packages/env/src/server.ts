@@ -10,9 +10,7 @@ export const env = createEnv({
 		POLAR_ACCESS_TOKEN: z.string().min(1).optional(),
 		POLAR_SUCCESS_URL: z.url().optional(),
 		CORS_ORIGIN: z.url().optional(),
-		NODE_ENV: z
-			.enum(["development", "production", "test"])
-			.default("development"),
+		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 		OPENAI_API_KEY: z.string().min(1).optional(),
 		UPLOADTHING_TOKEN: z.string().min(1).optional(),
 	},
