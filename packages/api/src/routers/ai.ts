@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { generateText } from "ai";
 import { z } from "zod";
 
+import { enforceAiUsageCap, incrementAiUsage } from "../lib/ai-usage";
 import { protectedProcedure, router } from "../index";
 
 // Groq via OpenAI-compatible endpoint
@@ -26,8 +27,6 @@ const ACTION_PROMPTS = {
 		"You are a thoughtful reading discussion partner. The reader wants to explore this idea deeper. Provide context, different perspectives, philosophical implications, and thought-provoking questions to expand on this passage.",
 } as const;
 
-const AI_MONTHLY_CAP = Number.POSITIVE_INFINITY; // disabled – no limit
-
 export const aiRouter = router({
 	query: protectedProcedure
 		.input(
@@ -37,31 +36,7 @@ export const aiRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// monthly AI usage cap
-			const user = await prisma.user.findUniqueOrThrow({
-				where: { id: ctx.session.user.id },
-				select: { aiCallsThisMonth: true, aiUsageResetAt: true },
-			});
-
-			const now = new Date();
-			let calls = user.aiCallsThisMonth;
-
-			// Reset counter if we've crossed into a new month
-			if (now > user.aiUsageResetAt) {
-				const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-				await prisma.user.update({
-					where: { id: ctx.session.user.id },
-					data: { aiCallsThisMonth: 0, aiUsageResetAt: nextReset },
-				});
-				calls = 0;
-			}
-
-			if (calls >= AI_MONTHLY_CAP) {
-				throw new TRPCError({
-					code: "TOO_MANY_REQUESTS",
-					message: `You have reached the monthly limit of ${AI_MONTHLY_CAP} AI requests. Your usage resets on the 1st of next month.`,
-				});
-			}
+			await enforceAiUsageCap(ctx.session.user.id);
 
 			const highlight = await prisma.highlight.findUnique({
 				where: { id: input.highlightId },
@@ -93,12 +68,7 @@ export const aiRouter = router({
 				},
 			});
 
-			// Increment usage counter
-			// TODO: provide option to add user their own api key
-			await prisma.user.update({
-				where: { id: ctx.session.user.id },
-				data: { aiCallsThisMonth: { increment: 1 } },
-			});
+			await incrementAiUsage(ctx.session.user.id);
 
 			return { response: text };
 		}),
@@ -115,30 +85,7 @@ export const aiRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// --- Same monthly cap logic ---
-			const user = await prisma.user.findUniqueOrThrow({
-				where: { id: ctx.session.user.id },
-				select: { aiCallsThisMonth: true, aiUsageResetAt: true },
-			});
-
-			const now = new Date();
-			let calls = user.aiCallsThisMonth;
-
-			if (now > user.aiUsageResetAt) {
-				const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-				await prisma.user.update({
-					where: { id: ctx.session.user.id },
-					data: { aiCallsThisMonth: 0, aiUsageResetAt: nextReset },
-				});
-				calls = 0;
-			}
-
-			if (calls >= AI_MONTHLY_CAP) {
-				throw new TRPCError({
-					code: "TOO_MANY_REQUESTS",
-					message: `You have reached the monthly limit of ${AI_MONTHLY_CAP} AI requests. Your usage resets on the 1st of next month.`,
-				});
-			}
+			await enforceAiUsageCap(ctx.session.user.id);
 
 			const systemPrompt = ACTION_PROMPTS[input.action];
 
@@ -151,10 +98,7 @@ export const aiRouter = router({
 				maxOutputTokens: 4096,
 			});
 
-			await prisma.user.update({
-				where: { id: ctx.session.user.id },
-				data: { aiCallsThisMonth: { increment: 1 } },
-			});
+			await incrementAiUsage(ctx.session.user.id);
 
 			return { response: text };
 		}),
@@ -169,27 +113,7 @@ export const aiRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// Monthly cap check
-			const user = await prisma.user.findUniqueOrThrow({
-				where: { id: ctx.session.user.id },
-				select: { aiCallsThisMonth: true, aiUsageResetAt: true },
-			});
-			const now = new Date();
-			let calls = user.aiCallsThisMonth;
-			if (now > user.aiUsageResetAt) {
-				const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-				await prisma.user.update({
-					where: { id: ctx.session.user.id },
-					data: { aiCallsThisMonth: 0, aiUsageResetAt: nextReset },
-				});
-				calls = 0;
-			}
-			if (calls >= AI_MONTHLY_CAP) {
-				throw new TRPCError({
-					code: "TOO_MANY_REQUESTS",
-					message: `Monthly AI limit of ${AI_MONTHLY_CAP} reached. Resets 1st of next month.`,
-				});
-			}
+			await enforceAiUsageCap(ctx.session.user.id);
 
 			const { text } = await generateText({
 				model: SUMMARY_MODEL,
@@ -208,10 +132,7 @@ export const aiRouter = router({
 				create: { userId: ctx.session.user.id, bookId: input.bookId, content: text },
 			});
 
-			await prisma.user.update({
-				where: { id: ctx.session.user.id },
-				data: { aiCallsThisMonth: { increment: 1 } },
-			});
+			await incrementAiUsage(ctx.session.user.id);
 
 			return { response: text };
 		}),

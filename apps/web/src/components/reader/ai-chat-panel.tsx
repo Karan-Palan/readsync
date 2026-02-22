@@ -3,28 +3,16 @@
 import { useMutation } from "@tanstack/react-query";
 import { BookMarked, GripVertical, MessageSquarePlus, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import MarkdownContent from "@/components/markdown-content";
 import { toast } from "sonner";
 
+import type { AIAction, Highlight } from "@/types/reader";
 import { trpc } from "@/utils/trpc";
-
-interface Highlight {
-	id: string;
-	text: string;
-	color?: string | null;
-	note?: string | null;
-	startCfi?: string | null;
-	endCfi?: string | null;
-	pageNumber?: number | null;
-	aiAction?: string | null;
-	aiResponse?: string | null;
-}
 
 interface AIChatPanelProps {
 	bookId: string;
 	highlight: Highlight;
-	action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS";
+	action: AIAction;
 	/** When true: open as blank chat, no auto-run, user types first */
 	chatMode?: boolean;
 	onResponseReceived: (highlightId: string, response: string) => void;
@@ -267,9 +255,7 @@ export default function AIChatPanel({
 							className={msg.role === "user" ? "ml-6 rounded-xl border px-3 py-2 text-sm" : "mr-6 rounded-xl border bg-muted/20 px-3 py-2"}
 						>
 							{msg.role === "assistant" ? (
-								<div className="prose prose-sm dark:prose-invert max-w-none text-sm">
-									<ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-								</div>
+								<MarkdownContent className="prose prose-sm dark:prose-invert max-w-none text-sm">{msg.content}</MarkdownContent>
 							) : (
 								<p className="text-sm">{msg.content}</p>
 							)}

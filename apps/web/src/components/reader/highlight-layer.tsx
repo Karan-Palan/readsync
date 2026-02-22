@@ -2,15 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-interface Highlight {
-	id: string;
-	text: string;
-	startCfi?: string | null;
-	endCfi?: string | null;
-	pageNumber?: number | null;
-	aiAction?: string | null;
-	aiResponse?: string | null;
-}
+import type { Highlight } from "@/types/reader";
 
 interface HighlightLayerProps {
 	highlights: Highlight[];

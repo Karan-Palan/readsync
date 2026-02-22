@@ -4,20 +4,12 @@ import { X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
 import AIChatPanel from "@/components/reader/ai-chat-panel";
-
-interface Highlight {
-	id: string;
-	text: string;
-	color?: string | null;
-	note?: string | null;
-	aiAction?: string | null;
-	aiResponse?: string | null;
-}
+import type { AIAction, Highlight } from "@/types/reader";
 
 interface AIDrawerProps {
 	bookId: string;
 	highlight: Highlight;
-	action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS";
+	action: AIAction;
 	chatMode?: boolean;
 	onClose: () => void;
 	onResponseReceived: (highlightId: string, response: string) => void;

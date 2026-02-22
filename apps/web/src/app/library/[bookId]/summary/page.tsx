@@ -4,8 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import MarkdownContent from "@/components/markdown-content";
 
 export default async function SummaryPage({
 	params,
@@ -55,9 +54,7 @@ export default async function SummaryPage({
 			<h1 className="mb-1 text-2xl font-bold">{book.title}</h1>
 			<p className="text-muted-foreground mb-6 text-sm">AI Summary</p>
 
-			<div className="prose prose-neutral dark:prose-invert max-w-none">
-				<ReactMarkdown remarkPlugins={[remarkGfm]}>{book.summary.content}</ReactMarkdown>
-			</div>
+			<MarkdownContent className="prose prose-neutral dark:prose-invert max-w-none">{book.summary.content}</MarkdownContent>
 
 			<p className="text-muted-foreground mt-8 text-xs">
 				Last updated {new Date(book.summary.updatedAt).toLocaleDateString()}

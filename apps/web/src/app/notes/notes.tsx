@@ -3,49 +3,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, StickyNote } from "lucide-react";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
+import EmptyState from "@/components/empty-state";
+import Loader from "@/components/loader";
+import MarkdownContent from "@/components/markdown-content";
+import { AI_ACTION_LABELS, getHighlightAccent } from "@/types/reader";
 import { trpc } from "@/utils/trpc";
-
-const COLOR_CLASSES: Record<string, string> = {
-	yellow: "border-yellow-400 bg-yellow-50 dark:bg-yellow-950/20",
-	green: "border-green-400 bg-green-50 dark:bg-green-950/20",
-	blue: "border-blue-400 bg-blue-50 dark:bg-blue-950/20",
-	pink: "border-pink-400 bg-pink-50 dark:bg-pink-950/20",
-};
-
-const ACTION_LABEL: Record<string, string> = {
-	EXPLAIN: "Explanation",
-	SUMMARIZE: "Summary",
-	EXTRACT: "Key Insights",
-	DISCUSS: "Discussion",
-};
 
 export default function Notes() {
 	const { data: highlights = [], isLoading } = useQuery(trpc.highlight.listAll.queryOptions());
 
 	if (isLoading) {
-		return (
-			<div className="flex h-full items-center justify-center">
-				<div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-			</div>
-		);
+		return <Loader size="h-8 w-8" />;
 	}
 	if (!highlights.length) {
 		return (
-			<div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-				<StickyNote className="text-muted-foreground h-12 w-12" />
-				<p className="text-muted-foreground text-sm">
-					No highlights yet. Start reading and highlight text to see notes here.
-				</p>
-				<Link
-					href="/library"
-					className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm"
-				>
-					Go to Library
-				</Link>
-			</div>
+			<EmptyState
+				icon={StickyNote}
+				message="No highlights yet. Start reading and highlight text to see notes here."
+			/>
 		);
 	}
 
@@ -78,8 +54,7 @@ export default function Notes() {
 
 						<div className="space-y-3">
 							{items.map((h) => {
-								const colorClass =
-									COLOR_CLASSES[h.color ?? "yellow"] ?? COLOR_CLASSES.yellow;
+								const colorClass = getHighlightAccent(h.color);
 								return (
 									<div
 										key={h.id}
@@ -97,11 +72,9 @@ export default function Notes() {
 										{h.note && h.aiResponse && (
 											<div className="mt-2">
 												<p className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wide">
-													{h.aiAction ? (ACTION_LABEL[h.aiAction] ?? h.aiAction) : "AI Note"}
+													{h.aiAction ? (AI_ACTION_LABELS[h.aiAction as keyof typeof AI_ACTION_LABELS] ?? h.aiAction) : "AI Note"}
 												</p>
-											<div className="prose prose-sm dark:prose-invert max-w-none">
-												<ReactMarkdown remarkPlugins={[remarkGfm]}>{h.note}</ReactMarkdown>
-											</div>
+												<MarkdownContent>{h.note}</MarkdownContent>
 											</div>
 										)}
 
@@ -109,11 +82,9 @@ export default function Notes() {
 										{h.aiResponse && !h.note && (
 											<div className="mt-2">
 												<p className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wide">
-													{h.aiAction ? (ACTION_LABEL[h.aiAction] ?? h.aiAction) : "AI"}
+													{h.aiAction ? (AI_ACTION_LABELS[h.aiAction as keyof typeof AI_ACTION_LABELS] ?? h.aiAction) : "AI"}
 												</p>
-											<div className="prose prose-sm dark:prose-invert max-w-none">
-												<ReactMarkdown remarkPlugins={[remarkGfm]}>{h.aiResponse}</ReactMarkdown>
-											</div>
+												<MarkdownContent>{h.aiResponse}</MarkdownContent>
 											</div>
 										)}
 									</div>

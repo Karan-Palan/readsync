@@ -4,25 +4,15 @@ import { useMutation } from "@tanstack/react-query";
 import { Lightbulb, List, MessageSquare, MessageSquarePlus, Save, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { getPdfPageNumber } from "@/lib/pdf-utils";
+import { type AIAction, type Highlight, HIGHLIGHT_COLORS } from "@/types/reader";
 import { trpc } from "@/utils/trpc";
-
-interface Highlight {
-	id: string;
-	text: string;
-	color: string;
-	startCfi?: string | null;
-	endCfi?: string | null;
-	pageNumber?: number | null;
-	aiAction?: string | null;
-	aiResponse?: string | null;
-	note?: string | null;
-}
 
 interface TextSelectionMenuProps {
 	bookId: string;
 	fileType: string;
 	onHighlightCreated: (highlight: Highlight) => void;
-	onAIAction: (highlight: Highlight, action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS") => void;
+	onAIAction: (highlight: Highlight, action: AIAction) => void;
 	onChapterCreate: (startPage: number, endPage: number) => void;
 }
 
@@ -37,13 +27,6 @@ interface FoliateSelectionDetail {
 	y: number;
 	cfi?: string;
 }
-
-const HIGHLIGHT_COLORS = [
-	{ id: "yellow", bg: "bg-yellow-300", label: "Yellow" },
-	{ id: "green", bg: "bg-green-300", label: "Green" },
-	{ id: "blue", bg: "bg-blue-300", label: "Blue" },
-	{ id: "pink", bg: "bg-pink-300", label: "Pink" },
-] as const;
 
 export default function TextSelectionMenu({
 	bookId,
@@ -151,19 +134,10 @@ export default function TextSelectionMenu({
 	}, []);
 
 	const createHighlight = useCallback(
-		async (color: string, action?: "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS") => {
+		async (color: string, action?: AIAction) => {
 			if (!selectedText) return;
 
-			let pageNumber: number | undefined;
-			if (fileType === "PDF") {
-				const selection = window.getSelection();
-				if (selection?.rangeCount) {
-					const anchor = selection.getRangeAt(0).startContainer.parentElement;
-					const pageEl = anchor?.closest(".react-pdf__Page");
-					const num = pageEl?.getAttribute("data-page-number");
-					if (num) pageNumber = Number.parseInt(num, 10);
-				}
-			}
+			const pageNumber = fileType === "PDF" ? getPdfPageNumber() : undefined;
 
 			const result = await createHighlightMutation.mutateAsync({
 				bookId,
@@ -218,16 +192,7 @@ export default function TextSelectionMenu({
 	const handleNoteSave = useCallback(async () => {
 		if (!selectedText) return;
 
-		let pageNumber: number | undefined;
-		if (fileType === "PDF") {
-			const selection = window.getSelection();
-			if (selection?.rangeCount) {
-				const anchor = selection.getRangeAt(0).startContainer.parentElement;
-				const pageEl = anchor?.closest(".react-pdf__Page");
-				const num = pageEl?.getAttribute("data-page-number");
-				if (num) pageNumber = Number.parseInt(num, 10);
-			}
-		}
+		const pageNumber = fileType === "PDF" ? getPdfPageNumber() : undefined;
 
 		const result = await createHighlightMutation.mutateAsync({
 			bookId,
@@ -273,16 +238,7 @@ export default function TextSelectionMenu({
 	]);
 
 	const handleChapterCreate = useCallback(() => {
-		let page = 1;
-		if (fileType === "PDF") {
-			const selection = window.getSelection();
-			if (selection?.rangeCount) {
-				const anchor = selection.getRangeAt(0).startContainer.parentElement;
-				const pageEl = anchor?.closest(".react-pdf__Page");
-				const num = pageEl?.getAttribute("data-page-number");
-				if (num) page = Number.parseInt(num, 10);
-			}
-		}
+		const page = (fileType === "PDF" ? getPdfPageNumber() : undefined) ?? 1;
 		onChapterCreate(page, page);
 		setMenuPosition(null);
 		selectionSource.current = null;

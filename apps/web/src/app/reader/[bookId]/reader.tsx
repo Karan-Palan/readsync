@@ -7,14 +7,14 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import AIBottomSheet from "@/components/reader/ai-bottom-sheet";
-import AIDrawer from "@/components/reader/ai-drawer";
+import AIPanel from "@/components/reader/ai-panel";
 import ChapterList from "@/components/reader/chapter-list";
 import ChunkedSpeedMode from "@/components/reader/chunked-speed-mode";
 import HighlightLayer from "@/components/reader/highlight-layer";
 import ReadingModeSelector, { type ReadingMode } from "@/components/reader/reading-mode-selector";
 import RSVPMode from "@/components/reader/rsvp-mode";
 import TextSelectionMenu from "@/components/reader/text-selection-menu";
+import type { AIAction, Chapter, Highlight } from "@/types/reader";
 import { trpc } from "@/utils/trpc";
 
 // Dynamic import — PDF.js uses DOMMatrix at module level (browser-only)
@@ -29,26 +29,6 @@ function ReaderLoading() {
 			<div className="border-primary h-10 w-10 animate-spin rounded-full border-4 border-t-transparent" />
 		</div>
 	);
-}
-
-interface Highlight {
-	id: string;
-	text: string;
-	color?: string | null;
-	note?: string | null;
-	startCfi?: string | null;
-	endCfi?: string | null;
-	pageNumber?: number | null;
-	aiAction?: string | null;
-	aiResponse?: string | null;
-}
-
-interface Chapter {
-	id: string;
-	name: string;
-	startPage: number;
-	endPage: number;
-	order: number;
 }
 
 interface ReaderProps {
@@ -82,7 +62,7 @@ export default function Reader({
 	const [chapters, setChapters] = useState<Chapter[]>(initialChapters);
 	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
 	const [isAIOpen, setIsAIOpen] = useState(false);
-	const [aiAction, setAiAction] = useState<"EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS" | null>(null);
+	const [aiAction, setAiAction] = useState<AIAction | null>(null);
 	const [isChatMode, setIsChatMode] = useState(false);
 	const [bookText, setBookText] = useState<string>("");
 	// Fraction 0-1 tracked from EPUB/PDF reader for RSVP/Chunked start position
@@ -147,7 +127,7 @@ export default function Reader({
 	}, []);
 
 	const handleAIAction = useCallback(
-		(highlight: Highlight, action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS") => {
+		(highlight: Highlight, action: AIAction) => {
 			setActiveHighlight(highlight);
 			setAiAction(action);
 			setIsChatMode(false);
@@ -162,6 +142,15 @@ export default function Reader({
 		setAiAction(null);
 		setIsChatMode(false);
 	}, []);
+
+	const handleAIResponse = useCallback(
+		(id: string, response: string) => {
+			setHighlights((prev) =>
+				prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
+			);
+		},
+		[aiAction],
+	);
 
 	const handleChapterJump = useCallback(
 		(startPage: number) => {
@@ -179,7 +168,7 @@ export default function Reader({
 		setActiveHighlight(h);
 		setIsChatMode(false);
 		if (h.aiResponse && h.aiAction) {
-			setAiAction(h.aiAction as "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS");
+			setAiAction(h.aiAction as AIAction);
 		} else {
 			setAiAction("EXPLAIN");
 		}
@@ -457,38 +446,15 @@ export default function Reader({
 
 				{/*  AI panel: drawer on desktop, bottom-sheet on mobile  */}
 				{isAIOpen && activeHighlight && aiAction && (
-					<>
-						<div className="hidden md:block">
-							<AIDrawer
-								bookId={book.id}
-								highlight={activeHighlight}
-								action={aiAction}
-								chatMode={isChatMode}
-								onClose={handleCloseAI}
-								onHighlightCreated={handleHighlightCreated}
-								onResponseReceived={(id, response) => {
-									setHighlights((prev) =>
-										prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
-									);
-								}}
-							/>
-						</div>
-						<div className="md:hidden">
-							<AIBottomSheet
-								bookId={book.id}
-								highlight={activeHighlight}
-								action={aiAction}
-								chatMode={isChatMode}
-								onClose={handleCloseAI}
-								onHighlightCreated={handleHighlightCreated}
-								onResponseReceived={(id, response) => {
-									setHighlights((prev) =>
-										prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
-									);
-								}}
-							/>
-						</div>
-					</>
+					<AIPanel
+						bookId={book.id}
+						highlight={activeHighlight}
+						action={aiAction}
+						chatMode={isChatMode}
+						onClose={handleCloseAI}
+						onHighlightCreated={handleHighlightCreated}
+						onResponseReceived={handleAIResponse}
+					/>
 				)}
 			</div>
 

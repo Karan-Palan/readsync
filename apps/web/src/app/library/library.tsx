@@ -8,6 +8,8 @@ import BookCard from "@/components/book-card";
 import { trpc } from "@/utils/trpc";
 import { UploadButton } from "@/utils/uploadthing";
 
+const BOOK_GRID = "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5";
+
 export default function Library() {
 	const booksQuery = useQuery(trpc.book.list.queryOptions());
 	const router = useRouter();
@@ -48,7 +50,7 @@ export default function Library() {
 			</div>
 
 			{booksQuery.isLoading && (
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+				<div className={BOOK_GRID}>
 					{Array.from({ length: 8 }).map((_, i) => (
 						<div key={`skeleton-${i}`} className="bg-muted aspect-3/4 animate-pulse rounded-lg" />
 					))}
@@ -64,7 +66,7 @@ export default function Library() {
 
 			{/* Real books */}
 			{books.length > 0 && (
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+				<div className={BOOK_GRID}>
 					{books.map((book) => (
 						<BookCard key={book.id} book={book} onDeleted={() => booksQuery.refetch()} />
 					))}
@@ -77,7 +79,7 @@ export default function Library() {
 					<h2 className="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wide">
 						Summaries
 					</h2>
-					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+					<div className={BOOK_GRID}>
 						{booksWithSummary.map((book) => (
 							<button
 								key={`summary-${book.id}`}
@@ -104,7 +106,7 @@ export default function Library() {
 					<h2 className="text-muted-foreground mb-4 text-sm font-semibold uppercase tracking-wide">
 						Notes &amp; Highlights
 					</h2>
-					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+					<div className={BOOK_GRID}>
 						{booksWithNotes.map((book) => (
 							<button
 								key={`notes-${book.id}`}

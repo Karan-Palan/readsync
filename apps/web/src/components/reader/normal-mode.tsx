@@ -3,16 +3,10 @@
 import type React from "react";
 import type { ReactNode } from "react";
 
+import type { EPUBHighlight } from "@/types/reader";
+
 import EPUBReader from "./epub-reader";
 import PDFReader from "./pdf-reader";
-
-interface EPUBHighlight {
-	id: string;
-	text: string;
-	color?: string | null;
-	startCfi?: string | null;
-	endCfi?: string | null;
-}
 
 interface NormalModeProps {
 	book: {

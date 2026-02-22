@@ -3,6 +3,8 @@
 import { ChevronLeft, ChevronRight, List, Search, Settings, X } from "lucide-react";
 import React, { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
+import { type EPUBHighlight, getHighlightRgba } from "@/types/reader";
+
 type TocItem = { label: string; href: string; subitems?: TocItem[] };
 
 // Shape of the foliate-view custom element after a book is opened
@@ -32,14 +34,6 @@ type FoliateView = HTMLElement & {
 	};
 	lastLocation?: { cfi?: string };
 };
-
-interface EPUBHighlight {
-	id: string;
-	text: string;
-	color?: string | null;
-	startCfi?: string | null;
-	endCfi?: string | null;
-}
 
 interface EPUBReaderProps {
 	book: {
@@ -242,13 +236,7 @@ export default function EPUBReader({
 					const { draw, annotation } = (e as CustomEvent).detail ?? {};
 					if (!draw || !annotation) return;
 					const color = highlightColorMap.current.get(annotation.value) ?? "yellow";
-					const colorMap: Record<string, string> = {
-						yellow: "rgba(250, 204, 21, 0.35)",
-						green: "rgba(74, 222, 128, 0.35)",
-						blue: "rgba(96, 165, 250, 0.35)",
-						pink: "rgba(244, 114, 182, 0.35)",
-					};
-					const fill = colorMap[color] ?? colorMap.yellow;
+					const fill = getHighlightRgba(color);
 					// Overlayer.highlight is a static method on the Overlayer class
 					draw((rects: DOMRectList) => {
 						const ns = "http://www.w3.org/2000/svg";

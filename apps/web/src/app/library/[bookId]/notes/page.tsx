@@ -4,8 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import MarkdownContent from "@/components/markdown-content";
 
 const COLOR_BORDER: Record<string, string> = {
 	yellow: "border-yellow-400 bg-yellow-50 dark:bg-yellow-950/20",
@@ -89,11 +88,7 @@ export default async function NotesPage({
 									<p className="text-muted-foreground mb-1 text-xs font-medium uppercase tracking-wide">
 										{h.aiAction ? (ACTION_LABEL[h.aiAction] ?? h.aiAction) : "AI"}
 									</p>
-									<div className="prose prose-sm dark:prose-invert max-w-none">
-										<ReactMarkdown remarkPlugins={[remarkGfm]}>
-											{h.note ?? h.aiResponse}
-										</ReactMarkdown>
-									</div>
+									<MarkdownContent>{h.note ?? h.aiResponse}</MarkdownContent>
 								</div>
 							)}
 

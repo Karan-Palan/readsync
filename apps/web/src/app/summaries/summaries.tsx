@@ -4,35 +4,24 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
+import EmptyState from "@/components/empty-state";
+import Loader from "@/components/loader";
+import MarkdownContent from "@/components/markdown-content";
 import { trpc } from "@/utils/trpc";
 
 export default function Summaries() {
 	const { data: summaries = [], isLoading } = useQuery(trpc.book.listSummaries.queryOptions());
 
 	if (isLoading) {
-		return (
-			<div className="flex h-full items-center justify-center">
-				<div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-			</div>
-		);
+		return <Loader size="h-8 w-8" />;
 	}
 	if (!summaries.length) {
 		return (
-			<div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-				<BookOpen className="text-muted-foreground h-12 w-12" />
-				<p className="text-muted-foreground text-sm">
-					No summaries yet. Open a book and press the &ldquo;Summary&rdquo; button to generate one.
-				</p>
-				<Link
-					href="/library"
-					className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm"
-				>
-					Go to Library
-				</Link>
-			</div>
+			<EmptyState
+				icon={BookOpen}
+				message='No summaries yet. Open a book and press the "Summary" button to generate one.'
+			/>
 		);
 	}
 
@@ -77,9 +66,7 @@ export default function Summaries() {
 						</div>
 
 						{/* Summary content */}
-						<div className="prose prose-sm dark:prose-invert max-w-none">
-							<ReactMarkdown remarkPlugins={[remarkGfm]}>{summary.content}</ReactMarkdown>
-						</div>
+						<MarkdownContent>{summary.content}</MarkdownContent>
 					</article>
 				))}
 			</div>
