@@ -12,6 +12,7 @@ export const env = createEnv({
 		CORS_ORIGIN: z.url().optional(),
 		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 		OPENAI_API_KEY: z.string().min(1).optional(),
+		GROQ_API_KEY: z.string().min(1).optional(),
 		UPLOADTHING_TOKEN: z.string().min(1).optional(),
 	},
 	runtimeEnv: process.env,

@@ -1,10 +1,19 @@
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import prisma from "@readsync/db";
 import { TRPCError } from "@trpc/server";
 import { generateText } from "ai";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "../index";
+
+// Groq via OpenAI-compatible endpoint
+const groq = createOpenAI({
+	baseURL: "https://api.groq.com/openai/v1",
+	apiKey: process.env.GROQ_API_KEY,
+});
+
+const SUMMARY_MODEL = groq("openai/gpt-oss-120b");     // heavy model for book summaries
+const GENERAL_MODEL = groq("openai/gpt-oss-20b");       // lighter model for everything else
 
 const ACTION_PROMPTS = {
 	EXPLAIN:
@@ -68,9 +77,12 @@ export const aiRouter = router({
 			const systemPrompt = ACTION_PROMPTS[input.action];
 
 			const { text } = await generateText({
-				model: openai("gpt-4o-mini"),
+				model: GENERAL_MODEL,
 				system: systemPrompt,
 				prompt: highlight.text,
+				temperature: 1,
+				topP: 1,
+				maxOutputTokens: 4096,
 			});
 
 			await prisma.highlight.update({
@@ -131,9 +143,12 @@ export const aiRouter = router({
 			const systemPrompt = ACTION_PROMPTS[input.action];
 
 			const { text } = await generateText({
-				model: openai("gpt-4o-mini"),
+				model: GENERAL_MODEL,
 				system: systemPrompt,
 				prompt: input.text,
+				temperature: 1,
+				topP: 1,
+				maxOutputTokens: 4096,
 			});
 
 			await prisma.user.update({
@@ -177,10 +192,13 @@ export const aiRouter = router({
 			}
 
 			const { text } = await generateText({
-				model: openai("gpt-4o-mini"),
+				model: SUMMARY_MODEL,
 				system:
 					"You are a literary assistant. Write a comprehensive, well-structured book summary including: the main thesis/purpose, key topics covered, major arguments or ideas, and why this book is valuable. Format your response in Markdown with clear headings.",
 				prompt: `Book title: "${input.bookTitle}"\n\nContent excerpt:\n${input.text}`,
+				temperature: 1,
+				topP: 1,
+				maxOutputTokens: 8192,
 			});
 
 			// Save summary to DB
