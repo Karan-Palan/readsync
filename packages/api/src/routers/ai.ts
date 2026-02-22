@@ -13,16 +13,18 @@ const ACTION_PROMPTS = {
 		"You are a helpful reading assistant. Summarize the following passage in a few clear, concise sentences that capture the main ideas.",
 	EXTRACT:
 		"You are a helpful reading assistant. Extract the key insights, facts, and takeaways from the following passage. Present them as a concise bullet-point list.",
+	DISCUSS:
+		"You are a thoughtful reading discussion partner. The reader wants to explore this idea deeper. Provide context, different perspectives, philosophical implications, and thought-provoking questions to expand on this passage.",
 } as const;
 
-const AI_MONTHLY_CAP = 100;
+const AI_MONTHLY_CAP = Number.POSITIVE_INFINITY; // disabled – no limit
 
 export const aiRouter = router({
 	query: protectedProcedure
 		.input(
 			z.object({
 				highlightId: z.string(),
-				action: z.enum(["EXPLAIN", "SUMMARIZE", "EXTRACT"]),
+				action: z.enum(["EXPLAIN", "SUMMARIZE", "EXTRACT", "DISCUSS"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -97,7 +99,7 @@ export const aiRouter = router({
 		.input(
 			z.object({
 				text: z.string().min(10).max(4000),
-				action: z.enum(["EXPLAIN", "SUMMARIZE", "EXTRACT"]),
+					action: z.enum(["EXPLAIN", "SUMMARIZE", "EXTRACT", "DISCUSS"]),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -132,6 +134,60 @@ export const aiRouter = router({
 				model: openai("gpt-4o-mini"),
 				system: systemPrompt,
 				prompt: input.text,
+			});
+
+			await prisma.user.update({
+				where: { id: ctx.session.user.id },
+				data: { aiCallsThisMonth: { increment: 1 } },
+			});
+
+			return { response: text };
+		}),
+
+	/** Generate an AI summary of the full book (based on extracted text excerpt). */
+	summarizeBook: protectedProcedure
+		.input(
+			z.object({
+				bookId: z.string(),
+				bookTitle: z.string(),
+				text: z.string().min(10).max(8000),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			// Monthly cap check
+			const user = await prisma.user.findUniqueOrThrow({
+				where: { id: ctx.session.user.id },
+				select: { aiCallsThisMonth: true, aiUsageResetAt: true },
+			});
+			const now = new Date();
+			let calls = user.aiCallsThisMonth;
+			if (now > user.aiUsageResetAt) {
+				const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+				await prisma.user.update({
+					where: { id: ctx.session.user.id },
+					data: { aiCallsThisMonth: 0, aiUsageResetAt: nextReset },
+				});
+				calls = 0;
+			}
+			if (calls >= AI_MONTHLY_CAP) {
+				throw new TRPCError({
+					code: "TOO_MANY_REQUESTS",
+					message: `Monthly AI limit of ${AI_MONTHLY_CAP} reached. Resets 1st of next month.`,
+				});
+			}
+
+			const { text } = await generateText({
+				model: openai("gpt-4o-mini"),
+				system:
+					"You are a literary assistant. Write a comprehensive, well-structured book summary including: the main thesis/purpose, key topics covered, major arguments or ideas, and why this book is valuable. Format your response in Markdown with clear headings.",
+				prompt: `Book title: "${input.bookTitle}"\n\nContent excerpt:\n${input.text}`,
+			});
+
+			// Save summary to DB
+			await prisma.bookSummary.upsert({
+				where: { bookId: input.bookId },
+				update: { content: text },
+				create: { userId: ctx.session.user.id, bookId: input.bookId, content: text },
 			});
 
 			await prisma.user.update({

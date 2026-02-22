@@ -1,116 +1,97 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { Copy, RefreshCw, X } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { X } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 
-import { trpc } from "@/utils/trpc";
+import AIChatPanel from "@/components/reader/ai-chat-panel";
 
 interface Highlight {
 	id: string;
 	text: string;
+	color?: string | null;
+	note?: string | null;
 	aiAction?: string | null;
 	aiResponse?: string | null;
 }
 
 interface AIDrawerProps {
+	bookId: string;
 	highlight: Highlight;
-	action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT";
+	action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS";
+	chatMode?: boolean;
 	onClose: () => void;
 	onResponseReceived: (highlightId: string, response: string) => void;
+	onHighlightCreated: (highlight: Highlight) => void;
 }
 
+const MIN_WIDTH = 280;
+
 export default function AIDrawer({
+	bookId,
 	highlight,
 	action,
+	chatMode,
 	onClose,
 	onResponseReceived,
+	onHighlightCreated,
 }: AIDrawerProps) {
-	const [response, setResponse] = useState(highlight.aiResponse ?? "");
+	const [width, setWidth] = useState(360);
+	const dragging = useRef(false);
+	const startX = useRef(0);
+	const startWidth = useRef(0);
 
-	const aiMutation = useMutation(
-		trpc.ai.query.mutationOptions({
-			onSuccess: (data) => {
-				setResponse(data.response);
-				onResponseReceived(highlight.id, data.response);
-			},
-		}),
+	const onResizePointerDown = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			e.preventDefault();
+			dragging.current = true;
+			startX.current = e.clientX;
+			startWidth.current = width;
+
+			const onMove = (ev: PointerEvent) => {
+				if (!dragging.current) return;
+				const delta = startX.current - ev.clientX; // moving left expands
+				const maxW = Math.round(window.innerWidth * 0.85);
+				setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
+			};
+			const onUp = () => {
+				dragging.current = false;
+				window.removeEventListener("pointermove", onMove);
+				window.removeEventListener("pointerup", onUp);
+			};
+			window.addEventListener("pointermove", onMove);
+			window.addEventListener("pointerup", onUp);
+		},
+		[width],
 	);
 
-	// Auto-trigger if no existing response
-	if (!response && !aiMutation.isPending && !aiMutation.isError) {
-		aiMutation.mutate({ highlightId: highlight.id, action });
-	}
-
-	const actionLabel = {
-		EXPLAIN: "Explanation",
-		SUMMARIZE: "Summary",
-		EXTRACT: "Key Insights",
-	}[action];
-
 	return (
-		<div className="bg-card fixed top-0 right-0 z-50 flex h-full w-80 flex-col border-l shadow-xl transition-transform duration-200">
-			{/* Header */}
+		<div
+			className="bg-card fixed top-0 right-0 z-50 flex h-full flex-col border-l shadow-xl"
+			style={{ width, maxWidth: "85vw" }}
+			data-ai-panel="true"
+		>
+			{/* Drag-resize handle — the left edge */}
+			<div
+				className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-primary/30 active:bg-primary/50 transition-colors"
+				onPointerDown={onResizePointerDown}
+				title="Drag to resize"
+			/>
+
 			<div className="flex items-center justify-between border-b px-4 py-3">
-				<h3 className="text-sm font-semibold">{actionLabel}</h3>
+				<h3 className="text-sm font-semibold">AI Assistant</h3>
 				<button type="button" onClick={onClose} className="hover:bg-accent rounded-md p-1">
 					<X className="h-4 w-4" />
 				</button>
 			</div>
-
-			{/* Highlight preview */}
-			<div className="border-b px-4 py-3">
-				<p className="text-muted-foreground line-clamp-3 text-xs italic">
-					&ldquo;{highlight.text}&rdquo;
-				</p>
-			</div>
-
-			{/* Response */}
-			<div className="flex-1 overflow-y-auto px-4 py-3">
-				{aiMutation.isPending && (
-					<div className="text-muted-foreground flex items-center gap-2 text-sm">
-						<div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-						Thinking...
-					</div>
-				)}
-				{aiMutation.isError && (
-					<p className="text-destructive text-sm">{aiMutation.error.message}</p>
-				)}
-				{response && (
-					<div className="prose prose-sm dark:prose-invert max-w-none">
-						<p className="text-sm whitespace-pre-wrap">{response}</p>
-					</div>
-				)}
-			</div>
-
-			{/* Actions */}
-			<div className="flex items-center gap-2 border-t px-4 py-3">
-				<button
-					type="button"
-					onClick={() => {
-						navigator.clipboard.writeText(response);
-						toast.success("Copied to clipboard");
-					}}
-					disabled={!response}
-					className="hover:bg-accent flex items-center gap-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
-				>
-					<Copy className="h-3.5 w-3.5" />
-					Copy
-				</button>
-				<button
-					type="button"
-					onClick={() => {
-						setResponse("");
-						aiMutation.mutate({ highlightId: highlight.id, action });
-					}}
-					disabled={aiMutation.isPending}
-					className="hover:bg-accent flex items-center gap-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
-				>
-					<RefreshCw className="h-3.5 w-3.5" />
-					Regenerate
-				</button>
-			</div>
+			<AIChatPanel
+				bookId={bookId}
+				highlight={highlight}
+				action={action}
+				chatMode={chatMode}
+				onResponseReceived={onResponseReceived}
+				onHighlightCreated={onHighlightCreated}
+			/>
 		</div>
 	);
 }
+

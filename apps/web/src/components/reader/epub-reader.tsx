@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, List, Search, Settings, X } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import React, { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 type TocItem = { label: string; href: string; subitems?: TocItem[] };
 
@@ -36,6 +36,8 @@ interface EPUBReaderProps {
 	onPositionChange: (position: unknown) => void;
 	onTextExtracted: (text: string) => void;
 	onCoverExtracted?: (coverDataUrl: string) => void;
+	/** Populated with a navigate function once the view is ready */
+	navigateRef?: React.MutableRefObject<((pos: unknown) => void) | null>;
 	children?: ReactNode;
 }
 
@@ -45,6 +47,7 @@ export default function EPUBReader({
 	onPositionChange,
 	onTextExtracted,
 	onCoverExtracted,
+	navigateRef,
 	children,
 }: EPUBReaderProps) {
 	const viewerRef = useRef<HTMLDivElement>(null);
@@ -58,6 +61,7 @@ export default function EPUBReader({
 	const [showSettings, setShowSettings] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [fontSize, setFontSize] = useState(100);
+	const fontSizeRef = useRef(fontSize);
 	const [progress, setProgress] = useState(0);
 
 	useEffect(() => {
@@ -92,16 +96,97 @@ export default function EPUBReader({
 				viewerRef.current.appendChild(view);
 				folViewRef.current = view;
 
-				// Track reading progress
-				view.addEventListener("relocate", (e: Event) => {
+				// Track reading progress — deduplicate by CFI so selection events
+			// that cause a re-render don't spuriously trigger a saveProgress call
+			let lastCfi: string | null = null;
+			view.addEventListener("relocate", (e: Event) => {
+				if (!mounted) return;
+				const detail = (e as CustomEvent).detail ?? {};
+				const fraction = typeof detail.fraction === "number" ? detail.fraction : 0;
+				const cfi: string | null = detail.cfi ?? null;
+				// Skip if the position hasn't actually changed
+				if (cfi !== null && cfi === lastCfi) return;
+				lastCfi = cfi;
+				setProgress(Math.round(fraction * 100));
+				onPositionChange({
+					fraction,
+					index: detail.index,
+					cfi,
+				});
+			});
+
+				// Listen for each section load: apply font size and wire up text-selection
+				view.addEventListener("load", (e: Event) => {
 					if (!mounted) return;
-					const detail = (e as CustomEvent).detail ?? {};
-					const fraction = typeof detail.fraction === "number" ? detail.fraction : 0;
-					setProgress(Math.round(fraction * 100));
-					onPositionChange({
-						fraction,
-						index: detail.index,
-						cfi: detail.cfi ?? null,
+					const { doc } = (e as CustomEvent).detail ?? {};
+					if (!doc) return;
+
+					// Re-apply font size CSS to the newly loaded doc
+					try {
+						const r = (view as any).renderer;
+						if (r?.setStyles) {
+							r.setStyles(`html { font-size: ${fontSizeRef.current}% !important; }`);
+						}
+					} catch {}
+
+					// Wire up text-selection so the selection menu works inside the EPUB iframe
+					const getIframeOffset = () => {
+						// frameElement gives exact iframe position (works because sandbox has allow-same-origin)
+						const frameEl = doc.defaultView?.frameElement as HTMLIFrameElement | null;
+						if (frameEl) return frameEl.getBoundingClientRect();
+						// fallback: use the foliate-view element bounds
+						return folViewRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
+					};
+
+					doc.addEventListener("mouseup", () => {
+						if (!mounted) return;
+						dispatchSelectionEvent();
+					});
+
+					// iOS Safari fires touchend instead of mouseup
+					doc.addEventListener("touchend", () => {
+						if (!mounted) return;
+						// Small delay so the browser finalises the selection
+						setTimeout(() => { if (mounted) dispatchSelectionEvent(); }, 80);
+					});
+
+					function dispatchSelectionEvent() {
+						const sel = doc.defaultView?.getSelection();
+						if (!sel || sel.isCollapsed) return;
+						const text = sel.toString().trim();
+						if (text.length < 2) return;
+						const range = sel.getRangeAt(0);
+						const rects = range.getClientRects();
+						if (!rects.length) return;
+						// Use the FIRST rect so the menu appears above the TOP of the selection
+						const topRect = rects[0];
+						const offset = getIframeOffset();
+						window.dispatchEvent(
+							new CustomEvent("foliate-selection", {
+								detail: {
+									text,
+									x: offset.left + topRect.left + topRect.width / 2,
+									// subtract 8px so the menu bottom lands just above the selection
+									y: offset.top + topRect.top - 8,
+								},
+							}),
+						);
+					}
+
+					doc.addEventListener("selectionchange", () => {
+						if (!mounted) return;
+						const sel = doc.defaultView?.getSelection();
+						if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+							setTimeout(() => {
+								if (!mounted) return;
+								const sel2 = doc.defaultView?.getSelection();
+								if (!sel2 || sel2.isCollapsed) {
+									window.dispatchEvent(
+										new CustomEvent("foliate-selection", { detail: null }),
+									);
+								}
+							}, 150);
+						}
 					});
 				});
 
@@ -115,6 +200,23 @@ export default function EPUBReader({
 				// Populate TOC
 				if (view.book?.toc) {
 					setToc(view.book.toc);
+				}
+
+				// Expose programmatic navigation to the parent
+				if (navigateRef) {
+					navigateRef.current = (pos: unknown) => {
+						const p = pos as any;
+						if (!p) return;
+						if (p.cfi) {
+							try { view.goTo(p.cfi); } catch {}
+						} else if (typeof p.index === "number") {
+							try { view.goTo({ index: p.index }); } catch {}
+						} else if (typeof p.fraction === "number") {
+							const sections = view.book?.sections ?? [];
+							const idx = Math.max(0, Math.min(sections.length - 1, Math.floor(p.fraction * sections.length)));
+							try { view.goTo({ index: idx }); } catch {}
+						}
+					};
 				}
 
 				// Extract cover if not already saved (fires async, non-blocking)
@@ -182,6 +284,7 @@ export default function EPUBReader({
 		return () => {
 			mounted = false;
 			cleanup?.();
+			if (navigateRef) navigateRef.current = null;
 			const cur = viewerRef.current;
 			const v = folViewRef.current;
 			if (v && cur?.contains(v)) {
@@ -193,13 +296,16 @@ export default function EPUBReader({
 		};
 	}, [book.fileUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// Apply font size via CSS custom property on the foliate-view element
+	// Keep fontSizeRef in sync and apply to the renderer whenever it changes
 	useEffect(() => {
+		fontSizeRef.current = fontSize;
 		const v = folViewRef.current;
 		if (!v) return;
 		try {
-			// Foliate supports style injection via its renderer
-			v.style.setProperty("--user-font-size", `${fontSize}%`);
+			const r = (v as any).renderer;
+			if (r?.setStyles) {
+				r.setStyles(`html { font-size: ${fontSize}% !important; }`);
+			}
 		} catch {}
 	}, [fontSize]);
 

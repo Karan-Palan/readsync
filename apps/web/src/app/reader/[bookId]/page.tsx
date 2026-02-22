@@ -50,6 +50,7 @@ export default async function ReaderPage({ params }: { params: Promise<{ bookId:
 				totalPages: book.totalPages,
 			}}
 			initialProgress={progress?.position ?? null}
+			initialHighestPosition={progress?.highestPosition ?? null}
 			initialHighlights={book.highlights}
 			initialChapters={book.chapters}
 		/>

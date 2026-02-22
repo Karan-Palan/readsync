@@ -14,6 +14,7 @@ model User {
   readingProgress ReadingProgress[]
   highlights    Highlight[]
   chapters      Chapter[]
+  bookSummaries BookSummary[]
 
   @@unique([email])
   @@map("user")

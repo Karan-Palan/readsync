@@ -9,7 +9,11 @@ export const bookRouter = router({
 		return prisma.book.findMany({
 			where: { userId: ctx.session.user.id },
 			orderBy: { updatedAt: "desc" },
-			include: { readingProgress: true },
+			include: {
+				readingProgress: true,
+				summary: { select: { id: true } },
+				_count: { select: { highlights: true } },
+			},
 		});
 	}),
 
@@ -46,21 +50,28 @@ export const bookRouter = router({
 			z.object({
 				bookId: z.string(),
 				position: z.any(),
+				fraction: z.number().min(0).max(1).optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const existing = await prisma.readingProgress.findUnique({
+				where: { userId_bookId: { userId: ctx.session.user.id, bookId: input.bookId } },
+			});
+
+			const currentFraction = input.fraction ?? 0;
+			const highestFraction = (existing?.highestPosition as any)?.fraction ?? 0;
+			// Advance highestPosition only when reader moves forward
+			const newHighestPosition =
+				currentFraction > highestFraction ? input.position : (existing?.highestPosition ?? input.position);
+
 			return prisma.readingProgress.upsert({
-				where: {
-					userId_bookId: {
-						userId: ctx.session.user.id,
-						bookId: input.bookId,
-					},
-				},
-				update: { position: input.position },
+				where: { userId_bookId: { userId: ctx.session.user.id, bookId: input.bookId } },
+				update: { position: input.position, highestPosition: newHighestPosition },
 				create: {
 					userId: ctx.session.user.id,
 					bookId: input.bookId,
 					position: input.position,
+					highestPosition: input.position,
 				},
 			});
 		}),
@@ -98,4 +109,34 @@ export const bookRouter = router({
 			});
 			return { success: true };
 		}),
+
+	getSummary: protectedProcedure
+		.input(z.object({ bookId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			return prisma.bookSummary.findUnique({
+				where: { bookId: input.bookId },
+			});
+		}),
+
+	saveSummary: protectedProcedure
+		.input(z.object({ bookId: z.string(), content: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const book = await prisma.book.findUnique({ where: { id: input.bookId } });
+			if (!book || book.userId !== ctx.session.user.id) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
+			}
+			return prisma.bookSummary.upsert({
+				where: { bookId: input.bookId },
+				update: { content: input.content },
+				create: { userId: ctx.session.user.id, bookId: input.bookId, content: input.content },
+			});
+		}),
+
+	listSummaries: protectedProcedure.query(async ({ ctx }) => {
+		return prisma.bookSummary.findMany({
+			where: { userId: ctx.session.user.id },
+			orderBy: { updatedAt: "desc" },
+			include: { book: { select: { id: true, title: true, coverUrl: true, fileType: true } } },
+		});
+	}),
 });

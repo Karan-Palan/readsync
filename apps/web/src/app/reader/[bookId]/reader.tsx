@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -33,6 +33,8 @@ function ReaderLoading() {
 interface Highlight {
 	id: string;
 	text: string;
+	color?: string | null;
+	note?: string | null;
 	startCfi?: string | null;
 	endCfi?: string | null;
 	pageNumber?: number | null;
@@ -59,6 +61,7 @@ interface ReaderProps {
 		totalPages: number | null;
 	};
 	initialProgress: unknown;
+	initialHighestPosition: unknown;
 	initialHighlights: Highlight[];
 	initialChapters: Chapter[];
 }
@@ -66,6 +69,7 @@ interface ReaderProps {
 export default function Reader({
 	book,
 	initialProgress,
+	initialHighestPosition,
 	initialHighlights,
 	initialChapters,
 }: ReaderProps) {
@@ -76,7 +80,8 @@ export default function Reader({
 	const [chapters, setChapters] = useState<Chapter[]>(initialChapters);
 	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
 	const [isAIOpen, setIsAIOpen] = useState(false);
-	const [aiAction, setAiAction] = useState<"EXPLAIN" | "SUMMARIZE" | "EXTRACT" | null>(null);
+	const [aiAction, setAiAction] = useState<"EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS" | null>(null);
+	const [isChatMode, setIsChatMode] = useState(false);
 	const [bookText, setBookText] = useState<string>("");
 	// Fraction 0-1 tracked from EPUB/PDF reader for RSVP/Chunked start position
 	const [readingFraction, setReadingFraction] = useState(0);
@@ -87,10 +92,21 @@ export default function Reader({
 	} | null>(null);
 	// Focus mode: strip width as % of viewport (30–95) — defaults to 60%
 	const [focusWidthPct, setFocusWidthPct] = useState(60);
+	// Resume dialog: shown once on mount if saved position is significantly behind highest
+	const [showResumeDialog, setShowResumeDialog] = useState(() => {
+		const currentFraction = (initialProgress as any)?.fraction ?? 0;
+		const highestFraction = (initialHighestPosition as any)?.fraction ?? 0;
+		return !!(initialHighestPosition && highestFraction > currentFraction + 0.02);
+	});
+	const [highestPosition] = useState<unknown>(initialHighestPosition);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	/** Populated by EPUBReader once the view is ready — allows programmatic navigation */
+	const navigateRef = useRef<((pos: unknown) => void) | null>(null);
 
 	const saveProgressMutation = useMutation(trpc.book.saveProgress.mutationOptions());
 	const updateCoverMutation = useMutation(trpc.book.updateCover.mutationOptions());
+	const summarizeBookMutation = useMutation(trpc.ai.summarizeBook.mutationOptions());
+	const saveSummaryMutation = useMutation(trpc.book.saveSummary.mutationOptions());
 
 	const handleCoverExtracted = useCallback(
 		(coverDataUrl: string) => {
@@ -104,13 +120,16 @@ export default function Reader({
 	const onPositionChange = useCallback(
 		(position: unknown) => {
 			setCurrentPosition(position);
-			if (position && typeof position === "object" && "fraction" in position) {
-				setReadingFraction((position as { fraction: number }).fraction ?? 0);
-			}
+			const fraction =
+				position && typeof position === "object" && "fraction" in position
+					? ((position as { fraction: number }).fraction ?? 0)
+					: 0;
+			if (fraction) setReadingFraction(fraction);
+
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 			debounceRef.current = setTimeout(() => {
-				saveProgressMutation.mutate({ bookId: book.id, position });
-			}, 1000);
+				saveProgressMutation.mutate({ bookId: book.id, position, fraction });
+			}, 1500);
 		},
 		[book.id, saveProgressMutation],
 	);
@@ -126,9 +145,10 @@ export default function Reader({
 	}, []);
 
 	const handleAIAction = useCallback(
-		(highlight: Highlight, action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT") => {
+		(highlight: Highlight, action: "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS") => {
 			setActiveHighlight(highlight);
 			setAiAction(action);
+			setIsChatMode(false);
 			setIsAIOpen(true);
 		},
 		[],
@@ -138,6 +158,7 @@ export default function Reader({
 		setIsAIOpen(false);
 		setActiveHighlight(null);
 		setAiAction(null);
+		setIsChatMode(false);
 	}, []);
 
 	const handleChapterJump = useCallback(
@@ -154,8 +175,9 @@ export default function Reader({
 
 	const handleHighlightClick = useCallback((h: Highlight) => {
 		setActiveHighlight(h);
+		setIsChatMode(false);
 		if (h.aiResponse && h.aiAction) {
-			setAiAction(h.aiAction as "EXPLAIN" | "SUMMARIZE" | "EXTRACT");
+			setAiAction(h.aiAction as "EXPLAIN" | "SUMMARIZE" | "EXTRACT" | "DISCUSS");
 		} else {
 			setAiAction("EXPLAIN");
 		}
@@ -167,16 +189,33 @@ export default function Reader({
 		setIsChapterListOpen(true);
 	}, []);
 
-	// AI shortcut: summarize selected text or current section excerpt
+	// AI shortcut: open a free-chat AI panel (no auto-run, user types first)
 	const handleQuickAI = useCallback(() => {
-		const selected = window.getSelection()?.toString().trim() ?? "";
-		const text = selected.length > 10 ? selected : bookText.slice(0, 2000);
-		if (!text) return;
-		const pseudo: Highlight = { id: "__quick__", text };
+		const pseudo: Highlight = { id: "__chat__", text: "" };
 		setActiveHighlight(pseudo);
-		setAiAction("SUMMARIZE");
+		setAiAction("DISCUSS");
+		setIsChatMode(true);
 		setIsAIOpen(true);
-	}, [bookText]);
+	}, []);
+
+	const handleSummarizeBook = useCallback(() => {
+		if (!bookText) return;
+		summarizeBookMutation.mutate(
+			{
+				bookId: book.id,
+				bookTitle: book.title,
+				text: bookText.slice(0, 8000),
+			},
+			{
+				onSuccess: (data) => {
+					const pseudo: Highlight = { id: "__summary__", text: bookText.slice(0, 500), aiResponse: data.response, aiAction: "SUMMARIZE" };
+					setActiveHighlight(pseudo);
+					setAiAction("SUMMARIZE");
+					setIsAIOpen(true);
+				},
+			},
+		);
+	}, [book.id, book.title, bookText, summarizeBookMutation]);
 
 	// Focus overlay gradient — keeps the center strip bright, dims edges
 	const focusMaskStyle =
@@ -198,6 +237,40 @@ export default function Reader({
 	return (
 		// h-dvh: true viewport height that accounts for mobile browser chrome
 		<div className="bg-background relative flex h-dvh flex-col overflow-hidden">
+			{/* Resume dialog */}
+			{showResumeDialog && highestPosition != null && (
+				<div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
+					<div className="bg-card w-full max-w-sm rounded-xl border p-6 shadow-2xl mx-4">
+						<h3 className="mb-2 font-semibold">Resume Reading?</h3>
+						<p className="text-muted-foreground mb-4 text-sm">
+							You previously reached{" "}
+							<strong>{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%</strong>
+							. Jump back there?
+						</p>
+						<div className="flex gap-2">
+							<button
+								type="button"
+								onClick={() => {
+									// Actually navigate in the reader
+									navigateRef.current?.(highestPosition);
+									setCurrentPosition(highestPosition);
+									setShowResumeDialog(false);
+								}}
+								className="bg-primary text-primary-foreground flex-1 rounded-md px-4 py-2 text-sm"
+							>
+								Jump to furthest ({Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%)
+							</button>
+							<button
+								type="button"
+								onClick={() => setShowResumeDialog(false)}
+								className="hover:bg-accent flex-1 rounded-md border px-4 py-2 text-sm"
+							>
+								Stay here ({Math.round(((initialProgress as any)?.fraction ?? 0) * 100)}%)
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 			{/* Top bar */}
 			<header className="flex shrink-0 items-center justify-between border-b px-3 py-2 sm:px-4">
 				<button
@@ -214,9 +287,19 @@ export default function Reader({
 				<div className="flex items-center gap-2">
 					<button
 						type="button"
+						onClick={handleSummarizeBook}
+						disabled={summarizeBookMutation.isPending || !bookText}
+						className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50"
+						title="Generate a full book summary"
+					>
+						<BookOpen className="h-3.5 w-3.5" />
+						<span className="hidden sm:inline">Summary</span>
+					</button>
+					<button
+						type="button"
 						onClick={handleQuickAI}
 						className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
-						title="AI: summarise selection or section"
+						title="AI: explain or discuss selection"
 					>
 						<Sparkles className="h-3.5 w-3.5" />
 						<span className="hidden sm:inline">AI</span>
@@ -247,6 +330,7 @@ export default function Reader({
 						onPositionChange={onPositionChange}
 						onTextExtracted={setBookText}
 						onCoverExtracted={handleCoverExtracted}
+						navigateRef={navigateRef}
 					>
 						<HighlightLayer
 							highlights={highlights}
@@ -339,9 +423,12 @@ export default function Reader({
 					<>
 						<div className="hidden md:block">
 							<AIDrawer
+								bookId={book.id}
 								highlight={activeHighlight}
 								action={aiAction}
+								chatMode={isChatMode}
 								onClose={handleCloseAI}
+								onHighlightCreated={handleHighlightCreated}
 								onResponseReceived={(id, response) => {
 									setHighlights((prev) =>
 										prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
@@ -351,9 +438,12 @@ export default function Reader({
 						</div>
 						<div className="md:hidden">
 							<AIBottomSheet
+								bookId={book.id}
 								highlight={activeHighlight}
 								action={aiAction}
+								chatMode={isChatMode}
 								onClose={handleCloseAI}
+								onHighlightCreated={handleHighlightCreated}
 								onResponseReceived={(id, response) => {
 									setHighlights((prev) =>
 										prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),

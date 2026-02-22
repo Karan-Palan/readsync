@@ -7,6 +7,7 @@ enum AIAction {
   EXPLAIN
   SUMMARIZE
   EXTRACT
+  DISCUSS
 }
 
 model Book {
@@ -25,17 +26,34 @@ model Book {
   readingProgress  ReadingProgress[]
   highlights       Highlight[]
   chapters         Chapter[]
+  summary          BookSummary?
 
   @@index([userId])
   @@map("book")
 }
 
-model ReadingProgress {
+model BookSummary {
   id        String   @id @default(cuid())
   userId    String
-  bookId    String
-  position  Json
+  bookId    String   @unique
+  content   String
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("book_summary")
+}
+
+model ReadingProgress {
+  id              String   @id @default(cuid())
+  userId          String
+  bookId          String
+  position        Json
+  highestPosition Json?
+  updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
@@ -51,6 +69,8 @@ model Highlight {
   userId     String
   bookId     String
   text       String
+  color      String    @default("yellow")
+  note       String?
   startCfi   String?
   endCfi     String?
   pageNumber Int?

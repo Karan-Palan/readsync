@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import type { ReactNode } from "react";
 
 import EPUBReader from "./epub-reader";
@@ -17,6 +18,7 @@ interface NormalModeProps {
 	onPositionChange: (position: unknown) => void;
 	onTextExtracted: (text: string) => void;
 	onCoverExtracted?: (coverDataUrl: string) => void;
+	navigateRef?: React.MutableRefObject<((pos: unknown) => void) | null>;
 	children?: ReactNode;
 }
 
@@ -31,6 +33,7 @@ export default function NormalMode({
 	onPositionChange,
 	onTextExtracted,
 	onCoverExtracted,
+	navigateRef,
 	children,
 }: NormalModeProps) {
 	if (book.fileType === "PDF") {
@@ -54,6 +57,7 @@ export default function NormalMode({
 				onPositionChange={onPositionChange}
 				onTextExtracted={onTextExtracted}
 				onCoverExtracted={onCoverExtracted}
+				navigateRef={navigateRef}
 			>
 				{children}
 			</EPUBReader>
