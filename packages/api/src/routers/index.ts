@@ -2,6 +2,7 @@ import { protectedProcedure, publicProcedure, router } from "../index";
 import { aiRouter } from "./ai";
 import { bookRouter } from "./book";
 import { chapterRouter } from "./chapter";
+import { dashboardRouter } from "./dashboard";
 import { highlightRouter } from "./highlight";
 
 export const appRouter = router({
@@ -18,5 +19,6 @@ export const appRouter = router({
 	highlight: highlightRouter,
 	chapter: chapterRouter,
 	ai: aiRouter,
+	dashboard: dashboardRouter,
 });
 export type AppRouter = typeof appRouter;

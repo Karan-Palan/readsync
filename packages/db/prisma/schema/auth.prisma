@@ -15,6 +15,7 @@ model User {
   highlights    Highlight[]
   chapters      Chapter[]
   bookSummaries BookSummary[]
+  readingGoals  ReadingGoal[]
 
   @@unique([email])
   @@map("user")

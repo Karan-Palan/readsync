@@ -103,3 +103,17 @@ model Chapter {
   @@index([bookId])
   @@map("chapter")
 }
+
+model ReadingGoal {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  targetBooks Int      @default(12)
+  year        Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year])
+  @@map("reading_goal")
+}

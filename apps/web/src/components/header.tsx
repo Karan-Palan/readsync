@@ -9,7 +9,7 @@ export default function Header() {
 		{ to: "/library", label: "Library" },
 		{ to: "/notes", label: "Notes" },
 		{ to: "/summaries", label: "Summaries" },
-		{ to: "/dashboard", label: "Account" },
+		{ to: "/dashboard", label: "Dashboard" },
 	];
 
 	return (
