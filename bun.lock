@@ -6,6 +6,7 @@
       "name": "readsync",
       "dependencies": {
         "@readsync/env": "workspace:*",
+        "@xincmm/foliate-js": "^0.1.3",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
@@ -27,6 +28,7 @@
         "@prisma/client": "catalog:",
         "@readsync/api": "workspace:*",
         "@readsync/auth": "workspace:*",
+        "@readsync/db": "workspace:*",
         "@readsync/env": "workspace:*",
         "@tanstack/react-form": "^1.28.0",
         "@tanstack/react-query": "^5.90.12",
@@ -694,6 +696,8 @@
     "@uploadthing/shared": ["@uploadthing/shared@7.1.10", "", { "dependencies": { "@uploadthing/mime-types": "0.3.6", "effect": "3.17.7", "sqids": "^0.3.0" } }, "sha512-R/XSA3SfCVnLIzFpXyGaKPfbwlYlWYSTuGjTFHuJhdAomuBuhopAHLh2Ois5fJibAHzi02uP1QCKbgTAdmArqg=="],
 
     "@vercel/oidc": ["@vercel/oidc@3.1.0", "", {}, "sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w=="],
+
+    "@xincmm/foliate-js": ["@xincmm/foliate-js@0.1.3", "", {}, "sha512-DzkFSpw4ECu5wf5p6SqyaBXvjexp5z/aU2yIJyjuzJdpHMS0kw1xyXsE2xOMP7hwgi+lWYSezESrBg0ZIeGSGQ=="],
 
     "@xmldom/xmldom": ["@xmldom/xmldom@0.7.13", "", {}, "sha512-lm2GW5PkosIzccsaZIz7tp8cPADSIlIHWDFTR1N0SzfinhhYgeIQjFMz4rYzanCScr3DqQLeomUDArp6MWKm+g=="],
 

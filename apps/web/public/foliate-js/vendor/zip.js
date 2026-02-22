@@ -1,0 +1,3441 @@
+const e = -2,
+	t = -3,
+	n = -5,
+	r = [
+		0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767,
+		65535,
+	],
+	i = [
+		96, 7, 256, 0, 8, 80, 0, 8, 16, 84, 8, 115, 82, 7, 31, 0, 8, 112, 0, 8, 48,
+		0, 9, 192, 80, 7, 10, 0, 8, 96, 0, 8, 32, 0, 9, 160, 0, 8, 0, 0, 8, 128, 0,
+		8, 64, 0, 9, 224, 80, 7, 6, 0, 8, 88, 0, 8, 24, 0, 9, 144, 83, 7, 59, 0, 8,
+		120, 0, 8, 56, 0, 9, 208, 81, 7, 17, 0, 8, 104, 0, 8, 40, 0, 9, 176, 0, 8,
+		8, 0, 8, 136, 0, 8, 72, 0, 9, 240, 80, 7, 4, 0, 8, 84, 0, 8, 20, 85, 8, 227,
+		83, 7, 43, 0, 8, 116, 0, 8, 52, 0, 9, 200, 81, 7, 13, 0, 8, 100, 0, 8, 36,
+		0, 9, 168, 0, 8, 4, 0, 8, 132, 0, 8, 68, 0, 9, 232, 80, 7, 8, 0, 8, 92, 0,
+		8, 28, 0, 9, 152, 84, 7, 83, 0, 8, 124, 0, 8, 60, 0, 9, 216, 82, 7, 23, 0,
+		8, 108, 0, 8, 44, 0, 9, 184, 0, 8, 12, 0, 8, 140, 0, 8, 76, 0, 9, 248, 80,
+		7, 3, 0, 8, 82, 0, 8, 18, 85, 8, 163, 83, 7, 35, 0, 8, 114, 0, 8, 50, 0, 9,
+		196, 81, 7, 11, 0, 8, 98, 0, 8, 34, 0, 9, 164, 0, 8, 2, 0, 8, 130, 0, 8, 66,
+		0, 9, 228, 80, 7, 7, 0, 8, 90, 0, 8, 26, 0, 9, 148, 84, 7, 67, 0, 8, 122, 0,
+		8, 58, 0, 9, 212, 82, 7, 19, 0, 8, 106, 0, 8, 42, 0, 9, 180, 0, 8, 10, 0, 8,
+		138, 0, 8, 74, 0, 9, 244, 80, 7, 5, 0, 8, 86, 0, 8, 22, 192, 8, 0, 83, 7,
+		51, 0, 8, 118, 0, 8, 54, 0, 9, 204, 81, 7, 15, 0, 8, 102, 0, 8, 38, 0, 9,
+		172, 0, 8, 6, 0, 8, 134, 0, 8, 70, 0, 9, 236, 80, 7, 9, 0, 8, 94, 0, 8, 30,
+		0, 9, 156, 84, 7, 99, 0, 8, 126, 0, 8, 62, 0, 9, 220, 82, 7, 27, 0, 8, 110,
+		0, 8, 46, 0, 9, 188, 0, 8, 14, 0, 8, 142, 0, 8, 78, 0, 9, 252, 96, 7, 256,
+		0, 8, 81, 0, 8, 17, 85, 8, 131, 82, 7, 31, 0, 8, 113, 0, 8, 49, 0, 9, 194,
+		80, 7, 10, 0, 8, 97, 0, 8, 33, 0, 9, 162, 0, 8, 1, 0, 8, 129, 0, 8, 65, 0,
+		9, 226, 80, 7, 6, 0, 8, 89, 0, 8, 25, 0, 9, 146, 83, 7, 59, 0, 8, 121, 0, 8,
+		57, 0, 9, 210, 81, 7, 17, 0, 8, 105, 0, 8, 41, 0, 9, 178, 0, 8, 9, 0, 8,
+		137, 0, 8, 73, 0, 9, 242, 80, 7, 4, 0, 8, 85, 0, 8, 21, 80, 8, 258, 83, 7,
+		43, 0, 8, 117, 0, 8, 53, 0, 9, 202, 81, 7, 13, 0, 8, 101, 0, 8, 37, 0, 9,
+		170, 0, 8, 5, 0, 8, 133, 0, 8, 69, 0, 9, 234, 80, 7, 8, 0, 8, 93, 0, 8, 29,
+		0, 9, 154, 84, 7, 83, 0, 8, 125, 0, 8, 61, 0, 9, 218, 82, 7, 23, 0, 8, 109,
+		0, 8, 45, 0, 9, 186, 0, 8, 13, 0, 8, 141, 0, 8, 77, 0, 9, 250, 80, 7, 3, 0,
+		8, 83, 0, 8, 19, 85, 8, 195, 83, 7, 35, 0, 8, 115, 0, 8, 51, 0, 9, 198, 81,
+		7, 11, 0, 8, 99, 0, 8, 35, 0, 9, 166, 0, 8, 3, 0, 8, 131, 0, 8, 67, 0, 9,
+		230, 80, 7, 7, 0, 8, 91, 0, 8, 27, 0, 9, 150, 84, 7, 67, 0, 8, 123, 0, 8,
+		59, 0, 9, 214, 82, 7, 19, 0, 8, 107, 0, 8, 43, 0, 9, 182, 0, 8, 11, 0, 8,
+		139, 0, 8, 75, 0, 9, 246, 80, 7, 5, 0, 8, 87, 0, 8, 23, 192, 8, 0, 83, 7,
+		51, 0, 8, 119, 0, 8, 55, 0, 9, 206, 81, 7, 15, 0, 8, 103, 0, 8, 39, 0, 9,
+		174, 0, 8, 7, 0, 8, 135, 0, 8, 71, 0, 9, 238, 80, 7, 9, 0, 8, 95, 0, 8, 31,
+		0, 9, 158, 84, 7, 99, 0, 8, 127, 0, 8, 63, 0, 9, 222, 82, 7, 27, 0, 8, 111,
+		0, 8, 47, 0, 9, 190, 0, 8, 15, 0, 8, 143, 0, 8, 79, 0, 9, 254, 96, 7, 256,
+		0, 8, 80, 0, 8, 16, 84, 8, 115, 82, 7, 31, 0, 8, 112, 0, 8, 48, 0, 9, 193,
+		80, 7, 10, 0, 8, 96, 0, 8, 32, 0, 9, 161, 0, 8, 0, 0, 8, 128, 0, 8, 64, 0,
+		9, 225, 80, 7, 6, 0, 8, 88, 0, 8, 24, 0, 9, 145, 83, 7, 59, 0, 8, 120, 0, 8,
+		56, 0, 9, 209, 81, 7, 17, 0, 8, 104, 0, 8, 40, 0, 9, 177, 0, 8, 8, 0, 8,
+		136, 0, 8, 72, 0, 9, 241, 80, 7, 4, 0, 8, 84, 0, 8, 20, 85, 8, 227, 83, 7,
+		43, 0, 8, 116, 0, 8, 52, 0, 9, 201, 81, 7, 13, 0, 8, 100, 0, 8, 36, 0, 9,
+		169, 0, 8, 4, 0, 8, 132, 0, 8, 68, 0, 9, 233, 80, 7, 8, 0, 8, 92, 0, 8, 28,
+		0, 9, 153, 84, 7, 83, 0, 8, 124, 0, 8, 60, 0, 9, 217, 82, 7, 23, 0, 8, 108,
+		0, 8, 44, 0, 9, 185, 0, 8, 12, 0, 8, 140, 0, 8, 76, 0, 9, 249, 80, 7, 3, 0,
+		8, 82, 0, 8, 18, 85, 8, 163, 83, 7, 35, 0, 8, 114, 0, 8, 50, 0, 9, 197, 81,
+		7, 11, 0, 8, 98, 0, 8, 34, 0, 9, 165, 0, 8, 2, 0, 8, 130, 0, 8, 66, 0, 9,
+		229, 80, 7, 7, 0, 8, 90, 0, 8, 26, 0, 9, 149, 84, 7, 67, 0, 8, 122, 0, 8,
+		58, 0, 9, 213, 82, 7, 19, 0, 8, 106, 0, 8, 42, 0, 9, 181, 0, 8, 10, 0, 8,
+		138, 0, 8, 74, 0, 9, 245, 80, 7, 5, 0, 8, 86, 0, 8, 22, 192, 8, 0, 83, 7,
+		51, 0, 8, 118, 0, 8, 54, 0, 9, 205, 81, 7, 15, 0, 8, 102, 0, 8, 38, 0, 9,
+		173, 0, 8, 6, 0, 8, 134, 0, 8, 70, 0, 9, 237, 80, 7, 9, 0, 8, 94, 0, 8, 30,
+		0, 9, 157, 84, 7, 99, 0, 8, 126, 0, 8, 62, 0, 9, 221, 82, 7, 27, 0, 8, 110,
+		0, 8, 46, 0, 9, 189, 0, 8, 14, 0, 8, 142, 0, 8, 78, 0, 9, 253, 96, 7, 256,
+		0, 8, 81, 0, 8, 17, 85, 8, 131, 82, 7, 31, 0, 8, 113, 0, 8, 49, 0, 9, 195,
+		80, 7, 10, 0, 8, 97, 0, 8, 33, 0, 9, 163, 0, 8, 1, 0, 8, 129, 0, 8, 65, 0,
+		9, 227, 80, 7, 6, 0, 8, 89, 0, 8, 25, 0, 9, 147, 83, 7, 59, 0, 8, 121, 0, 8,
+		57, 0, 9, 211, 81, 7, 17, 0, 8, 105, 0, 8, 41, 0, 9, 179, 0, 8, 9, 0, 8,
+		137, 0, 8, 73, 0, 9, 243, 80, 7, 4, 0, 8, 85, 0, 8, 21, 80, 8, 258, 83, 7,
+		43, 0, 8, 117, 0, 8, 53, 0, 9, 203, 81, 7, 13, 0, 8, 101, 0, 8, 37, 0, 9,
+		171, 0, 8, 5, 0, 8, 133, 0, 8, 69, 0, 9, 235, 80, 7, 8, 0, 8, 93, 0, 8, 29,
+		0, 9, 155, 84, 7, 83, 0, 8, 125, 0, 8, 61, 0, 9, 219, 82, 7, 23, 0, 8, 109,
+		0, 8, 45, 0, 9, 187, 0, 8, 13, 0, 8, 141, 0, 8, 77, 0, 9, 251, 80, 7, 3, 0,
+		8, 83, 0, 8, 19, 85, 8, 195, 83, 7, 35, 0, 8, 115, 0, 8, 51, 0, 9, 199, 81,
+		7, 11, 0, 8, 99, 0, 8, 35, 0, 9, 167, 0, 8, 3, 0, 8, 131, 0, 8, 67, 0, 9,
+		231, 80, 7, 7, 0, 8, 91, 0, 8, 27, 0, 9, 151, 84, 7, 67, 0, 8, 123, 0, 8,
+		59, 0, 9, 215, 82, 7, 19, 0, 8, 107, 0, 8, 43, 0, 9, 183, 0, 8, 11, 0, 8,
+		139, 0, 8, 75, 0, 9, 247, 80, 7, 5, 0, 8, 87, 0, 8, 23, 192, 8, 0, 83, 7,
+		51, 0, 8, 119, 0, 8, 55, 0, 9, 207, 81, 7, 15, 0, 8, 103, 0, 8, 39, 0, 9,
+		175, 0, 8, 7, 0, 8, 135, 0, 8, 71, 0, 9, 239, 80, 7, 9, 0, 8, 95, 0, 8, 31,
+		0, 9, 159, 84, 7, 99, 0, 8, 127, 0, 8, 63, 0, 9, 223, 82, 7, 27, 0, 8, 111,
+		0, 8, 47, 0, 9, 191, 0, 8, 15, 0, 8, 143, 0, 8, 79, 0, 9, 255,
+	],
+	a = [
+		80, 5, 1, 87, 5, 257, 83, 5, 17, 91, 5, 4097, 81, 5, 5, 89, 5, 1025, 85, 5,
+		65, 93, 5, 16385, 80, 5, 3, 88, 5, 513, 84, 5, 33, 92, 5, 8193, 82, 5, 9,
+		90, 5, 2049, 86, 5, 129, 192, 5, 24577, 80, 5, 2, 87, 5, 385, 83, 5, 25, 91,
+		5, 6145, 81, 5, 7, 89, 5, 1537, 85, 5, 97, 93, 5, 24577, 80, 5, 4, 88, 5,
+		769, 84, 5, 49, 92, 5, 12289, 82, 5, 13, 90, 5, 3073, 86, 5, 193, 192, 5,
+		24577,
+	],
+	s = [
+		3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67,
+		83, 99, 115, 131, 163, 195, 227, 258, 0, 0,
+	],
+	o = [
+		0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5,
+		5, 5, 5, 0, 112, 112,
+	],
+	l = [
+		1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513,
+		769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
+	],
+	c = [
+		0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+		11, 11, 12, 12, 13, 13,
+	],
+	u = 15;
+function f() {
+	let e, r, i, a, f, d;
+	function h(e, r, s, o, l, c, h, w, _, b, p) {
+		let m, g, y, x, k, S, v, z, A, U, D, E, F, T, O;
+		(U = 0), (k = s);
+		do {
+			i[e[r + U]]++, U++, k--;
+		} while (0 !== k);
+		if (i[0] == s) return (h[0] = -1), (w[0] = 0), 0;
+		for (z = w[0], S = 1; S <= u && 0 === i[S]; S++);
+		for (v = S, z < S && (z = S), k = u; 0 !== k && 0 === i[k]; k--);
+		for (y = k, z > k && (z = k), w[0] = z, T = 1 << S; S < k; S++, T <<= 1)
+			if ((T -= i[S]) < 0) return t;
+		if ((T -= i[k]) < 0) return t;
+		for (i[k] += T, d[1] = S = 0, U = 1, F = 2; 0 !== --k; )
+			(d[F] = S += i[U]), F++, U++;
+		(k = 0), (U = 0);
+		do {
+			0 !== (S = e[r + U]) && (p[d[S]++] = k), U++;
+		} while (++k < s);
+		for (
+			s = d[y], d[0] = k = 0, U = 0, x = -1, E = -z, f[0] = 0, D = 0, O = 0;
+			v <= y;
+			v++
+		)
+			for (m = i[v]; 0 !== m--; ) {
+				for (; v > E + z; ) {
+					if (
+						(x++,
+						(E += z),
+						(O = y - E),
+						(O = O > z ? z : O),
+						(g = 1 << (S = v - E)) > m + 1 && ((g -= m + 1), (F = v), S < O))
+					)
+						for (; ++S < O && !((g <<= 1) <= i[++F]); ) g -= i[F];
+					if (((O = 1 << S), b[0] + O > 1440)) return t;
+					(f[x] = D = b[0]),
+						(b[0] += O),
+						0 !== x
+							? ((d[x] = k),
+								(a[0] = S),
+								(a[1] = z),
+								(S = k >>> (E - z)),
+								(a[2] = D - f[x - 1] - S),
+								_.set(a, 3 * (f[x - 1] + S)))
+							: (h[0] = D);
+				}
+				for (
+					a[1] = v - E,
+						U >= s
+							? (a[0] = 192)
+							: p[U] < o
+								? ((a[0] = p[U] < 256 ? 0 : 96), (a[2] = p[U++]))
+								: ((a[0] = c[p[U] - o] + 16 + 64), (a[2] = l[p[U++] - o])),
+						g = 1 << (v - E),
+						S = k >>> E;
+					S < O;
+					S += g
+				)
+					_.set(a, 3 * (D + S));
+				for (S = 1 << (v - 1); 0 !== (k & S); S >>>= 1) k ^= S;
+				for (k ^= S, A = (1 << E) - 1; (k & A) != d[x]; )
+					x--, (E -= z), (A = (1 << E) - 1);
+			}
+		return 0 !== T && 1 != y ? n : 0;
+	}
+	function w(t) {
+		let n;
+		for (
+			e ||
+				((e = []),
+				(r = []),
+				(i = new Int32Array(16)),
+				(a = []),
+				(f = new Int32Array(u)),
+				(d = new Int32Array(16))),
+				r.length < t && (r = []),
+				n = 0;
+			n < t;
+			n++
+		)
+			r[n] = 0;
+		for (n = 0; n < 16; n++) i[n] = 0;
+		for (n = 0; n < 3; n++) a[n] = 0;
+		f.set(i.subarray(0, u), 0), d.set(i.subarray(0, 16), 0);
+	}
+	(this.inflate_trees_bits = (i, a, s, o, l) => {
+		let c;
+		return (
+			w(19),
+			(e[0] = 0),
+			(c = h(i, 0, 19, 19, null, null, s, a, o, e, r)),
+			c == t
+				? (l.msg = "oversubscribed dynamic bit lengths tree")
+				: (c != n && 0 !== a[0]) ||
+					((l.msg = "incomplete dynamic bit lengths tree"), (c = t)),
+			c
+		);
+	}),
+		(this.inflate_trees_dynamic = (i, a, u, f, d, _, b, p, m) => {
+			let g;
+			return (
+				w(288),
+				(e[0] = 0),
+				(g = h(u, 0, i, 257, s, o, _, f, p, e, r)),
+				0 != g || 0 === f[0]
+					? (g == t
+							? (m.msg = "oversubscribed literal/length tree")
+							: -4 != g &&
+								((m.msg = "incomplete literal/length tree"), (g = t)),
+						g)
+					: (w(288),
+						(g = h(u, i, a, 0, l, c, b, d, p, e, r)),
+						0 != g || (0 === d[0] && i > 257)
+							? (g == t
+									? (m.msg = "oversubscribed distance tree")
+									: g == n
+										? ((m.msg = "incomplete distance tree"), (g = t))
+										: -4 != g &&
+											((m.msg = "empty distance tree with lengths"), (g = t)),
+								g)
+							: 0)
+			);
+		});
+}
+f.inflate_trees_fixed = (e, t, n, r) => (
+	(e[0] = 9), (t[0] = 5), (n[0] = i), (r[0] = a), 0
+);
+function d() {
+	let i,
+		a,
+		s,
+		o,
+		l = 0,
+		c = 0,
+		u = 0,
+		f = 0,
+		d = 0,
+		h = 0,
+		w = 0,
+		_ = 0,
+		b = 0,
+		p = 0;
+	function m(e, n, i, a, s, o, l, c) {
+		let u, f, d, h, w, _, b, p, m, g, y, x, k, S, v, z;
+		(b = c.next_in_index),
+			(p = c.avail_in),
+			(w = l.bitb),
+			(_ = l.bitk),
+			(m = l.write),
+			(g = m < l.read ? l.read - m - 1 : l.end - m),
+			(y = r[e]),
+			(x = r[n]);
+		do {
+			for (; _ < 20; ) p--, (w |= (255 & c.read_byte(b++)) << _), (_ += 8);
+			if (((u = w & y), (f = i), (d = a), (z = 3 * (d + u)), 0 !== (h = f[z])))
+				for (;;) {
+					if (((w >>= f[z + 1]), (_ -= f[z + 1]), 16 & h)) {
+						for (h &= 15, k = f[z + 2] + (w & r[h]), w >>= h, _ -= h; _ < 15; )
+							p--, (w |= (255 & c.read_byte(b++)) << _), (_ += 8);
+						for (u = w & x, f = s, d = o, z = 3 * (d + u), h = f[z]; ; ) {
+							if (((w >>= f[z + 1]), (_ -= f[z + 1]), 16 & h)) {
+								for (h &= 15; _ < h; )
+									p--, (w |= (255 & c.read_byte(b++)) << _), (_ += 8);
+								if (
+									((S = f[z + 2] + (w & r[h])),
+									(w >>= h),
+									(_ -= h),
+									(g -= k),
+									m >= S)
+								)
+									(v = m - S),
+										m - v > 0 && 2 > m - v
+											? ((l.win[m++] = l.win[v++]),
+												(l.win[m++] = l.win[v++]),
+												(k -= 2))
+											: (l.win.set(l.win.subarray(v, v + 2), m),
+												(m += 2),
+												(v += 2),
+												(k -= 2));
+								else {
+									v = m - S;
+									do {
+										v += l.end;
+									} while (v < 0);
+									if (((h = l.end - v), k > h)) {
+										if (((k -= h), m - v > 0 && h > m - v))
+											do {
+												l.win[m++] = l.win[v++];
+											} while (0 !== --h);
+										else
+											l.win.set(l.win.subarray(v, v + h), m),
+												(m += h),
+												(v += h),
+												(h = 0);
+										v = 0;
+									}
+								}
+								if (m - v > 0 && k > m - v)
+									do {
+										l.win[m++] = l.win[v++];
+									} while (0 !== --k);
+								else
+									l.win.set(l.win.subarray(v, v + k), m),
+										(m += k),
+										(v += k),
+										(k = 0);
+								break;
+							}
+							if (64 & h)
+								return (
+									(c.msg = "invalid distance code"),
+									(k = c.avail_in - p),
+									(k = _ >> 3 < k ? _ >> 3 : k),
+									(p += k),
+									(b -= k),
+									(_ -= k << 3),
+									(l.bitb = w),
+									(l.bitk = _),
+									(c.avail_in = p),
+									(c.total_in += b - c.next_in_index),
+									(c.next_in_index = b),
+									(l.write = m),
+									t
+								);
+							(u += f[z + 2]), (u += w & r[h]), (z = 3 * (d + u)), (h = f[z]);
+						}
+						break;
+					}
+					if (64 & h)
+						return 32 & h
+							? ((k = c.avail_in - p),
+								(k = _ >> 3 < k ? _ >> 3 : k),
+								(p += k),
+								(b -= k),
+								(_ -= k << 3),
+								(l.bitb = w),
+								(l.bitk = _),
+								(c.avail_in = p),
+								(c.total_in += b - c.next_in_index),
+								(c.next_in_index = b),
+								(l.write = m),
+								1)
+							: ((c.msg = "invalid literal/length code"),
+								(k = c.avail_in - p),
+								(k = _ >> 3 < k ? _ >> 3 : k),
+								(p += k),
+								(b -= k),
+								(_ -= k << 3),
+								(l.bitb = w),
+								(l.bitk = _),
+								(c.avail_in = p),
+								(c.total_in += b - c.next_in_index),
+								(c.next_in_index = b),
+								(l.write = m),
+								t);
+					if (
+						((u += f[z + 2]),
+						(u += w & r[h]),
+						(z = 3 * (d + u)),
+						0 === (h = f[z]))
+					) {
+						(w >>= f[z + 1]), (_ -= f[z + 1]), (l.win[m++] = f[z + 2]), g--;
+						break;
+					}
+				}
+			else (w >>= f[z + 1]), (_ -= f[z + 1]), (l.win[m++] = f[z + 2]), g--;
+		} while (g >= 258 && p >= 10);
+		return (
+			(k = c.avail_in - p),
+			(k = _ >> 3 < k ? _ >> 3 : k),
+			(p += k),
+			(b -= k),
+			(_ -= k << 3),
+			(l.bitb = w),
+			(l.bitk = _),
+			(c.avail_in = p),
+			(c.total_in += b - c.next_in_index),
+			(c.next_in_index = b),
+			(l.write = m),
+			0
+		);
+	}
+	(this.init = (e, t, n, r, l, c) => {
+		(i = 0), (w = e), (_ = t), (s = n), (b = r), (o = l), (p = c), (a = null);
+	}),
+		(this.proc = (n, g, y) => {
+			let x,
+				k,
+				S,
+				v,
+				z,
+				A,
+				U,
+				D = 0,
+				E = 0,
+				F = 0;
+			for (
+				F = g.next_in_index,
+					v = g.avail_in,
+					D = n.bitb,
+					E = n.bitk,
+					z = n.write,
+					A = z < n.read ? n.read - z - 1 : n.end - z;
+				;
+			)
+				switch (i) {
+					case 0:
+						if (
+							A >= 258 &&
+							v >= 10 &&
+							((n.bitb = D),
+							(n.bitk = E),
+							(g.avail_in = v),
+							(g.total_in += F - g.next_in_index),
+							(g.next_in_index = F),
+							(n.write = z),
+							(y = m(w, _, s, b, o, p, n, g)),
+							(F = g.next_in_index),
+							(v = g.avail_in),
+							(D = n.bitb),
+							(E = n.bitk),
+							(z = n.write),
+							(A = z < n.read ? n.read - z - 1 : n.end - z),
+							0 != y)
+						) {
+							i = 1 == y ? 7 : 9;
+							break;
+						}
+						(u = w), (a = s), (c = b), (i = 1);
+					case 1:
+						for (x = u; E < x; ) {
+							if (0 === v)
+								return (
+									(n.bitb = D),
+									(n.bitk = E),
+									(g.avail_in = v),
+									(g.total_in += F - g.next_in_index),
+									(g.next_in_index = F),
+									(n.write = z),
+									n.inflate_flush(g, y)
+								);
+							(y = 0), v--, (D |= (255 & g.read_byte(F++)) << E), (E += 8);
+						}
+						if (
+							((k = 3 * (c + (D & r[x]))),
+							(D >>>= a[k + 1]),
+							(E -= a[k + 1]),
+							(S = a[k]),
+							0 === S)
+						) {
+							(f = a[k + 2]), (i = 6);
+							break;
+						}
+						if (16 & S) {
+							(d = 15 & S), (l = a[k + 2]), (i = 2);
+							break;
+						}
+						if (!(64 & S)) {
+							(u = S), (c = k / 3 + a[k + 2]);
+							break;
+						}
+						if (32 & S) {
+							i = 7;
+							break;
+						}
+						return (
+							(i = 9),
+							(g.msg = "invalid literal/length code"),
+							(y = t),
+							(n.bitb = D),
+							(n.bitk = E),
+							(g.avail_in = v),
+							(g.total_in += F - g.next_in_index),
+							(g.next_in_index = F),
+							(n.write = z),
+							n.inflate_flush(g, y)
+						);
+					case 2:
+						for (x = d; E < x; ) {
+							if (0 === v)
+								return (
+									(n.bitb = D),
+									(n.bitk = E),
+									(g.avail_in = v),
+									(g.total_in += F - g.next_in_index),
+									(g.next_in_index = F),
+									(n.write = z),
+									n.inflate_flush(g, y)
+								);
+							(y = 0), v--, (D |= (255 & g.read_byte(F++)) << E), (E += 8);
+						}
+						(l += D & r[x]),
+							(D >>= x),
+							(E -= x),
+							(u = _),
+							(a = o),
+							(c = p),
+							(i = 3);
+					case 3:
+						for (x = u; E < x; ) {
+							if (0 === v)
+								return (
+									(n.bitb = D),
+									(n.bitk = E),
+									(g.avail_in = v),
+									(g.total_in += F - g.next_in_index),
+									(g.next_in_index = F),
+									(n.write = z),
+									n.inflate_flush(g, y)
+								);
+							(y = 0), v--, (D |= (255 & g.read_byte(F++)) << E), (E += 8);
+						}
+						if (
+							((k = 3 * (c + (D & r[x]))),
+							(D >>= a[k + 1]),
+							(E -= a[k + 1]),
+							(S = a[k]),
+							16 & S)
+						) {
+							(d = 15 & S), (h = a[k + 2]), (i = 4);
+							break;
+						}
+						if (!(64 & S)) {
+							(u = S), (c = k / 3 + a[k + 2]);
+							break;
+						}
+						return (
+							(i = 9),
+							(g.msg = "invalid distance code"),
+							(y = t),
+							(n.bitb = D),
+							(n.bitk = E),
+							(g.avail_in = v),
+							(g.total_in += F - g.next_in_index),
+							(g.next_in_index = F),
+							(n.write = z),
+							n.inflate_flush(g, y)
+						);
+					case 4:
+						for (x = d; E < x; ) {
+							if (0 === v)
+								return (
+									(n.bitb = D),
+									(n.bitk = E),
+									(g.avail_in = v),
+									(g.total_in += F - g.next_in_index),
+									(g.next_in_index = F),
+									(n.write = z),
+									n.inflate_flush(g, y)
+								);
+							(y = 0), v--, (D |= (255 & g.read_byte(F++)) << E), (E += 8);
+						}
+						(h += D & r[x]), (D >>= x), (E -= x), (i = 5);
+					case 5:
+						for (U = z - h; U < 0; ) U += n.end;
+						for (; 0 !== l; ) {
+							if (
+								0 === A &&
+								(z == n.end &&
+									0 !== n.read &&
+									((z = 0), (A = z < n.read ? n.read - z - 1 : n.end - z)),
+								0 === A &&
+									((n.write = z),
+									(y = n.inflate_flush(g, y)),
+									(z = n.write),
+									(A = z < n.read ? n.read - z - 1 : n.end - z),
+									z == n.end &&
+										0 !== n.read &&
+										((z = 0), (A = z < n.read ? n.read - z - 1 : n.end - z)),
+									0 === A))
+							)
+								return (
+									(n.bitb = D),
+									(n.bitk = E),
+									(g.avail_in = v),
+									(g.total_in += F - g.next_in_index),
+									(g.next_in_index = F),
+									(n.write = z),
+									n.inflate_flush(g, y)
+								);
+							(n.win[z++] = n.win[U++]), A--, U == n.end && (U = 0), l--;
+						}
+						i = 0;
+						break;
+					case 6:
+						if (
+							0 === A &&
+							(z == n.end &&
+								0 !== n.read &&
+								((z = 0), (A = z < n.read ? n.read - z - 1 : n.end - z)),
+							0 === A &&
+								((n.write = z),
+								(y = n.inflate_flush(g, y)),
+								(z = n.write),
+								(A = z < n.read ? n.read - z - 1 : n.end - z),
+								z == n.end &&
+									0 !== n.read &&
+									((z = 0), (A = z < n.read ? n.read - z - 1 : n.end - z)),
+								0 === A))
+						)
+							return (
+								(n.bitb = D),
+								(n.bitk = E),
+								(g.avail_in = v),
+								(g.total_in += F - g.next_in_index),
+								(g.next_in_index = F),
+								(n.write = z),
+								n.inflate_flush(g, y)
+							);
+						(y = 0), (n.win[z++] = f), A--, (i = 0);
+						break;
+					case 7:
+						if (
+							(E > 7 && ((E -= 8), v++, F--),
+							(n.write = z),
+							(y = n.inflate_flush(g, y)),
+							(z = n.write),
+							(A = z < n.read ? n.read - z - 1 : n.end - z),
+							n.read != n.write)
+						)
+							return (
+								(n.bitb = D),
+								(n.bitk = E),
+								(g.avail_in = v),
+								(g.total_in += F - g.next_in_index),
+								(g.next_in_index = F),
+								(n.write = z),
+								n.inflate_flush(g, y)
+							);
+						i = 8;
+					case 8:
+						return (
+							(y = 1),
+							(n.bitb = D),
+							(n.bitk = E),
+							(g.avail_in = v),
+							(g.total_in += F - g.next_in_index),
+							(g.next_in_index = F),
+							(n.write = z),
+							n.inflate_flush(g, y)
+						);
+					case 9:
+						return (
+							(y = t),
+							(n.bitb = D),
+							(n.bitk = E),
+							(g.avail_in = v),
+							(g.total_in += F - g.next_in_index),
+							(g.next_in_index = F),
+							(n.write = z),
+							n.inflate_flush(g, y)
+						);
+					default:
+						return (
+							(y = e),
+							(n.bitb = D),
+							(n.bitk = E),
+							(g.avail_in = v),
+							(g.total_in += F - g.next_in_index),
+							(g.next_in_index = F),
+							(n.write = z),
+							n.inflate_flush(g, y)
+						);
+				}
+		}),
+		(this.free = () => {});
+}
+const h = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+function w(i, a) {
+	let o,
+		l = 0,
+		c = 0,
+		u = 0,
+		w = 0;
+	const _ = [0],
+		b = [0],
+		p = new d();
+	let m = 0,
+		g = new Int32Array(4320);
+	const y = new f();
+	(this.bitk = 0),
+		(this.bitb = 0),
+		(this.win = new Uint8Array(a)),
+		(this.end = a),
+		(this.read = 0),
+		(this.write = 0),
+		(this.reset = (e, t) => {
+			t && (t[0] = 0),
+				6 == l && p.free(e),
+				(l = 0),
+				(this.bitk = 0),
+				(this.bitb = 0),
+				(this.read = this.write = 0);
+		}),
+		this.reset(i, null),
+		(this.inflate_flush = (e, t) => {
+			let r, i, a;
+			return (
+				(i = e.next_out_index),
+				(a = this.read),
+				(r = (a <= this.write ? this.write : this.end) - a),
+				r > e.avail_out && (r = e.avail_out),
+				0 !== r && t == n && (t = 0),
+				(e.avail_out -= r),
+				(e.total_out += r),
+				e.next_out.set(this.win.subarray(a, a + r), i),
+				(i += r),
+				(a += r),
+				a == this.end &&
+					((a = 0),
+					this.write == this.end && (this.write = 0),
+					(r = this.write - a),
+					r > e.avail_out && (r = e.avail_out),
+					0 !== r && t == n && (t = 0),
+					(e.avail_out -= r),
+					(e.total_out += r),
+					e.next_out.set(this.win.subarray(a, a + r), i),
+					(i += r),
+					(a += r)),
+				(e.next_out_index = i),
+				(this.read = a),
+				t
+			);
+		}),
+		(this.proc = (n, i) => {
+			let a, d, x, k, S, v, z, A;
+			for (
+				k = n.next_in_index,
+					S = n.avail_in,
+					d = this.bitb,
+					x = this.bitk,
+					v = this.write,
+					z = v < this.read ? this.read - v - 1 : this.end - v;
+				;
+			) {
+				let U, D, E, F, T, O, C, W;
+				switch (l) {
+					case 0:
+						for (; x < 3; ) {
+							if (0 === S)
+								return (
+									(this.bitb = d),
+									(this.bitk = x),
+									(n.avail_in = S),
+									(n.total_in += k - n.next_in_index),
+									(n.next_in_index = k),
+									(this.write = v),
+									this.inflate_flush(n, i)
+								);
+							(i = 0), S--, (d |= (255 & n.read_byte(k++)) << x), (x += 8);
+						}
+						switch (((a = 7 & d), (m = 1 & a), a >>> 1)) {
+							case 0:
+								(d >>>= 3),
+									(x -= 3),
+									(a = 7 & x),
+									(d >>>= a),
+									(x -= a),
+									(l = 1);
+								break;
+							case 1:
+								(U = []),
+									(D = []),
+									(E = [[]]),
+									(F = [[]]),
+									f.inflate_trees_fixed(U, D, E, F),
+									p.init(U[0], D[0], E[0], 0, F[0], 0),
+									(d >>>= 3),
+									(x -= 3),
+									(l = 6);
+								break;
+							case 2:
+								(d >>>= 3), (x -= 3), (l = 3);
+								break;
+							case 3:
+								return (
+									(d >>>= 3),
+									(x -= 3),
+									(l = 9),
+									(n.msg = "invalid block type"),
+									(i = t),
+									(this.bitb = d),
+									(this.bitk = x),
+									(n.avail_in = S),
+									(n.total_in += k - n.next_in_index),
+									(n.next_in_index = k),
+									(this.write = v),
+									this.inflate_flush(n, i)
+								);
+						}
+						break;
+					case 1:
+						for (; x < 32; ) {
+							if (0 === S)
+								return (
+									(this.bitb = d),
+									(this.bitk = x),
+									(n.avail_in = S),
+									(n.total_in += k - n.next_in_index),
+									(n.next_in_index = k),
+									(this.write = v),
+									this.inflate_flush(n, i)
+								);
+							(i = 0), S--, (d |= (255 & n.read_byte(k++)) << x), (x += 8);
+						}
+						if (((~d >>> 16) & 65535) != (65535 & d))
+							return (
+								(l = 9),
+								(n.msg = "invalid stored block lengths"),
+								(i = t),
+								(this.bitb = d),
+								(this.bitk = x),
+								(n.avail_in = S),
+								(n.total_in += k - n.next_in_index),
+								(n.next_in_index = k),
+								(this.write = v),
+								this.inflate_flush(n, i)
+							);
+						(c = 65535 & d), (d = x = 0), (l = 0 !== c ? 2 : 0 !== m ? 7 : 0);
+						break;
+					case 2:
+						if (0 === S)
+							return (
+								(this.bitb = d),
+								(this.bitk = x),
+								(n.avail_in = S),
+								(n.total_in += k - n.next_in_index),
+								(n.next_in_index = k),
+								(this.write = v),
+								this.inflate_flush(n, i)
+							);
+						if (
+							0 === z &&
+							(v == this.end &&
+								0 !== this.read &&
+								((v = 0),
+								(z = v < this.read ? this.read - v - 1 : this.end - v)),
+							0 === z &&
+								((this.write = v),
+								(i = this.inflate_flush(n, i)),
+								(v = this.write),
+								(z = v < this.read ? this.read - v - 1 : this.end - v),
+								v == this.end &&
+									0 !== this.read &&
+									((v = 0),
+									(z = v < this.read ? this.read - v - 1 : this.end - v)),
+								0 === z))
+						)
+							return (
+								(this.bitb = d),
+								(this.bitk = x),
+								(n.avail_in = S),
+								(n.total_in += k - n.next_in_index),
+								(n.next_in_index = k),
+								(this.write = v),
+								this.inflate_flush(n, i)
+							);
+						if (
+							((i = 0),
+							(a = c),
+							a > S && (a = S),
+							a > z && (a = z),
+							this.win.set(n.read_buf(k, a), v),
+							(k += a),
+							(S -= a),
+							(v += a),
+							(z -= a),
+							0 !== (c -= a))
+						)
+							break;
+						l = 0 !== m ? 7 : 0;
+						break;
+					case 3:
+						for (; x < 14; ) {
+							if (0 === S)
+								return (
+									(this.bitb = d),
+									(this.bitk = x),
+									(n.avail_in = S),
+									(n.total_in += k - n.next_in_index),
+									(n.next_in_index = k),
+									(this.write = v),
+									this.inflate_flush(n, i)
+								);
+							(i = 0), S--, (d |= (255 & n.read_byte(k++)) << x), (x += 8);
+						}
+						if (((u = a = 16383 & d), (31 & a) > 29 || ((a >> 5) & 31) > 29))
+							return (
+								(l = 9),
+								(n.msg = "too many length or distance symbols"),
+								(i = t),
+								(this.bitb = d),
+								(this.bitk = x),
+								(n.avail_in = S),
+								(n.total_in += k - n.next_in_index),
+								(n.next_in_index = k),
+								(this.write = v),
+								this.inflate_flush(n, i)
+							);
+						if (((a = 258 + (31 & a) + ((a >> 5) & 31)), !o || o.length < a))
+							o = [];
+						else for (A = 0; A < a; A++) o[A] = 0;
+						(d >>>= 14), (x -= 14), (w = 0), (l = 4);
+					case 4:
+						for (; w < 4 + (u >>> 10); ) {
+							for (; x < 3; ) {
+								if (0 === S)
+									return (
+										(this.bitb = d),
+										(this.bitk = x),
+										(n.avail_in = S),
+										(n.total_in += k - n.next_in_index),
+										(n.next_in_index = k),
+										(this.write = v),
+										this.inflate_flush(n, i)
+									);
+								(i = 0), S--, (d |= (255 & n.read_byte(k++)) << x), (x += 8);
+							}
+							(o[h[w++]] = 7 & d), (d >>>= 3), (x -= 3);
+						}
+						for (; w < 19; ) o[h[w++]] = 0;
+						if (((_[0] = 7), (a = y.inflate_trees_bits(o, _, b, g, n)), 0 != a))
+							return (
+								(i = a) == t && ((o = null), (l = 9)),
+								(this.bitb = d),
+								(this.bitk = x),
+								(n.avail_in = S),
+								(n.total_in += k - n.next_in_index),
+								(n.next_in_index = k),
+								(this.write = v),
+								this.inflate_flush(n, i)
+							);
+						(w = 0), (l = 5);
+					case 5:
+						for (; (a = u), !(w >= 258 + (31 & a) + ((a >> 5) & 31)); ) {
+							let e, c;
+							for (a = _[0]; x < a; ) {
+								if (0 === S)
+									return (
+										(this.bitb = d),
+										(this.bitk = x),
+										(n.avail_in = S),
+										(n.total_in += k - n.next_in_index),
+										(n.next_in_index = k),
+										(this.write = v),
+										this.inflate_flush(n, i)
+									);
+								(i = 0), S--, (d |= (255 & n.read_byte(k++)) << x), (x += 8);
+							}
+							if (
+								((a = g[3 * (b[0] + (d & r[a])) + 1]),
+								(c = g[3 * (b[0] + (d & r[a])) + 2]),
+								c < 16)
+							)
+								(d >>>= a), (x -= a), (o[w++] = c);
+							else {
+								for (
+									A = 18 == c ? 7 : c - 14, e = 18 == c ? 11 : 3;
+									x < a + A;
+								) {
+									if (0 === S)
+										return (
+											(this.bitb = d),
+											(this.bitk = x),
+											(n.avail_in = S),
+											(n.total_in += k - n.next_in_index),
+											(n.next_in_index = k),
+											(this.write = v),
+											this.inflate_flush(n, i)
+										);
+									(i = 0), S--, (d |= (255 & n.read_byte(k++)) << x), (x += 8);
+								}
+								if (
+									((d >>>= a),
+									(x -= a),
+									(e += d & r[A]),
+									(d >>>= A),
+									(x -= A),
+									(A = w),
+									(a = u),
+									A + e > 258 + (31 & a) + ((a >> 5) & 31) ||
+										(16 == c && A < 1))
+								)
+									return (
+										(o = null),
+										(l = 9),
+										(n.msg = "invalid bit length repeat"),
+										(i = t),
+										(this.bitb = d),
+										(this.bitk = x),
+										(n.avail_in = S),
+										(n.total_in += k - n.next_in_index),
+										(n.next_in_index = k),
+										(this.write = v),
+										this.inflate_flush(n, i)
+									);
+								c = 16 == c ? o[A - 1] : 0;
+								do {
+									o[A++] = c;
+								} while (0 !== --e);
+								w = A;
+							}
+						}
+						if (
+							((b[0] = -1),
+							(T = []),
+							(O = []),
+							(C = []),
+							(W = []),
+							(T[0] = 9),
+							(O[0] = 6),
+							(a = u),
+							(a = y.inflate_trees_dynamic(
+								257 + (31 & a),
+								1 + ((a >> 5) & 31),
+								o,
+								T,
+								O,
+								C,
+								W,
+								g,
+								n,
+							)),
+							0 != a)
+						)
+							return (
+								a == t && ((o = null), (l = 9)),
+								(i = a),
+								(this.bitb = d),
+								(this.bitk = x),
+								(n.avail_in = S),
+								(n.total_in += k - n.next_in_index),
+								(n.next_in_index = k),
+								(this.write = v),
+								this.inflate_flush(n, i)
+							);
+						p.init(T[0], O[0], g, C[0], g, W[0]), (l = 6);
+					case 6:
+						if (
+							((this.bitb = d),
+							(this.bitk = x),
+							(n.avail_in = S),
+							(n.total_in += k - n.next_in_index),
+							(n.next_in_index = k),
+							(this.write = v),
+							1 != (i = p.proc(this, n, i)))
+						)
+							return this.inflate_flush(n, i);
+						if (
+							((i = 0),
+							p.free(n),
+							(k = n.next_in_index),
+							(S = n.avail_in),
+							(d = this.bitb),
+							(x = this.bitk),
+							(v = this.write),
+							(z = v < this.read ? this.read - v - 1 : this.end - v),
+							0 === m)
+						) {
+							l = 0;
+							break;
+						}
+						l = 7;
+					case 7:
+						if (
+							((this.write = v),
+							(i = this.inflate_flush(n, i)),
+							(v = this.write),
+							(z = v < this.read ? this.read - v - 1 : this.end - v),
+							this.read != this.write)
+						)
+							return (
+								(this.bitb = d),
+								(this.bitk = x),
+								(n.avail_in = S),
+								(n.total_in += k - n.next_in_index),
+								(n.next_in_index = k),
+								(this.write = v),
+								this.inflate_flush(n, i)
+							);
+						l = 8;
+					case 8:
+						return (
+							(i = 1),
+							(this.bitb = d),
+							(this.bitk = x),
+							(n.avail_in = S),
+							(n.total_in += k - n.next_in_index),
+							(n.next_in_index = k),
+							(this.write = v),
+							this.inflate_flush(n, i)
+						);
+					case 9:
+						return (
+							(i = t),
+							(this.bitb = d),
+							(this.bitk = x),
+							(n.avail_in = S),
+							(n.total_in += k - n.next_in_index),
+							(n.next_in_index = k),
+							(this.write = v),
+							this.inflate_flush(n, i)
+						);
+					default:
+						return (
+							(i = e),
+							(this.bitb = d),
+							(this.bitk = x),
+							(n.avail_in = S),
+							(n.total_in += k - n.next_in_index),
+							(n.next_in_index = k),
+							(this.write = v),
+							this.inflate_flush(n, i)
+						);
+				}
+			}
+		}),
+		(this.free = (e) => {
+			this.reset(e, null), (this.win = null), (g = null);
+		}),
+		(this.set_dictionary = (e, t, n) => {
+			this.win.set(e.subarray(t, t + n), 0), (this.read = this.write = n);
+		}),
+		(this.sync_point = () => (1 == l ? 1 : 0));
+}
+const _ = 13,
+	b = [0, 0, 255, 255];
+function p() {
+	function i(t) {
+		return t && t.istate
+			? ((t.total_in = t.total_out = 0),
+				(t.msg = null),
+				(t.istate.mode = 7),
+				t.istate.blocks.reset(t, null),
+				0)
+			: e;
+	}
+	(this.mode = 0),
+		(this.method = 0),
+		(this.was = [0]),
+		(this.need = 0),
+		(this.marker = 0),
+		(this.wbits = 0),
+		(this.inflateEnd = (e) => (
+			this.blocks && this.blocks.free(e), (this.blocks = null), 0
+		)),
+		(this.inflateInit = (t, n) => (
+			(t.msg = null),
+			(this.blocks = null),
+			n < 8 || n > 15
+				? (this.inflateEnd(t), e)
+				: ((this.wbits = n), (t.istate.blocks = new w(t, 1 << n)), i(t), 0)
+		)),
+		(this.inflate = (r, i) => {
+			let a, s;
+			if (!r || !r.istate || !r.next_in) return e;
+			const o = r.istate;
+			for (i = 4 == i ? n : 0, a = n; ; )
+				switch (o.mode) {
+					case 0:
+						if (0 === r.avail_in) return a;
+						if (
+							((a = i),
+							r.avail_in--,
+							r.total_in++,
+							8 != (15 & (o.method = r.read_byte(r.next_in_index++))))
+						) {
+							(o.mode = _),
+								(r.msg = "unknown compression method"),
+								(o.marker = 5);
+							break;
+						}
+						if (8 + (o.method >> 4) > o.wbits) {
+							(o.mode = _), (r.msg = "invalid win size"), (o.marker = 5);
+							break;
+						}
+						o.mode = 1;
+					case 1:
+						if (0 === r.avail_in) return a;
+						if (
+							((a = i),
+							r.avail_in--,
+							r.total_in++,
+							(s = 255 & r.read_byte(r.next_in_index++)),
+							((o.method << 8) + s) % 31 != 0)
+						) {
+							(o.mode = _), (r.msg = "incorrect header check"), (o.marker = 5);
+							break;
+						}
+						if (!(32 & s)) {
+							o.mode = 7;
+							break;
+						}
+						o.mode = 2;
+					case 2:
+						if (0 === r.avail_in) return a;
+						(a = i),
+							r.avail_in--,
+							r.total_in++,
+							(o.need =
+								((255 & r.read_byte(r.next_in_index++)) << 24) & 4278190080),
+							(o.mode = 3);
+					case 3:
+						if (0 === r.avail_in) return a;
+						(a = i),
+							r.avail_in--,
+							r.total_in++,
+							(o.need +=
+								((255 & r.read_byte(r.next_in_index++)) << 16) & 16711680),
+							(o.mode = 4);
+					case 4:
+						if (0 === r.avail_in) return a;
+						(a = i),
+							r.avail_in--,
+							r.total_in++,
+							(o.need += ((255 & r.read_byte(r.next_in_index++)) << 8) & 65280),
+							(o.mode = 5);
+					case 5:
+						return 0 === r.avail_in
+							? a
+							: ((a = i),
+								r.avail_in--,
+								r.total_in++,
+								(o.need += 255 & r.read_byte(r.next_in_index++)),
+								(o.mode = 6),
+								2);
+					case 6:
+						return (o.mode = _), (r.msg = "need dictionary"), (o.marker = 0), e;
+					case 7:
+						if (((a = o.blocks.proc(r, a)), a == t)) {
+							(o.mode = _), (o.marker = 0);
+							break;
+						}
+						if ((0 == a && (a = i), 1 != a)) return a;
+						(a = i), o.blocks.reset(r, o.was), (o.mode = 12);
+					case 12:
+						return (r.avail_in = 0), 1;
+					case _:
+						return t;
+					default:
+						return e;
+				}
+		}),
+		(this.inflateSetDictionary = (t, n, r) => {
+			let i = 0,
+				a = r;
+			if (!t || !t.istate || 6 != t.istate.mode) return e;
+			const s = t.istate;
+			return (
+				a >= 1 << s.wbits && ((a = (1 << s.wbits) - 1), (i = r - a)),
+				s.blocks.set_dictionary(n, i, a),
+				(s.mode = 7),
+				0
+			);
+		}),
+		(this.inflateSync = (r) => {
+			let a, s, o, l, c;
+			if (!r || !r.istate) return e;
+			const u = r.istate;
+			if (
+				(u.mode != _ && ((u.mode = _), (u.marker = 0)), 0 === (a = r.avail_in))
+			)
+				return n;
+			for (s = r.next_in_index, o = u.marker; 0 !== a && o < 4; )
+				r.read_byte(s) == b[o] ? o++ : (o = 0 !== r.read_byte(s) ? 0 : 4 - o),
+					s++,
+					a--;
+			return (
+				(r.total_in += s - r.next_in_index),
+				(r.next_in_index = s),
+				(r.avail_in = a),
+				(u.marker = o),
+				4 != o
+					? t
+					: ((l = r.total_in),
+						(c = r.total_out),
+						i(r),
+						(r.total_in = l),
+						(r.total_out = c),
+						(u.mode = 7),
+						0)
+			);
+		}),
+		(this.inflateSyncPoint = (t) =>
+			t && t.istate && t.istate.blocks ? t.istate.blocks.sync_point() : e);
+}
+function m() {}
+m.prototype = {
+	inflateInit(e) {
+		return (
+			(this.istate = new p()), e || (e = 15), this.istate.inflateInit(this, e)
+		);
+	},
+	inflate(t) {
+		return this.istate ? this.istate.inflate(this, t) : e;
+	},
+	inflateEnd() {
+		if (!this.istate) return e;
+		const n = this.istate.inflateEnd(this);
+		return (this.istate = null), n;
+	},
+	inflateSync() {
+		return this.istate ? this.istate.inflateSync(this) : e;
+	},
+	inflateSetDictionary(t, n) {
+		return this.istate ? this.istate.inflateSetDictionary(this, t, n) : e;
+	},
+	read_byte(e) {
+		return this.next_in[e];
+	},
+	read_buf(e, t) {
+		return this.next_in.subarray(e, e + t);
+	},
+};
+const g = 4294967295,
+	y = 65535,
+	x = 33639248,
+	k = 101075792,
+	S = 22,
+	v = void 0,
+	z = "undefined",
+	A = "function";
+class U {
+	constructor(e) {
+		return class extends TransformStream {
+			constructor(t, n) {
+				const r = new e(n);
+				super({
+					transform(e, t) {
+						t.enqueue(r.append(e));
+					},
+					flush(e) {
+						const t = r.flush();
+						t && e.enqueue(t);
+					},
+				});
+			}
+		};
+	}
+}
+let D = 2;
+try {
+	typeof navigator != z &&
+		navigator.hardwareConcurrency &&
+		(D = navigator.hardwareConcurrency);
+} catch (e) {}
+const E = {
+		chunkSize: 524288,
+		maxWorkers: D,
+		terminateWorkerTimeout: 5e3,
+		useWebWorkers: !0,
+		useCompressionStream: !0,
+		workerScripts: v,
+		CompressionStreamNative: typeof CompressionStream != z && CompressionStream,
+		DecompressionStreamNative:
+			typeof DecompressionStream != z && DecompressionStream,
+	},
+	F = Object.assign({}, E);
+function T(e) {
+	const {
+		baseURL: t,
+		chunkSize: n,
+		maxWorkers: r,
+		terminateWorkerTimeout: i,
+		useCompressionStream: a,
+		useWebWorkers: s,
+		Deflate: o,
+		Inflate: l,
+		CompressionStream: c,
+		DecompressionStream: u,
+		workerScripts: f,
+	} = e;
+	if (
+		(O("baseURL", t),
+		O("chunkSize", n),
+		O("maxWorkers", r),
+		O("terminateWorkerTimeout", i),
+		O("useCompressionStream", a),
+		O("useWebWorkers", s),
+		o && (F.CompressionStream = new U(o)),
+		l && (F.DecompressionStream = new U(l)),
+		O("CompressionStream", c),
+		O("DecompressionStream", u),
+		f !== v)
+	) {
+		const { deflate: e, inflate: t } = f;
+		if (((e || t) && (F.workerScripts || (F.workerScripts = {})), e)) {
+			if (!Array.isArray(e))
+				throw new Error("workerScripts.deflate must be an array");
+			F.workerScripts.deflate = e;
+		}
+		if (t) {
+			if (!Array.isArray(t))
+				throw new Error("workerScripts.inflate must be an array");
+			F.workerScripts.inflate = t;
+		}
+	}
+}
+function O(e, t) {
+	t !== v && (F[e] = t);
+}
+const C = [];
+for (let e = 0; e < 256; e++) {
+	let t = e;
+	for (let e = 0; e < 8; e++) 1 & t ? (t = (t >>> 1) ^ 3988292384) : (t >>>= 1);
+	C[e] = t;
+}
+class W {
+	constructor(e) {
+		this.crc = e || -1;
+	}
+	append(e) {
+		let t = 0 | this.crc;
+		for (let n = 0, r = 0 | e.length; n < r; n++)
+			t = (t >>> 8) ^ C[255 & (t ^ e[n])];
+		this.crc = t;
+	}
+	get() {
+		return ~this.crc;
+	}
+}
+class j extends TransformStream {
+	constructor() {
+		let e;
+		const t = new W();
+		super({
+			transform(e, n) {
+				t.append(e), n.enqueue(e);
+			},
+			flush() {
+				const n = new Uint8Array(4);
+				new DataView(n.buffer).setUint32(0, t.get()), (e.value = n);
+			},
+		}),
+			(e = this);
+	}
+}
+const M = {
+		concat(e, t) {
+			if (0 === e.length || 0 === t.length) return e.concat(t);
+			const n = e[e.length - 1],
+				r = M.getPartial(n);
+			return 32 === r
+				? e.concat(t)
+				: M._shiftRight(t, r, 0 | n, e.slice(0, e.length - 1));
+		},
+		bitLength(e) {
+			const t = e.length;
+			if (0 === t) return 0;
+			const n = e[t - 1];
+			return 32 * (t - 1) + M.getPartial(n);
+		},
+		clamp(e, t) {
+			if (32 * e.length < t) return e;
+			const n = (e = e.slice(0, Math.ceil(t / 32))).length;
+			return (
+				(t &= 31),
+				n > 0 &&
+					t &&
+					(e[n - 1] = M.partial(t, e[n - 1] & (2147483648 >> (t - 1)), 1)),
+				e
+			);
+		},
+		partial: (e, t, n) =>
+			32 === e ? t : (n ? 0 | t : t << (32 - e)) + 1099511627776 * e,
+		getPartial: (e) => Math.round(e / 1099511627776) || 32,
+		_shiftRight(e, t, n, r) {
+			for (void 0 === r && (r = []); t >= 32; t -= 32) r.push(n), (n = 0);
+			if (0 === t) return r.concat(e);
+			for (let i = 0; i < e.length; i++)
+				r.push(n | (e[i] >>> t)), (n = e[i] << (32 - t));
+			const i = e.length ? e[e.length - 1] : 0,
+				a = M.getPartial(i);
+			return r.push(M.partial((t + a) & 31, t + a > 32 ? n : r.pop(), 1)), r;
+		},
+	},
+	L = {
+		bytes: {
+			fromBits(e) {
+				const t = M.bitLength(e) / 8,
+					n = new Uint8Array(t);
+				let r;
+				for (let i = 0; i < t; i++)
+					3 & i || (r = e[i / 4]), (n[i] = r >>> 24), (r <<= 8);
+				return n;
+			},
+			toBits(e) {
+				const t = [];
+				let n,
+					r = 0;
+				for (n = 0; n < e.length; n++)
+					(r = (r << 8) | e[n]), 3 & ~n || (t.push(r), (r = 0));
+				return 3 & n && t.push(M.partial(8 * (3 & n), r)), t;
+			},
+		},
+	},
+	P = {
+		sha1: class {
+			constructor(e) {
+				(this.blockSize = 512),
+					(this._init = [
+						1732584193, 4023233417, 2562383102, 271733878, 3285377520,
+					]),
+					(this._key = [1518500249, 1859775393, 2400959708, 3395469782]),
+					e
+						? ((this._h = e._h.slice(0)),
+							(this._buffer = e._buffer.slice(0)),
+							(this._length = e._length))
+						: this.reset();
+			}
+			reset() {
+				return (
+					(this._h = this._init.slice(0)),
+					(this._buffer = []),
+					(this._length = 0),
+					this
+				);
+			}
+			update(e) {
+				"string" == typeof e && (e = L.utf8String.toBits(e));
+				const n = (this._buffer = M.concat(this._buffer, e)),
+					r = this._length,
+					i = (this._length = r + M.bitLength(e));
+				if (i > 9007199254740991)
+					throw new Error("Cannot hash more than 2^53 - 1 bits");
+				const a = new Uint32Array(n);
+				let s = 0;
+				for (
+					let e =
+						this.blockSize + r - ((this.blockSize + r) & (this.blockSize - 1));
+					e <= i;
+					e += this.blockSize
+				)
+					this._block(a.subarray(16 * s, 16 * (s + 1))), (s += 1);
+				return n.splice(0, 16 * s), this;
+			}
+			finalize() {
+				let t = this._buffer;
+				const n = this._h;
+				t = M.concat(t, [M.partial(1, 1)]);
+				for (let e = t.length + 2; 15 & e; e++) t.push(0);
+				for (
+					t.push(Math.floor(this._length / 4294967296)),
+						t.push(0 | this._length);
+					t.length;
+				)
+					this._block(t.splice(0, 16));
+				return this.reset(), n;
+			}
+			_f(e, t, n, r) {
+				return e <= 19
+					? (t & n) | (~t & r)
+					: e <= 39
+						? t ^ n ^ r
+						: e <= 59
+							? (t & n) | (t & r) | (n & r)
+							: e <= 79
+								? t ^ n ^ r
+								: void 0;
+			}
+			_S(e, t) {
+				return (t << e) | (t >>> (32 - e));
+			}
+			_block(e) {
+				const n = this._h,
+					r = Array(80);
+				for (let t = 0; t < 16; t++) r[t] = e[t];
+				let i = n[0],
+					a = n[1],
+					s = n[2],
+					o = n[3],
+					l = n[4];
+				for (let e = 0; e <= 79; e++) {
+					e >= 16 &&
+						(r[e] = this._S(1, r[e - 3] ^ r[e - 8] ^ r[e - 14] ^ r[e - 16]));
+					const n =
+						(this._S(5, i) +
+							this._f(e, a, s, o) +
+							l +
+							r[e] +
+							this._key[Math.floor(e / 20)]) |
+						0;
+					(l = o), (o = s), (s = this._S(30, a)), (a = i), (i = n);
+				}
+				(n[0] = (n[0] + i) | 0),
+					(n[1] = (n[1] + a) | 0),
+					(n[2] = (n[2] + s) | 0),
+					(n[3] = (n[3] + o) | 0),
+					(n[4] = (n[4] + l) | 0);
+			}
+		},
+	},
+	R = {
+		aes: class {
+			constructor(e) {
+				(this._tables = [
+					[[], [], [], [], []],
+					[[], [], [], [], []],
+				]),
+					this._tables[0][0][0] || this._precompute();
+				const n = this._tables[0][4],
+					r = this._tables[1],
+					i = e.length;
+				let a,
+					s,
+					o,
+					l = 1;
+				if (4 !== i && 6 !== i && 8 !== i)
+					throw new Error("invalid aes key size");
+				for (
+					this._key = [(s = e.slice(0)), (o = [])], a = i;
+					a < 4 * i + 28;
+					a++
+				) {
+					let e = s[a - 1];
+					(a % i === 0 || (8 === i && a % i === 4)) &&
+						((e =
+							(n[e >>> 24] << 24) ^
+							(n[(e >> 16) & 255] << 16) ^
+							(n[(e >> 8) & 255] << 8) ^
+							n[255 & e]),
+						a % i === 0 &&
+							((e = (e << 8) ^ (e >>> 24) ^ (l << 24)),
+							(l = (l << 1) ^ (283 * (l >> 7))))),
+						(s[a] = s[a - i] ^ e);
+				}
+				for (let e = 0; a; e++, a--) {
+					const t = s[3 & e ? a : a - 4];
+					o[e] =
+						a <= 4 || e < 4
+							? t
+							: r[0][n[t >>> 24]] ^
+								r[1][n[(t >> 16) & 255]] ^
+								r[2][n[(t >> 8) & 255]] ^
+								r[3][n[255 & t]];
+				}
+			}
+			encrypt(e) {
+				return this._crypt(e, 0);
+			}
+			decrypt(e) {
+				return this._crypt(e, 1);
+			}
+			_precompute() {
+				const e = this._tables[0],
+					t = this._tables[1],
+					n = e[4],
+					r = t[4],
+					i = [],
+					a = [];
+				let s, o, l, c;
+				for (let e = 0; e < 256; e++)
+					a[(i[e] = (e << 1) ^ (283 * (e >> 7))) ^ e] = e;
+				for (let u = (s = 0); !n[u]; u ^= o || 1, s = a[s] || 1) {
+					let a = s ^ (s << 1) ^ (s << 2) ^ (s << 3) ^ (s << 4);
+					(a = (a >> 8) ^ (255 & a) ^ 99),
+						(n[u] = a),
+						(r[a] = u),
+						(c = i[(l = i[(o = i[u])])]);
+					let f = (16843009 * c) ^ (65537 * l) ^ (257 * o) ^ (16843008 * u),
+						d = (257 * i[a]) ^ (16843008 * a);
+					for (let n = 0; n < 4; n++)
+						(e[n][u] = d = (d << 24) ^ (d >>> 8)),
+							(t[n][a] = f = (f << 24) ^ (f >>> 8));
+				}
+				for (let n = 0; n < 5; n++)
+					(e[n] = e[n].slice(0)), (t[n] = t[n].slice(0));
+			}
+			_crypt(e, t) {
+				if (4 !== e.length) throw new Error("invalid aes block size");
+				const n = this._key[t],
+					r = n.length / 4 - 2,
+					i = [0, 0, 0, 0],
+					a = this._tables[t],
+					s = a[0],
+					o = a[1],
+					l = a[2],
+					c = a[3],
+					u = a[4];
+				let f,
+					d,
+					h,
+					w = e[0] ^ n[0],
+					_ = e[t ? 3 : 1] ^ n[1],
+					b = e[2] ^ n[2],
+					p = e[t ? 1 : 3] ^ n[3],
+					m = 4;
+				for (let e = 0; e < r; e++)
+					(f =
+						s[w >>> 24] ^
+						o[(_ >> 16) & 255] ^
+						l[(b >> 8) & 255] ^
+						c[255 & p] ^
+						n[m]),
+						(d =
+							s[_ >>> 24] ^
+							o[(b >> 16) & 255] ^
+							l[(p >> 8) & 255] ^
+							c[255 & w] ^
+							n[m + 1]),
+						(h =
+							s[b >>> 24] ^
+							o[(p >> 16) & 255] ^
+							l[(w >> 8) & 255] ^
+							c[255 & _] ^
+							n[m + 2]),
+						(p =
+							s[p >>> 24] ^
+							o[(w >> 16) & 255] ^
+							l[(_ >> 8) & 255] ^
+							c[255 & b] ^
+							n[m + 3]),
+						(m += 4),
+						(w = f),
+						(_ = d),
+						(b = h);
+				for (let e = 0; e < 4; e++)
+					(i[t ? 3 & -e : e] =
+						(u[w >>> 24] << 24) ^
+						(u[(_ >> 16) & 255] << 16) ^
+						(u[(b >> 8) & 255] << 8) ^
+						u[255 & p] ^
+						n[m++]),
+						(f = w),
+						(w = _),
+						(_ = b),
+						(b = p),
+						(p = f);
+				return i;
+			}
+		},
+	},
+	B = {
+		getRandomValues(e) {
+			const t = new Uint32Array(e.buffer),
+				n = (e) => {
+					let t = 987654321;
+					const n = 4294967295;
+					return () => {
+						t = (36969 * (65535 & t) + (t >> 16)) & n;
+						return (
+							((((t << 16) + (e = (18e3 * (65535 & e) + (e >> 16)) & n)) & n) /
+								4294967296 +
+								0.5) *
+							(Math.random() > 0.5 ? 1 : -1)
+						);
+					};
+				};
+			for (let r, i = 0; i < e.length; i += 4) {
+				const e = n(4294967296 * (r || Math.random()));
+				(r = 987654071 * e()), (t[i / 4] = (4294967296 * e()) | 0);
+			}
+			return e;
+		},
+	},
+	I = {
+		ctrGladman: class {
+			constructor(e, t) {
+				(this._prf = e), (this._initIv = t), (this._iv = t);
+			}
+			reset() {
+				this._iv = this._initIv;
+			}
+			update(e) {
+				return this.calculate(this._prf, e, this._iv);
+			}
+			incWord(e) {
+				if (255 & ~(e >> 24)) e += 1 << 24;
+				else {
+					let t = (e >> 16) & 255,
+						n = (e >> 8) & 255,
+						r = 255 & e;
+					255 === t
+						? ((t = 0), 255 === n ? ((n = 0), 255 === r ? (r = 0) : ++r) : ++n)
+						: ++t,
+						(e = 0),
+						(e += t << 16),
+						(e += n << 8),
+						(e += r);
+				}
+				return e;
+			}
+			incCounter(e) {
+				0 === (e[0] = this.incWord(e[0])) && (e[1] = this.incWord(e[1]));
+			}
+			calculate(e, t, n) {
+				let r;
+				if (!(r = t.length)) return [];
+				const i = M.bitLength(t);
+				for (let i = 0; i < r; i += 4) {
+					this.incCounter(n);
+					const r = e.encrypt(n);
+					(t[i] ^= r[0]),
+						(t[i + 1] ^= r[1]),
+						(t[i + 2] ^= r[2]),
+						(t[i + 3] ^= r[3]);
+				}
+				return M.clamp(t, i);
+			}
+		},
+	},
+	N = {
+		importKey: (e) => new N.hmacSha1(L.bytes.toBits(e)),
+		pbkdf2(e, t, n, r) {
+			if (((n = n || 1e4), r < 0 || n < 0))
+				throw new Error("invalid params to pbkdf2");
+			const i = (1 + (r >> 5)) << 2;
+			let a, s, o, l, c;
+			const u = new ArrayBuffer(i),
+				f = new DataView(u);
+			let d = 0;
+			const h = M;
+			for (t = L.bytes.toBits(t), c = 1; d < (i || 1); c++) {
+				for (a = s = e.encrypt(h.concat(t, [c])), o = 1; o < n; o++)
+					for (s = e.encrypt(s), l = 0; l < s.length; l++) a[l] ^= s[l];
+				for (o = 0; d < (i || 1) && o < a.length; o++)
+					f.setInt32(d, a[o]), (d += 4);
+			}
+			return u.slice(0, r / 8);
+		},
+		hmacSha1: class {
+			constructor(e) {
+				const n = (this._hash = P.sha1),
+					r = [[], []];
+				this._baseHash = [new n(), new n()];
+				const i = this._baseHash[0].blockSize / 32;
+				e.length > i && (e = new n().update(e).finalize());
+				for (let t = 0; t < i; t++)
+					(r[0][t] = 909522486 ^ e[t]), (r[1][t] = 1549556828 ^ e[t]);
+				this._baseHash[0].update(r[0]),
+					this._baseHash[1].update(r[1]),
+					(this._resultHash = new n(this._baseHash[0]));
+			}
+			reset() {
+				(this._resultHash = new this._hash(this._baseHash[0])),
+					(this._updated = !1);
+			}
+			update(e) {
+				(this._updated = !0), this._resultHash.update(e);
+			}
+			digest() {
+				const t = this._resultHash.finalize(),
+					n = new this._hash(this._baseHash[1]).update(t).finalize();
+				return this.reset(), n;
+			}
+			encrypt(e) {
+				if (this._updated)
+					throw new Error("encrypt on already updated hmac called!");
+				return this.update(e), this.digest(e);
+			}
+		},
+	},
+	V = typeof crypto != z && typeof crypto.getRandomValues == A,
+	q = "Invalid password",
+	H = "Invalid signature",
+	K = "zipjs-abort-check-password";
+function Z(e) {
+	return V ? crypto.getRandomValues(e) : B.getRandomValues(e);
+}
+const G = 16,
+	J = { name: "PBKDF2" },
+	Q = Object.assign({ hash: { name: "HMAC" } }, J),
+	X = Object.assign({ iterations: 1e3, hash: { name: "SHA-1" } }, J),
+	Y = ["deriveBits"],
+	$ = [8, 12, 16],
+	ee = [16, 24, 32],
+	te = 10,
+	ne = [0, 0, 0, 0],
+	re = typeof crypto != z,
+	ie = re && crypto.subtle,
+	ae = re && typeof ie != z,
+	se = L.bytes,
+	oe = R.aes,
+	le = I.ctrGladman,
+	ce = N.hmacSha1;
+let ue = re && ae && typeof ie.importKey == A,
+	fe = re && ae && typeof ie.deriveBits == A;
+class de extends TransformStream {
+	constructor({
+		password: e,
+		rawPassword: t,
+		signed: n,
+		encryptionStrength: r,
+		checkPasswordOnly: i,
+	}) {
+		super({
+			start() {
+				Object.assign(this, {
+					ready: new Promise((e) => (this.resolveReady = e)),
+					password: be(e, t),
+					signed: n,
+					strength: r - 1,
+					pending: new Uint8Array(),
+				});
+			},
+			async transform(e, t) {
+				const { password: r, strength: a, resolveReady: s, ready: o } = this;
+				r
+					? (await (async (e, t, n, r) => {
+							const i = await _e(e, t, n, me(r, 0, $[t])),
+								a = me(r, $[t]);
+							if (i[0] != a[0] || i[1] != a[1]) throw new Error(q);
+						})(this, a, r, me(e, 0, $[a] + 2)),
+						(e = me(e, $[a] + 2)),
+						i ? t.error(new Error(K)) : s())
+					: await o;
+				const l = new Uint8Array(e.length - te - ((e.length - te) % G));
+				t.enqueue(we(this, e, l, 0, te, !0));
+			},
+			async flush(e) {
+				const { signed: t, ctr: n, hmac: r, pending: i, ready: a } = this;
+				if (r && n) {
+					await a;
+					const s = me(i, 0, i.length - te),
+						o = me(i, i.length - te);
+					let l = new Uint8Array();
+					if (s.length) {
+						const e = ye(se, s);
+						r.update(e);
+						const t = n.update(e);
+						l = ge(se, t);
+					}
+					if (t) {
+						const e = me(ge(se, r.digest()), 0, te);
+						for (let t = 0; t < te; t++) if (e[t] != o[t]) throw new Error(H);
+					}
+					e.enqueue(l);
+				}
+			},
+		});
+	}
+}
+class he extends TransformStream {
+	constructor({ password: e, rawPassword: t, encryptionStrength: n }) {
+		let r;
+		super({
+			start() {
+				Object.assign(this, {
+					ready: new Promise((e) => (this.resolveReady = e)),
+					password: be(e, t),
+					strength: n - 1,
+					pending: new Uint8Array(),
+				});
+			},
+			async transform(e, t) {
+				const { password: r, strength: i, resolveReady: a, ready: s } = this;
+				let o = new Uint8Array();
+				r
+					? ((o = await (async (e, t, n) => {
+							const r = Z(new Uint8Array($[t])),
+								i = await _e(e, t, n, r);
+							return pe(r, i);
+						})(this, i, r)),
+						a())
+					: await s;
+				const l = new Uint8Array(o.length + e.length - (e.length % G));
+				l.set(o, 0), t.enqueue(we(this, e, l, o.length, 0));
+			},
+			async flush(e) {
+				const { ctr: t, hmac: n, pending: i, ready: a } = this;
+				if (n && t) {
+					await a;
+					let s = new Uint8Array();
+					if (i.length) {
+						const e = t.update(ye(se, i));
+						n.update(e), (s = ge(se, e));
+					}
+					(r.signature = ge(se, n.digest()).slice(0, te)),
+						e.enqueue(pe(s, r.signature));
+				}
+			},
+		}),
+			(r = this);
+	}
+}
+function we(e, t, n, r, i, a) {
+	const { ctr: s, hmac: o, pending: l } = e,
+		c = t.length - i;
+	let u;
+	for (
+		l.length &&
+			((t = pe(l, t)),
+			(n = ((e, t) => {
+				if (t && t > e.length) {
+					const n = e;
+					(e = new Uint8Array(t)).set(n, 0);
+				}
+				return e;
+			})(n, c - (c % G)))),
+			u = 0;
+		u <= c - G;
+		u += G
+	) {
+		const e = ye(se, me(t, u, u + G));
+		a && o.update(e);
+		const i = s.update(e);
+		a || o.update(i), n.set(ge(se, i), u + r);
+	}
+	return (e.pending = me(t, u)), n;
+}
+async function _e(e, t, n, r) {
+	e.password = null;
+	const i = await (async (e, t, n, r, i) => {
+			if (!ue) return N.importKey(t);
+			try {
+				return await ie.importKey(e, t, n, r, i);
+			} catch (e) {
+				return (ue = !1), N.importKey(t);
+			}
+		})("raw", n, Q, !1, Y),
+		a = await (async (e, t, n) => {
+			if (!fe) return N.pbkdf2(t, e.salt, X.iterations, n);
+			try {
+				return await ie.deriveBits(e, t, n);
+			} catch (r) {
+				return (fe = !1), N.pbkdf2(t, e.salt, X.iterations, n);
+			}
+		})(Object.assign({ salt: r }, X), i, 8 * (2 * ee[t] + 2)),
+		s = new Uint8Array(a),
+		o = ye(se, me(s, 0, ee[t])),
+		l = ye(se, me(s, ee[t], 2 * ee[t])),
+		c = me(s, 2 * ee[t]);
+	return (
+		Object.assign(e, {
+			keys: { key: o, authentication: l, passwordVerification: c },
+			ctr: new le(new oe(o), Array.from(ne)),
+			hmac: new ce(l),
+		}),
+		c
+	);
+}
+function be(e, t) {
+	return t === v
+		? ((e) => {
+				if (typeof TextEncoder == z) {
+					e = unescape(encodeURIComponent(e));
+					const t = new Uint8Array(e.length);
+					for (let n = 0; n < t.length; n++) t[n] = e.charCodeAt(n);
+					return t;
+				}
+				return new TextEncoder().encode(e);
+			})(e)
+		: t;
+}
+function pe(e, t) {
+	let n = e;
+	return (
+		e.length + t.length &&
+			((n = new Uint8Array(e.length + t.length)),
+			n.set(e, 0),
+			n.set(t, e.length)),
+		n
+	);
+}
+function me(e, t, n) {
+	return e.subarray(t, n);
+}
+function ge(e, t) {
+	return e.fromBits(t);
+}
+function ye(e, t) {
+	return e.toBits(t);
+}
+const xe = 12;
+class ke extends TransformStream {
+	constructor({ password: e, passwordVerification: t, checkPasswordOnly: n }) {
+		super({
+			start() {
+				Object.assign(this, { password: e, passwordVerification: t }),
+					Ae(this, e);
+			},
+			transform(e, t) {
+				if (this.password) {
+					const t = ve(this, e.subarray(0, xe));
+					if (((this.password = null), t[11] != this.passwordVerification))
+						throw new Error(q);
+					e = e.subarray(xe);
+				}
+				n ? t.error(new Error(K)) : t.enqueue(ve(this, e));
+			},
+		});
+	}
+}
+class Se extends TransformStream {
+	constructor({ password: e, passwordVerification: t }) {
+		super({
+			start() {
+				Object.assign(this, { password: e, passwordVerification: t }),
+					Ae(this, e);
+			},
+			transform(e, t) {
+				let r, i;
+				if (this.password) {
+					this.password = null;
+					const t = Z(new Uint8Array(xe));
+					(t[11] = this.passwordVerification),
+						(r = new Uint8Array(e.length + t.length)),
+						r.set(ze(this, t), 0),
+						(i = xe);
+				} else (r = new Uint8Array(e.length)), (i = 0);
+				r.set(ze(this, e), i), t.enqueue(r);
+			},
+		});
+	}
+}
+function ve(e, t) {
+	const n = new Uint8Array(t.length);
+	for (let r = 0; r < t.length; r++) (n[r] = De(e) ^ t[r]), Ue(e, n[r]);
+	return n;
+}
+function ze(e, t) {
+	const n = new Uint8Array(t.length);
+	for (let r = 0; r < t.length; r++) (n[r] = De(e) ^ t[r]), Ue(e, t[r]);
+	return n;
+}
+function Ae(e, t) {
+	const n = [305419896, 591751049, 878082192];
+	Object.assign(e, { keys: n, crcKey0: new W(n[0]), crcKey2: new W(n[2]) });
+	for (let n = 0; n < t.length; n++) Ue(e, t.charCodeAt(n));
+}
+function Ue(e, t) {
+	let [n, r, i] = e.keys;
+	e.crcKey0.append([t]),
+		(n = ~e.crcKey0.get()),
+		(r = Fe(Math.imul(Fe(r + Ee(n)), 134775813) + 1)),
+		e.crcKey2.append([r >>> 24]),
+		(i = ~e.crcKey2.get()),
+		(e.keys = [n, r, i]);
+}
+function De(e) {
+	const t = 2 | e.keys[2];
+	return Ee(Math.imul(t, 1 ^ t) >>> 8);
+}
+function Ee(e) {
+	return 255 & e;
+}
+function Fe(e) {
+	return 4294967295 & e;
+}
+const Te = "deflate-raw";
+class Oe extends TransformStream {
+	constructor(
+		e,
+		{ chunkSize: t, CompressionStream: n, CompressionStreamNative: r },
+	) {
+		super({});
+		const {
+			compressed: i,
+			encrypted: a,
+			useCompressionStream: s,
+			zipCrypto: o,
+			signed: l,
+			level: c,
+		} = e;
+		let f,
+			d,
+			h = We(super.readable);
+		(a && !o) || !l || ((f = new j()), (h = Le(h, f))),
+			i && (h = Me(h, s, { level: c, chunkSize: t }, r, n)),
+			a && (o ? (h = Le(h, new Se(e))) : ((d = new he(e)), (h = Le(h, d)))),
+			je(this, h, () => {
+				let e;
+				a && !o && (e = d.signature),
+					(a && !o) || !l || (e = new DataView(f.value.buffer).getUint32(0)),
+					(this.signature = e);
+			});
+	}
+}
+class Ce extends TransformStream {
+	constructor(
+		e,
+		{ chunkSize: t, DecompressionStream: n, DecompressionStreamNative: r },
+	) {
+		super({});
+		const {
+			zipCrypto: i,
+			encrypted: a,
+			signed: s,
+			signature: o,
+			compressed: l,
+			useCompressionStream: c,
+		} = e;
+		let u,
+			f,
+			d = We(super.readable);
+		a && (i ? (d = Le(d, new ke(e))) : ((f = new de(e)), (d = Le(d, f)))),
+			l && (d = Me(d, c, { chunkSize: t }, r, n)),
+			(a && !i) || !s || ((u = new j()), (d = Le(d, u))),
+			je(this, d, () => {
+				if ((!a || i) && s) {
+					const e = new DataView(u.value.buffer);
+					if (o != e.getUint32(0, !1)) throw new Error(H);
+				}
+			});
+	}
+}
+function We(e) {
+	return Le(
+		e,
+		new TransformStream({
+			transform(e, t) {
+				e && e.length && t.enqueue(e);
+			},
+		}),
+	);
+}
+function je(e, t, n) {
+	(t = Le(t, new TransformStream({ flush: n }))),
+		Object.defineProperty(e, "readable", { get: () => t });
+}
+function Me(e, t, n, r, i) {
+	try {
+		e = Le(e, new (t && r ? r : i)(Te, n));
+	} catch (r) {
+		if (!t) return e;
+		try {
+			e = Le(e, new i(Te, n));
+		} catch (t) {
+			return e;
+		}
+	}
+	return e;
+}
+function Le(e, t) {
+	return e.pipeThrough(t);
+}
+const Pe = "message",
+	Re = "start",
+	Be = "pull",
+	Ie = "data",
+	Ne = "close",
+	Ve = "inflate";
+class qe extends TransformStream {
+	constructor(e, t) {
+		super({});
+		const n = this,
+			{ codecType: r } = e;
+		let i;
+		r.startsWith("deflate") ? (i = Oe) : r.startsWith(Ve) && (i = Ce),
+			(n.outputSize = 0);
+		let a = 0;
+		const s = new i(e, t),
+			o = super.readable,
+			l = new TransformStream({
+				transform(e, t) {
+					e && e.length && ((a += e.length), t.enqueue(e));
+				},
+				flush() {
+					Object.assign(n, { inputSize: a });
+				},
+			}),
+			c = new TransformStream({
+				transform(e, t) {
+					e && e.length && (t.enqueue(e), (n.outputSize += e.length));
+				},
+				flush() {
+					const { signature: e } = s;
+					Object.assign(n, { signature: e, inputSize: a });
+				},
+			});
+		Object.defineProperty(n, "readable", {
+			get: () => o.pipeThrough(l).pipeThrough(s).pipeThrough(c),
+		});
+	}
+}
+class He extends TransformStream {
+	constructor(e) {
+		let t;
+		super({
+			transform: function n(r, i) {
+				if (t) {
+					const e = new Uint8Array(t.length + r.length);
+					e.set(t), e.set(r, t.length), (r = e), (t = null);
+				}
+				r.length > e ? (i.enqueue(r.slice(0, e)), n(r.slice(e), i)) : (t = r);
+			},
+			flush(e) {
+				t && t.length && e.enqueue(t);
+			},
+		});
+	}
+}
+let Ke = typeof Worker != z;
+class Ze {
+	constructor(
+		e,
+		{ readable: t, writable: n },
+		{
+			options: r,
+			config: i,
+			streamOptions: a,
+			useWebWorkers: s,
+			transferStreams: o,
+			scripts: l,
+		},
+		c,
+	) {
+		const { signal: u } = a;
+		return (
+			Object.assign(e, {
+				busy: !0,
+				readable: t
+					.pipeThrough(new He(i.chunkSize))
+					.pipeThrough(new Ge(a), { signal: u }),
+				writable: n,
+				options: Object.assign({}, r),
+				scripts: l,
+				transferStreams: o,
+				terminate: () =>
+					new Promise((t) => {
+						const { worker: n, busy: r } = e;
+						n
+							? (r ? (e.resolveTerminated = t) : (n.terminate(), t()),
+								(e.interface = null))
+							: t();
+					}),
+				onTaskFinished() {
+					const { resolveTerminated: t } = e;
+					t &&
+						((e.resolveTerminated = null),
+						(e.terminated = !0),
+						e.worker.terminate(),
+						t()),
+						(e.busy = !1),
+						c(e);
+				},
+			}),
+			(s && Ke ? Xe : Qe)(e, i)
+		);
+	}
+}
+class Ge extends TransformStream {
+	constructor({ onstart: e, onprogress: t, size: n, onend: r }) {
+		let i = 0;
+		super({
+			async start() {
+				e && (await Je(e, n));
+			},
+			async transform(e, r) {
+				(i += e.length), t && (await Je(t, i, n)), r.enqueue(e);
+			},
+			async flush() {
+				r && (await Je(r, i));
+			},
+		});
+	}
+}
+async function Je(e, ...t) {
+	try {
+		await e(...t);
+	} catch (e) {}
+}
+function Qe(e, t) {
+	return {
+		run: () =>
+			(async (
+				{ options: e, readable: t, writable: n, onTaskFinished: r },
+				i,
+			) => {
+				let a;
+				try {
+					(a = new qe(e, i)),
+						await t
+							.pipeThrough(a)
+							.pipeTo(n, { preventClose: !0, preventAbort: !0 });
+					const { signature: r, inputSize: s, outputSize: o } = a;
+					return { signature: r, inputSize: s, outputSize: o };
+				} catch (e) {
+					throw (a && (e.outputSize = a.outputSize), e);
+				} finally {
+					r();
+				}
+			})(e, t),
+	};
+}
+function Xe(e, t) {
+	const { baseURL: n, chunkSize: r } = t;
+	if (!e.interface) {
+		let i;
+		try {
+			i = ((e, t, n) => {
+				const r = { type: "module" };
+				let i, a;
+				typeof e == A && (e = e());
+				try {
+					i = new URL(e, t);
+				} catch (t) {
+					i = e;
+				}
+				if (Ye)
+					try {
+						a = new Worker(i);
+					} catch (e) {
+						(Ye = !1), (a = new Worker(i, r));
+					}
+				else a = new Worker(i, r);
+				return (
+					a.addEventListener(Pe, (e) =>
+						(async ({ data: e }, t) => {
+							const {
+									type: n,
+									value: r,
+									messageId: i,
+									result: a,
+									error: s,
+								} = e,
+								{
+									reader: o,
+									writer: l,
+									resolveResult: c,
+									rejectResult: u,
+									onTaskFinished: f,
+								} = t;
+							try {
+								if (s) {
+									const {
+											message: e,
+											stack: t,
+											code: n,
+											name: r,
+											outputSize: i,
+										} = s,
+										a = new Error(e);
+									Object.assign(a, {
+										stack: t,
+										code: n,
+										name: r,
+										outputSize: i,
+									}),
+										d(a);
+								} else {
+									if (n == Be) {
+										const { value: e, done: n } = await o.read();
+										et({ type: Ie, value: e, done: n, messageId: i }, t);
+									}
+									n == Ie &&
+										(await l.ready,
+										await l.write(new Uint8Array(r)),
+										et({ type: "ack", messageId: i }, t)),
+										n == Ne && d(null, a);
+								}
+							} catch (s) {
+								et({ type: Ne, messageId: i }, t), d(s);
+							}
+							function d(e, t) {
+								e ? u(e) : c(t), l && l.releaseLock(), f();
+							}
+						})(e, n),
+					),
+					a
+				);
+			})(e.scripts[0], n, e);
+		} catch (n) {
+			return (Ke = !1), Qe(e, t);
+		}
+		Object.assign(e, {
+			worker: i,
+			interface: {
+				run: () =>
+					(async (e, t) => {
+						let n, r;
+						const i = new Promise((e, t) => {
+							(n = e), (r = t);
+						});
+						Object.assign(e, {
+							reader: null,
+							writer: null,
+							resolveResult: n,
+							rejectResult: r,
+							result: i,
+						});
+						const { readable: a, options: s, scripts: o } = e,
+							{ writable: l, closed: c } = ((e) => {
+								let t;
+								const n = new Promise((e) => (t = e)),
+									r = new WritableStream({
+										async write(t) {
+											const n = e.getWriter();
+											await n.ready, await n.write(t), n.releaseLock();
+										},
+										close() {
+											t();
+										},
+										abort: (t) => e.getWriter().abort(t),
+									});
+								return { writable: r, closed: n };
+							})(e.writable),
+							u = et(
+								{
+									type: Re,
+									scripts: o.slice(1),
+									options: s,
+									config: t,
+									readable: a,
+									writable: l,
+								},
+								e,
+							);
+						u ||
+							Object.assign(e, {
+								reader: a.getReader(),
+								writer: l.getWriter(),
+							});
+						const f = await i;
+						u || (await l.getWriter().close());
+						return await c, f;
+					})(e, { chunkSize: r }),
+			},
+		});
+	}
+	return e.interface;
+}
+let Ye = !0,
+	$e = !0;
+function et(
+	e,
+	{ worker: t, writer: n, onTaskFinished: r, transferStreams: i },
+) {
+	try {
+		const { value: n, readable: r, writable: a } = e,
+			s = [];
+		if (
+			(n &&
+				(n.byteLength < n.buffer.byteLength
+					? (e.value = n.buffer.slice(0, n.byteLength))
+					: (e.value = n.buffer),
+				s.push(e.value)),
+			i && $e
+				? (r && s.push(r), a && s.push(a))
+				: (e.readable = e.writable = null),
+			s.length)
+		)
+			try {
+				return t.postMessage(e, s), !0;
+			} catch (n) {
+				($e = !1), (e.readable = e.writable = null), t.postMessage(e);
+			}
+		else t.postMessage(e);
+	} catch (e) {
+		throw (n && n.releaseLock(), r(), e);
+	}
+}
+let tt = [];
+const nt = [];
+let rt = 0;
+async function it(e, t) {
+	const { options: n, config: r } = t,
+		{
+			transferStreams: i,
+			useWebWorkers: a,
+			useCompressionStream: s,
+			codecType: o,
+			compressed: l,
+			signed: c,
+			encrypted: u,
+		} = n,
+		{ workerScripts: f, maxWorkers: d } = r;
+	t.transferStreams = i || i === v;
+	const h = !(l || c || u || t.transferStreams);
+	return (
+		(t.useWebWorkers = !h && (a || (a === v && r.useWebWorkers))),
+		(t.scripts = t.useWebWorkers && f ? f[o] : []),
+		(n.useCompressionStream = s || (s === v && r.useCompressionStream)),
+		(
+			await (async () => {
+				const n = tt.find((e) => !e.busy);
+				if (n) return at(n), new Ze(n, e, t, w);
+				if (tt.length < d) {
+					const n = { indexWorker: rt };
+					return rt++, tt.push(n), new Ze(n, e, t, w);
+				}
+				return new Promise((n) =>
+					nt.push({ resolve: n, stream: e, workerOptions: t }),
+				);
+			})()
+		).run()
+	);
+	function w(e) {
+		if (nt.length) {
+			const [{ resolve: t, stream: n, workerOptions: r }] = nt.splice(0, 1);
+			t(new Ze(e, n, r, w));
+		} else
+			e.worker
+				? (at(e),
+					((e, t) => {
+						const { config: n } = t,
+							{ terminateWorkerTimeout: r } = n;
+						Number.isFinite(r) &&
+							r >= 0 &&
+							(e.terminated
+								? (e.terminated = !1)
+								: (e.terminateTimeout = setTimeout(async () => {
+										tt = tt.filter((t) => t != e);
+										try {
+											await e.terminate();
+										} catch (e) {}
+									}, r)));
+					})(e, t))
+				: (tt = tt.filter((t) => t != e));
+	}
+}
+function at(e) {
+	const { terminateTimeout: t } = e;
+	t && (clearTimeout(t), (e.terminateTimeout = null));
+}
+const st = 65536,
+	ot = "writable";
+class lt {
+	constructor() {
+		this.size = 0;
+	}
+	init() {
+		this.initialized = !0;
+	}
+}
+class ct extends lt {
+	get readable() {
+		const e = this,
+			{ chunkSize: t = st } = e,
+			n = new ReadableStream({
+				start() {
+					this.chunkOffset = 0;
+				},
+				async pull(r) {
+					const { offset: i = 0, size: a, diskNumberStart: s } = n,
+						{ chunkOffset: o } = this,
+						l = a === v ? t : Math.min(t, a - o),
+						c = await mt(e, i + o, l, s);
+					r.enqueue(c),
+						o + t > a || (a === v && !c.length && l)
+							? r.close()
+							: (this.chunkOffset += t);
+				},
+			});
+		return n;
+	}
+}
+class ut extends ct {
+	constructor(e) {
+		super(), Object.assign(this, { blob: e, size: e.size });
+	}
+	async readUint8Array(e, t) {
+		const r = e + t,
+			i = e || r < this.size ? this.blob.slice(e, r) : this.blob;
+		let a = await i.arrayBuffer();
+		return a.byteLength > t && (a = a.slice(e, r)), new Uint8Array(a);
+	}
+}
+class ft extends lt {
+	constructor(e) {
+		super();
+		const t = new TransformStream(),
+			n = [];
+		e && n.push(["Content-Type", e]),
+			Object.defineProperty(this, ot, { get: () => t.writable }),
+			(this.blob = new Response(t.readable, { headers: n }).blob());
+	}
+	getData() {
+		return this.blob;
+	}
+}
+class dt extends ft {
+	constructor(e) {
+		super(e),
+			Object.assign(this, {
+				encoding: e,
+				utf8: !e || "utf-8" == e.toLowerCase(),
+			});
+	}
+	async getData() {
+		const { encoding: e, utf8: t } = this,
+			n = await super.getData();
+		if (n.text && t) return n.text();
+		{
+			const t = new FileReader();
+			return new Promise((r, i) => {
+				Object.assign(t, {
+					onload: ({ target: e }) => r(e.result),
+					onerror: () => i(t.error),
+				}),
+					t.readAsText(n, e);
+			});
+		}
+	}
+}
+class ht extends ct {
+	constructor(e) {
+		super(), (this.readers = e);
+	}
+	async init() {
+		const { readers: t } = this;
+		(this.lastDiskNumber = 0),
+			(this.lastDiskOffset = 0),
+			await Promise.all(
+				t.map(async (n, r) => {
+					await n.init(),
+						r != t.length - 1 && (this.lastDiskOffset += n.size),
+						(this.size += n.size);
+				}),
+			),
+			super.init();
+	}
+	async readUint8Array(e, t, n = 0) {
+		const { readers: i } = this;
+		let a,
+			s = n;
+		-1 == s && (s = i.length - 1);
+		let o = e;
+		for (; i[s] && o >= i[s].size; ) (o -= i[s].size), s++;
+		const l = i[s];
+		if (l) {
+			const i = l.size;
+			if (o + t <= i) a = await mt(l, o, t);
+			else {
+				const s = i - o;
+				a = new Uint8Array(t);
+				const c = await mt(l, o, s);
+				a.set(c, 0);
+				const u = await this.readUint8Array(e + s, t - s, n);
+				a.set(u, s),
+					c.length + u.length < t && (a = a.subarray(0, c.length + u.length));
+			}
+		} else a = new Uint8Array();
+		return (this.lastDiskNumber = Math.max(s, this.lastDiskNumber)), a;
+	}
+}
+class wt extends lt {
+	constructor(e, t = 4294967295) {
+		super();
+		const n = this;
+		let r, i, a;
+		Object.assign(n, {
+			diskNumber: 0,
+			diskOffset: 0,
+			size: 0,
+			maxSize: t,
+			availableSize: t,
+		});
+		const s = new WritableStream({
+			async write(t) {
+				const { availableSize: s } = n;
+				if (a)
+					t.length >= s
+						? (await o(t.subarray(0, s)),
+							await l(),
+							(n.diskOffset += r.size),
+							n.diskNumber++,
+							(a = null),
+							await this.write(t.subarray(s)))
+						: await o(t);
+				else {
+					const { value: s, done: o } = await e.next();
+					if (o && !s) throw new Error("Writer iterator completed too soon");
+					(r = s),
+						(r.size = 0),
+						r.maxSize && (n.maxSize = r.maxSize),
+						(n.availableSize = n.maxSize),
+						await pt(r),
+						(i = s.writable),
+						(a = i.getWriter()),
+						await this.write(t);
+				}
+			},
+			async close() {
+				await a.ready, await l();
+			},
+		});
+		async function o(e) {
+			const t = e.length;
+			t &&
+				(await a.ready,
+				await a.write(e),
+				(r.size += t),
+				(n.size += t),
+				(n.availableSize -= t));
+		}
+		async function l() {
+			await a.close();
+		}
+		Object.defineProperty(n, ot, { get: () => s });
+	}
+}
+class _t {
+	constructor(e) {
+		return (
+			Array.isArray(e) && (e = new ht(e)),
+			e instanceof ReadableStream && (e = { readable: e }),
+			e
+		);
+	}
+}
+class bt {
+	constructor(e) {
+		return (
+			e.writable === v && typeof e.next == A && (e = new wt(e)),
+			e instanceof WritableStream && (e = { writable: e }),
+			e.size === v && (e.size = 0),
+			e instanceof wt ||
+				Object.assign(e, {
+					diskNumber: 0,
+					diskOffset: 0,
+					availableSize: 1 / 0,
+					maxSize: 1 / 0,
+				}),
+			e
+		);
+	}
+}
+async function pt(e, t) {
+	if (!e.init || e.initialized) return Promise.resolve();
+	await e.init(t);
+}
+function mt(e, t, n, r) {
+	return e.readUint8Array(t, n, r);
+}
+const gt =
+		"\0☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ".split(
+			"",
+		),
+	yt = 256 == gt.length;
+function xt(e, t) {
+	return t && "cp437" == t.trim().toLowerCase()
+		? ((e) => {
+				if (yt) {
+					let t = "";
+					for (let n = 0; n < e.length; n++) t += gt[e[n]];
+					return t;
+				}
+				return new TextDecoder().decode(e);
+			})(e)
+		: new TextDecoder(t).decode(e);
+}
+const kt = "filename",
+	St = "rawFilename",
+	vt = "comment",
+	zt = "rawComment",
+	At = "uncompressedSize",
+	Ut = "compressedSize",
+	Dt = "offset",
+	Et = "diskNumberStart",
+	Ft = "lastModDate",
+	Tt = "rawLastModDate",
+	Ot = "lastAccessDate",
+	Ct = "rawLastAccessDate",
+	Wt = "creationDate",
+	jt = "rawCreationDate",
+	Mt = [
+		kt,
+		St,
+		Ut,
+		At,
+		Ft,
+		Tt,
+		vt,
+		zt,
+		Ot,
+		Wt,
+		Dt,
+		Et,
+		Et,
+		"internalFileAttribute",
+		"internalFileAttributes",
+		"externalFileAttribute",
+		"externalFileAttributes",
+		"msDosCompatible",
+		"zip64",
+		"encrypted",
+		"version",
+		"versionMadeBy",
+		"zipCrypto",
+		"directory",
+		"executable",
+		"bitFlag",
+		"signature",
+		"filenameUTF8",
+		"commentUTF8",
+		"compressionMethod",
+		"extraField",
+		"rawExtraField",
+		"extraFieldZip64",
+		"extraFieldUnicodePath",
+		"extraFieldUnicodeComment",
+		"extraFieldAES",
+		"extraFieldNTFS",
+		"extraFieldExtendedTimestamp",
+	];
+class Lt {
+	constructor(e) {
+		Mt.forEach((t) => (this[t] = e[t]));
+	}
+}
+const Pt = "File format is not recognized",
+	Rt = "Zip64 extra field not found",
+	Bt = "Compression method not supported",
+	It = "Split zip file",
+	Nt = "utf-8",
+	Vt = "cp437",
+	qt = [
+		[At, g],
+		[Ut, g],
+		[Dt, g],
+		[Et, y],
+	],
+	Ht = { [y]: { getValue: nn, bytes: 4 }, [g]: { getValue: rn, bytes: 8 } };
+class Kt {
+	constructor(e, t = {}) {
+		Object.assign(this, { reader: new _t(e), options: t, config: F });
+	}
+	async *getEntriesGenerator(e = {}) {
+		let { reader: n } = this;
+		const { config: r } = this;
+		if (
+			(await pt(n),
+			(n.size !== v && n.readUint8Array) ||
+				((n = new ut(await new Response(n.readable).blob())), await pt(n)),
+			n.size < S)
+		)
+			throw new Error(Pt);
+		n.chunkSize = ((e) => Math.max(e.chunkSize, 64))(r);
+		const i = await (async (e, t, n, r, i) => {
+			const a = new Uint8Array(4);
+			!((e, t, n) => {
+				e.setUint32(t, n, !0);
+			})(an(a), 0, t);
+			const s = r + i;
+			return (await o(r)) || (await o(Math.min(s, n)));
+			async function o(t) {
+				const i = n - t,
+					s = await mt(e, i, t);
+				for (let e = s.length - r; e >= 0; e--)
+					if (
+						s[e] == a[0] &&
+						s[e + 1] == a[1] &&
+						s[e + 2] == a[2] &&
+						s[e + 3] == a[3]
+					)
+						return { offset: i + e, buffer: s.slice(e, e + r).buffer };
+			}
+		})(n, 101010256, n.size, S, 1048560);
+		if (!i) {
+			throw 134695760 == nn(an(await mt(n, 0, 4)))
+				? new Error(It)
+				: new Error("End of central directory not found");
+		}
+		const a = an(i);
+		let s = nn(a, 12),
+			o = nn(a, 16);
+		const l = i.offset,
+			c = tn(a, 20),
+			u = l + S + c;
+		let f = tn(a, 4);
+		const d = n.lastDiskNumber || 0;
+		let h = tn(a, 6),
+			w = tn(a, 8),
+			_ = 0,
+			b = 0;
+		if (o == g || s == g || w == y || h == y) {
+			const e = an(await mt(n, i.offset - 20, 20));
+			if (117853008 == nn(e, 0)) {
+				o = rn(e, 8);
+				let t = await mt(n, o, 56, -1),
+					r = an(t);
+				const a = i.offset - 20 - 56;
+				if (nn(r, 0) != k && o != a) {
+					const e = o;
+					(o = a), (_ = o - e), (t = await mt(n, o, 56, -1)), (r = an(t));
+				}
+				if (nn(r, 0) != k)
+					throw new Error("End of Zip64 central directory locator not found");
+				f == y && (f = nn(r, 16)),
+					h == y && (h = nn(r, 20)),
+					w == y && (w = rn(r, 32)),
+					s == g && (s = rn(r, 40)),
+					(o -= s);
+			}
+		}
+		if (
+			(o >= n.size && ((_ = n.size - o - s - S), (o = n.size - s - S)), d != f)
+		)
+			throw new Error(It);
+		if (o < 0) throw new Error(Pt);
+		let p = 0,
+			m = await mt(n, o, s, h),
+			z = an(m);
+		if (s) {
+			const e = i.offset - s;
+			if (nn(z, p) != x && o != e) {
+				const t = o;
+				(o = e), (_ += o - t), (m = await mt(n, o, s, h)), (z = an(m));
+			}
+		}
+		const A = i.offset - o - (n.lastDiskOffset || 0);
+		if (
+			(s != A && A >= 0 && ((s = A), (m = await mt(n, o, s, h)), (z = an(m))),
+			o < 0 || o >= n.size)
+		)
+			throw new Error(Pt);
+		const U = Xt(this, e, "filenameEncoding"),
+			D = Xt(this, e, "commentEncoding");
+		for (let i = 0; i < w; i++) {
+			const a = new Zt(n, r, this.options);
+			if (nn(z, p) != x) throw new Error("Central directory header not found");
+			Gt(a, z, p + 6);
+			const s = Boolean(a.bitFlag.languageEncodingFlag),
+				o = p + 46,
+				l = o + a.filenameLength,
+				c = l + a.extraFieldLength,
+				u = tn(z, p + 4),
+				f = !(u >> 8),
+				d = u >> 8 == 3,
+				h = m.subarray(o, l),
+				g = tn(z, p + 32),
+				y = c + g,
+				k = m.subarray(c, y),
+				S = s,
+				A = s,
+				E = nn(z, p + 38),
+				F =
+					(f && !(16 & ~en(z, p + 38))) ||
+					(d && 16384 == ((E >> 16) & 61440)) ||
+					(h.length && h[h.length - 1] == "/".charCodeAt(0)),
+				T = d && !!((E >> 16) & 73),
+				O = nn(z, p + 42) + _;
+			Object.assign(a, {
+				versionMadeBy: u,
+				msDosCompatible: f,
+				compressedSize: 0,
+				uncompressedSize: 0,
+				commentLength: g,
+				directory: F,
+				offset: O,
+				diskNumberStart: tn(z, p + 34),
+				internalFileAttributes: tn(z, p + 36),
+				externalFileAttributes: E,
+				rawFilename: h,
+				filenameUTF8: S,
+				commentUTF8: A,
+				rawExtraField: m.subarray(l, c),
+				executable: T,
+			}),
+				(a.internalFileAttribute = a.internalFileAttributes),
+				(a.externalFileAttribute = a.externalFileAttributes);
+			const C = Xt(this, e, "decodeText") || xt,
+				W = S ? Nt : U || Vt,
+				j = A ? Nt : D || Vt;
+			let M = C(h, W);
+			M === v && (M = xt(h, W));
+			let L = C(k, j);
+			L === v && (L = xt(k, j)),
+				Object.assign(a, {
+					rawComment: k,
+					filename: M,
+					comment: L,
+					directory: F || M.endsWith("/"),
+				}),
+				(b = Math.max(O, b)),
+				Jt(a, a, z, p + 6),
+				(a.zipCrypto = a.encrypted && !a.extraFieldAES);
+			const P = new Lt(a);
+			(P.getData = (e, t) => a.getData(e, P, t)),
+				(P.arrayBuffer = async (e) => {
+					const t = new TransformStream(),
+						[n] = await Promise.all([
+							new Response(t.readable).arrayBuffer(),
+							a.getData(t, P, e),
+						]);
+					return n;
+				}),
+				(p = y);
+			const { onprogress: R } = e;
+			if (R)
+				try {
+					await R(i + 1, w, new Lt(a));
+				} catch (e) {}
+			yield P;
+		}
+		const E = Xt(this, e, "extractPrependedData"),
+			F = Xt(this, e, "extractAppendedData");
+		return (
+			E && (this.prependedData = b > 0 ? await mt(n, 0, b) : new Uint8Array()),
+			(this.comment = c ? await mt(n, l + S, c) : new Uint8Array()),
+			F &&
+				(this.appendedData =
+					u < n.size ? await mt(n, u, n.size - u) : new Uint8Array()),
+			!0
+		);
+	}
+	async getEntries(e = {}) {
+		const t = [];
+		for await (const n of this.getEntriesGenerator(e)) t.push(n);
+		return t;
+	}
+	async close() {}
+}
+class Zt {
+	constructor(e, t, n) {
+		Object.assign(this, { reader: e, config: t, options: n });
+	}
+	async getData(e, t, n = {}) {
+		const {
+				reader: i,
+				offset: a,
+				diskNumberStart: s,
+				extraFieldAES: o,
+				compressionMethod: l,
+				config: c,
+				bitFlag: u,
+				signature: f,
+				rawLastModDate: d,
+				uncompressedSize: h,
+				compressedSize: w,
+			} = this,
+			_ = (t.localDirectory = {}),
+			b = an(await mt(i, a, 34, s));
+		let p = Xt(this, n, "password"),
+			m = Xt(this, n, "rawPassword");
+		const g = Xt(this, n, "passThrough");
+		if (
+			((p = p && p.length && p),
+			(m = m && m.length && m),
+			o && 99 != o.originalCompressionMethod)
+		)
+			throw new Error(Bt);
+		if (0 != l && 8 != l && !g) throw new Error(Bt);
+		if (67324752 != nn(b, 0)) throw new Error("Local file header not found");
+		Gt(_, b, 4),
+			(_.rawExtraField = _.extraFieldLength
+				? await mt(i, a + 30 + _.filenameLength, _.extraFieldLength, s)
+				: new Uint8Array()),
+			Jt(this, _, b, 4, !0),
+			Object.assign(t, {
+				lastAccessDate: _.lastAccessDate,
+				creationDate: _.creationDate,
+			});
+		const y = this.encrypted && _.encrypted && !g,
+			x = y && !o;
+		if ((g || (t.zipCrypto = x), y)) {
+			if (!x && o.strength === v)
+				throw new Error("Encryption method not supported");
+			if (!p && !m) throw new Error("File contains encrypted entry");
+		}
+		const k = a + 30 + _.filenameLength + _.extraFieldLength,
+			S = w,
+			z = i.readable;
+		Object.assign(z, { diskNumberStart: s, offset: k, size: S });
+		const A = Xt(this, n, "signal"),
+			U = Xt(this, n, "checkPasswordOnly");
+		U && (e = new WritableStream()), (e = new bt(e)), await pt(e, g ? w : h);
+		const { writable: D } = e,
+			{ onstart: E, onprogress: F, onend: T } = n,
+			O = {
+				options: {
+					codecType: Ve,
+					password: p,
+					rawPassword: m,
+					zipCrypto: x,
+					encryptionStrength: o && o.strength,
+					signed: Xt(this, n, "checkSignature") && !g,
+					passwordVerification:
+						x && (u.dataDescriptor ? (d >>> 8) & 255 : (f >>> 24) & 255),
+					signature: f,
+					compressed: 0 != l && !g,
+					encrypted: this.encrypted && !g,
+					useWebWorkers: Xt(this, n, "useWebWorkers"),
+					useCompressionStream: Xt(this, n, "useCompressionStream"),
+					transferStreams: Xt(this, n, "transferStreams"),
+					checkPasswordOnly: U,
+				},
+				config: c,
+				streamOptions: {
+					signal: A,
+					size: S,
+					onstart: E,
+					onprogress: F,
+					onend: T,
+				},
+			};
+		try {
+			const { outputSize: t } = await it({ readable: z, writable: D }, O);
+			e.size += t;
+		} catch (t) {
+			if (
+				(t.outputSize !== v && (e.size += t.outputSize), !U || t.message != K)
+			)
+				throw t;
+		} finally {
+			Xt(this, n, "preventClose") || D.locked || (await D.getWriter().close());
+		}
+		return U ? v : e.getData ? e.getData() : D;
+	}
+}
+function Gt(e, t, n) {
+	const r = (e.rawBitFlag = tn(t, n + 2)),
+		i = !(1 & ~r),
+		a = nn(t, n + 6);
+	Object.assign(e, {
+		encrypted: i,
+		version: tn(t, n),
+		bitFlag: {
+			level: (6 & r) >> 1,
+			dataDescriptor: !(8 & ~r),
+			languageEncodingFlag: !(2048 & ~r),
+		},
+		rawLastModDate: a,
+		lastModDate: Yt(a),
+		filenameLength: tn(t, n + 22),
+		extraFieldLength: tn(t, n + 24),
+	});
+}
+function Jt(e, t, n, r, i) {
+	const { rawExtraField: a } = t,
+		s = (t.extraField = new Map()),
+		o = an(new Uint8Array(a));
+	let l = 0;
+	try {
+		for (; l < a.length; ) {
+			const e = tn(o, l),
+				t = tn(o, l + 2);
+			s.set(e, { type: e, data: a.slice(l + 4, l + 4 + t) }), (l += 4 + t);
+		}
+	} catch (e) {}
+	const c = tn(n, r + 4);
+	Object.assign(t, {
+		signature: nn(n, r + 10),
+		compressedSize: nn(n, r + 14),
+		uncompressedSize: nn(n, r + 18),
+	});
+	const u = s.get(1);
+	u &&
+		(!((e, t) => {
+			t.zip64 = !0;
+			const n = an(e.data),
+				r = qt.filter(([e, n]) => t[e] == n);
+			for (let i = 0, a = 0; i < r.length; i++) {
+				const [s, o] = r[i];
+				if (t[s] == o) {
+					const r = Ht[o];
+					(t[s] = e[s] = r.getValue(n, a)), (a += r.bytes);
+				} else if (e[s]) throw new Error(Rt);
+			}
+		})(u, t),
+		(t.extraFieldZip64 = u));
+	const f = s.get(28789);
+	f && (Qt(f, kt, St, t, e), (t.extraFieldUnicodePath = f));
+	const d = s.get(25461);
+	d && (Qt(d, vt, zt, t, e), (t.extraFieldUnicodeComment = d));
+	const h = s.get(39169);
+	h
+		? (!((e, t, n) => {
+				const r = an(e.data),
+					i = en(r, 4);
+				Object.assign(e, {
+					vendorVersion: en(r, 0),
+					vendorId: en(r, 2),
+					strength: i,
+					originalCompressionMethod: n,
+					compressionMethod: tn(r, 5),
+				}),
+					(t.compressionMethod = e.compressionMethod);
+			})(h, t, c),
+			(t.extraFieldAES = h))
+		: (t.compressionMethod = c);
+	const w = s.get(10);
+	w &&
+		(!((e, t) => {
+			const n = an(e.data);
+			let r,
+				i = 4;
+			try {
+				for (; i < e.data.length && !r; ) {
+					const t = tn(n, i),
+						a = tn(n, i + 2);
+					1 == t && (r = e.data.slice(i + 4, i + 4 + a)), (i += 4 + a);
+				}
+			} catch (e) {}
+			try {
+				if (r && 24 == r.length) {
+					const n = an(r),
+						i = n.getBigUint64(0, !0),
+						a = n.getBigUint64(8, !0),
+						s = n.getBigUint64(16, !0);
+					Object.assign(e, {
+						rawLastModDate: i,
+						rawLastAccessDate: a,
+						rawCreationDate: s,
+					});
+					const o = $t(i),
+						l = $t(a),
+						c = { lastModDate: o, lastAccessDate: l, creationDate: $t(s) };
+					Object.assign(e, c), Object.assign(t, c);
+				}
+			} catch (e) {}
+		})(w, t),
+		(t.extraFieldNTFS = w));
+	const _ = s.get(21589);
+	_ &&
+		(!((e, t, n) => {
+			const r = an(e.data),
+				i = en(r, 0),
+				a = [],
+				s = [];
+			n
+				? (1 & ~i || (a.push(Ft), s.push(Tt)),
+					2 & ~i || (a.push(Ot), s.push(Ct)),
+					4 & ~i || (a.push(Wt), s.push(jt)))
+				: e.data.length >= 5 && (a.push(Ft), s.push(Tt));
+			let o = 1;
+			a.forEach((n, i) => {
+				if (e.data.length >= o + 4) {
+					const a = nn(r, o);
+					t[n] = e[n] = new Date(1e3 * a);
+					const l = s[i];
+					e[l] = a;
+				}
+				o += 4;
+			});
+		})(_, t, i),
+		(t.extraFieldExtendedTimestamp = _));
+	const b = s.get(6534);
+	b && (t.extraFieldUSDZ = b);
+}
+function Qt(e, t, n, r, i) {
+	const a = an(e.data),
+		s = new W();
+	s.append(i[n]);
+	const o = an(new Uint8Array(4));
+	o.setUint32(0, s.get(), !0);
+	const l = nn(a, 1);
+	Object.assign(e, {
+		version: en(a, 0),
+		[t]: xt(e.data.subarray(5)),
+		valid: !i.bitFlag.languageEncodingFlag && l == nn(o, 0),
+	}),
+		e.valid && ((r[t] = e[t]), (r[t + "UTF8"] = !0));
+}
+function Xt(e, t, n) {
+	return t[n] === v ? e.options[n] : t[n];
+}
+function Yt(e) {
+	const t = (4294901760 & e) >> 16,
+		n = 65535 & e;
+	try {
+		return new Date(
+			1980 + ((65024 & t) >> 9),
+			((480 & t) >> 5) - 1,
+			31 & t,
+			(63488 & n) >> 11,
+			(2016 & n) >> 5,
+			2 * (31 & n),
+			0,
+		);
+	} catch (e) {}
+}
+function $t(e) {
+	return new Date(Number(e / BigInt(1e4) - BigInt(116444736e5)));
+}
+function en(e, t) {
+	return e.getUint8(t);
+}
+function tn(e, t) {
+	return e.getUint16(t, !0);
+}
+function nn(e, t) {
+	return e.getUint32(t, !0);
+}
+function rn(e, t) {
+	return Number(e.getBigUint64(t, !0));
+}
+function an(e) {
+	return new DataView(e.buffer);
+}
+T({
+	Inflate: function (e) {
+		const t = new m(),
+			r = e && e.chunkSize ? Math.floor(2 * e.chunkSize) : 131072,
+			i = new Uint8Array(r);
+		let a = !1;
+		t.inflateInit(),
+			(t.next_out = i),
+			(this.append = (e, s) => {
+				const o = [];
+				let l,
+					c,
+					u = 0,
+					f = 0,
+					d = 0;
+				if (0 !== e.length) {
+					(t.next_in_index = 0), (t.next_in = e), (t.avail_in = e.length);
+					do {
+						if (
+							((t.next_out_index = 0),
+							(t.avail_out = r),
+							0 !== t.avail_in || a || ((t.next_in_index = 0), (a = !0)),
+							(l = t.inflate(0)),
+							a && l === n)
+						) {
+							if (0 !== t.avail_in) throw new Error("inflating: bad input");
+						} else if (0 !== l && 1 !== l)
+							throw new Error("inflating: " + t.msg);
+						if ((a || 1 === l) && t.avail_in === e.length)
+							throw new Error("inflating: bad input");
+						t.next_out_index &&
+							(t.next_out_index === r
+								? o.push(new Uint8Array(i))
+								: o.push(i.subarray(0, t.next_out_index))),
+							(d += t.next_out_index),
+							s &&
+								t.next_in_index > 0 &&
+								t.next_in_index != u &&
+								(s(t.next_in_index), (u = t.next_in_index));
+					} while (t.avail_in > 0 || 0 === t.avail_out);
+					return (
+						o.length > 1
+							? ((c = new Uint8Array(d)),
+								o.forEach((e) => {
+									c.set(e, f), (f += e.length);
+								}))
+							: (c = o[0] ? new Uint8Array(o[0]) : new Uint8Array()),
+						c
+					);
+				}
+			}),
+			(this.flush = () => {
+				t.inflateEnd();
+			});
+	},
+});
+export {
+	ut as BlobReader,
+	ft as BlobWriter,
+	dt as TextWriter,
+	Kt as ZipReader,
+	T as configure,
+};
