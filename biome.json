@@ -27,7 +27,8 @@
 			"!**/.svelte-kit",
 			"!**/wrangler.jsonc",
 			"!**/.source",
-			"!**/convex/_generated"
+			"!**/convex/_generated",
+			"!**/prisma/generated"
 		]
 	},
 	"formatter": {
@@ -41,6 +42,9 @@
 			"recommended": true,
 			"correctness": {
 				"useExhaustiveDependencies": "info"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off"
 			},
 			"nursery": {
 				"useSortedClasses": {

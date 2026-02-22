@@ -30,6 +30,8 @@
 		"db:generate": "turbo -F @readsync/db db:generate",
 		"db:migrate": "turbo -F @readsync/db db:migrate",
 		"check": "biome check --write .",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
 		"ruler:apply": "bunx @intellectronica/ruler@latest apply --local-only"
 	},
 	"dependencies": {
@@ -42,6 +44,8 @@
 		"@biomejs/biome": "^2.2.0",
 		"@readsync/config": "workspace:*",
 		"@types/node": "^22.13.14",
+		"prettier": "^3.8.1",
+		"prettier-plugin-tailwindcss": "^0.7.2",
 		"turbo": "^2.6.3",
 		"typescript": "catalog:"
 	},

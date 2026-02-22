@@ -52,12 +52,12 @@ Open [http://localhost:3001](http://localhost:3001) in your browser to see the f
 
 ```
 readsync/
-├── apps/
-│   └── web/         # Fullstack application (Next.js)
-├── packages/
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
+├ apps/
+│   └ web/         # Fullstack application (Next.js)
+├ packages/
+│   ├ api/         # API layer / business logic
+│   ├ auth/        # Authentication configuration & logic
+│   └ db/          # Database schema & queries
 ```
 
 ## Available Scripts
