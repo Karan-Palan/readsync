@@ -1,26 +1,26 @@
 {
-  "name": "@readsync/auth",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {},
-  "dependencies": {
-    "@polar-sh/better-auth": "catalog:",
-    "@polar-sh/sdk": "^0.42.2",
-    "@readsync/db": "workspace:*",
-    "@readsync/env": "workspace:*",
-    "better-auth": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@readsync/config": "workspace:*",
-    "typescript": "catalog:"
-  }
+	"name": "@readsync/auth",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {},
+	"dependencies": {
+		"@polar-sh/better-auth": "catalog:",
+		"@polar-sh/sdk": "^0.42.2",
+		"@readsync/db": "workspace:*",
+		"@readsync/env": "workspace:*",
+		"better-auth": "catalog:",
+		"dotenv": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@readsync/config": "workspace:*",
+		"typescript": "catalog:"
+	}
 }
