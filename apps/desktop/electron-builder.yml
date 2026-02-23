@@ -1,0 +1,27 @@
+appId: in.readsync.app
+productName: ReadSync
+
+directories:
+  output: release/
+
+files:
+  - dist/**/*
+  - package.json
+
+mac:
+  category: public.app-category.productivity
+  icon: assets/icon.icns
+  target:
+    - dmg
+    - zip
+
+linux:
+  category: Office
+  icon: assets/icon.png
+  target:
+    - AppImage
+
+win:
+  icon: assets/icon.ico
+  target:
+    - nsis
