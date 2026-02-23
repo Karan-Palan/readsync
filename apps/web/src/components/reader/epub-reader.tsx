@@ -138,39 +138,64 @@ export default function EPUBReader({
 				viewerRef.current.appendChild(view);
 				folViewRef.current = view;
 
-			// iOS Safari: block horizontal swipe gestures from reaching foliate's
-			// paginator so that finger drags can be used for text selection instead.
-			// On Android/desktop the swipe paginator works correctly, no guard needed.
-			const ua = navigator.userAgent;
-			const isIOS =
-				/iPad|iPhone|iPod/.test(ua) ||
-				(navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+				// On all touch devices: disable foliate's swipe-based page turner so
+				// that finger/Apple Pencil drags can be used for text selection.
+				// Page turns are handled instead by Kindle-style edge taps (leftmost
+				// or rightmost 15 % of the container) and the header arrow buttons.
+				const isTouchDevice = navigator.maxTouchPoints > 0;
 
-			let touchStartX = 0;
-			let touchStartY = 0;
+				let touchStartX = 0;
+				let touchStartY = 0;
 
-			const handleTouchStart = (e: TouchEvent) => {
-				const t = e.touches[0];
-				if (t) {
-					touchStartX = t.clientX;
-					touchStartY = t.clientY;
+				const handleTouchStart = (e: TouchEvent) => {
+					const t = e.touches[0];
+					if (t) {
+						touchStartX = t.clientX;
+						touchStartY = t.clientY;
+					}
+				};
+
+				const handleTouchMove = (e: TouchEvent) => {
+					const t = e.touches[0];
+					if (!t) return;
+					const deltaX = t.clientX - touchStartX;
+					const deltaY = t.clientY - touchStartY;
+					// Prevent foliate's horizontal swipe paginator from firing.
+					// stopPropagation (in capture phase) prevents foliate-view from
+					// seeing this event entirely; preventDefault stops browser scroll.
+					if (Math.abs(deltaX) > Math.abs(deltaY)) {
+						e.preventDefault();
+						e.stopPropagation();
+					}
+				};
+
+				// 15 % edge zones trigger prev / next — same feel as Kindle.
+				// Only fires when movement is small enough to be a tap, not a drag.
+				const EDGE_ZONE = 0.15;
+				const TAP_THRESHOLD_PX = 20;
+
+				const handleTouchEnd = (e: TouchEvent) => {
+					const t = e.changedTouches[0];
+					if (!t) return;
+					const dx = Math.abs(t.clientX - touchStartX);
+					const dy = Math.abs(t.clientY - touchStartY);
+					if (dx > TAP_THRESHOLD_PX || dy > TAP_THRESHOLD_PX) return;
+					const containerW = viewerRef.current?.clientWidth ?? window.innerWidth;
+					const relX = touchStartX / containerW;
+					if (relX < EDGE_ZONE) {
+						view.prev();
+					} else if (relX > 1 - EDGE_ZONE) {
+						view.next();
+					}
+				};
+
+				if (isTouchDevice && viewerRef.current) {
+					// Use capture phase so our handlers fire before foliate's own
+					// touch listeners on the child foliate-view element.
+					viewerRef.current.addEventListener("touchstart", handleTouchStart, { passive: true, capture: true });
+					viewerRef.current.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
+					viewerRef.current.addEventListener("touchend", handleTouchEnd, { passive: true, capture: true });
 				}
-			};
-
-			const handleTouchMove = (e: TouchEvent) => {
-				const t = e.touches[0];
-				if (!t) return;
-				const deltaX = t.clientX - touchStartX;
-				const deltaY = t.clientY - touchStartY;
-				if (Math.abs(deltaX) > Math.abs(deltaY)) {
-					e.preventDefault();
-				}
-			};
-
-			if (isIOS && viewerRef.current) {
-				viewerRef.current.addEventListener("touchstart", handleTouchStart, { passive: true });
-				viewerRef.current.addEventListener("touchmove", handleTouchMove, { passive: false });
-			}
 				let lastCfi: string | null = null;
 				view.addEventListener("relocate", (e: Event) => {
 					if (!mounted) return;
@@ -452,9 +477,10 @@ export default function EPUBReader({
 
 				return () => {
 					document.removeEventListener("keydown", handleKey);
-					if (isIOS && viewerRef.current) {
-						viewerRef.current.removeEventListener("touchstart", handleTouchStart);
-						viewerRef.current.removeEventListener("touchmove", handleTouchMove);
+					if (isTouchDevice && viewerRef.current) {
+						viewerRef.current.removeEventListener("touchstart", handleTouchStart, { capture: true });
+						viewerRef.current.removeEventListener("touchmove", handleTouchMove, { capture: true });
+						viewerRef.current.removeEventListener("touchend", handleTouchEnd, { capture: true });
 					}
 				};
 			} catch (err) {
