@@ -144,57 +144,40 @@ export default function EPUBReader({
 				// or rightmost 15 % of the container) and the header arrow buttons.
 				const isTouchDevice = navigator.maxTouchPoints > 0;
 
-				let touchStartX = 0;
-				let touchStartY = 0;
+				//  Foliate navigation blocker
+				// Foliate's paginator (paginator.js) hooks touchstart/touchmove/touchend with
+				// { passive: false } on two places:
+				//   1. The foliate-view element itself  (for outer touches)
+				//   2. The iframe's document            (for in-iframe touches)
+				// Touch events inside the iframe do NOT bubble to the parent document, so
+				// intercepting on viewerRef / foliate-view does nothing for in-iframe touches.
+				// We handle (1) here and (2) inside the "load" event handler below.
 
+				let outerTouchStartX = 0;
+				let outerTouchStartY = 0;
+
+				// On touch devices, block foliate's swipe/snap navigation but
+				// DO NOT block touchstart — iOS needs full touchstart propagation
+				// to set up its text-selection state machine (long-press, handles).
 				const handleTouchStart = (e: TouchEvent) => {
-					const t = e.touches[0];
-					if (t) {
-						touchStartX = t.clientX;
-						touchStartY = t.clientY;
-					}
+					const tt = e.touches[0];
+					if (tt) { outerTouchStartX = tt.clientX; outerTouchStartY = tt.clientY; }
+					// Do NOT stopPropagation — iOS needs touchstart for selection
 				};
 
 				const handleTouchMove = (e: TouchEvent) => {
-					const t = e.touches[0];
-					if (!t) return;
-					const deltaX = t.clientX - touchStartX;
-					const deltaY = t.clientY - touchStartY;
-					// Prevent foliate's horizontal swipe paginator from firing.
-					// stopPropagation (in capture phase) prevents foliate-view from
-					// seeing this event entirely; preventDefault stops browser scroll.
-					if (Math.abs(deltaX) > Math.abs(deltaY)) {
-						e.preventDefault();
-						e.stopPropagation();
-					}
+					e.stopImmediatePropagation();
 				};
 
-				// 15 % edge zones trigger prev / next — same feel as Kindle.
-				// Only fires when movement is small enough to be a tap, not a drag.
-				const EDGE_ZONE = 0.15;
-				const TAP_THRESHOLD_PX = 20;
-
 				const handleTouchEnd = (e: TouchEvent) => {
-					const t = e.changedTouches[0];
-					if (!t) return;
-					const dx = Math.abs(t.clientX - touchStartX);
-					const dy = Math.abs(t.clientY - touchStartY);
-					if (dx > TAP_THRESHOLD_PX || dy > TAP_THRESHOLD_PX) return;
-					const containerW = viewerRef.current?.clientWidth ?? window.innerWidth;
-					const relX = touchStartX / containerW;
-					if (relX < EDGE_ZONE) {
-						view.prev();
-					} else if (relX > 1 - EDGE_ZONE) {
-						view.next();
-					}
+					e.stopImmediatePropagation();
 				};
 
 				if (isTouchDevice && viewerRef.current) {
-					// Use capture phase so our handlers fire before foliate's own
-					// touch listeners on the child foliate-view element.
+					// Capture on the outer container to block foliate-view's own-element listeners.
 					viewerRef.current.addEventListener("touchstart", handleTouchStart, { passive: true, capture: true });
 					viewerRef.current.addEventListener("touchmove", handleTouchMove, { passive: false, capture: true });
-					viewerRef.current.addEventListener("touchend", handleTouchEnd, { passive: true, capture: true });
+					viewerRef.current.addEventListener("touchend", handleTouchEnd, { capture: true });
 				}
 				let lastCfi: string | null = null;
 				view.addEventListener("relocate", (e: Event) => {
@@ -248,48 +231,64 @@ export default function EPUBReader({
 						].join("\n");
 						(doc.head ?? doc.documentElement).appendChild(selStyle);
 					} catch {}
-				// Capture-phase touch guard inside iframe doc ──────────────────────
-				// Foliate adds touchstart/touchmove/touchend on `doc` WITHOUT capture,
-				// so our capture handlers fire first. We stopImmediatePropagation on
-				// horizontal moves so foliate's #onTouchMove never runs.
+				// -- iframe touch guard --
+				// Foliate registers bubble-phase touchstart/touchmove/touchend on the iframe
+				// doc (passive:false). We register capture-phase listeners on the SAME doc so
+				// they fire first. stopImmediatePropagation prevents foliate's handlers from
+				// ever running — killing its scrollBy() / snap() navigation calls.
+				// Critical: we do NOT skip when selection is active. Selection already works
+				// via selectionchange + pointerup; it doesn't need touchend to propagate.
 				let iframeTouchStartX = 0;
 				let iframeTouchStartY = 0;
 
+				// On touch devices, block foliate's touchmove (scrollBy) and 
+				// touchend (snap/page-turn) but NOT touchstart.
+				// iOS Safari needs touchstart to propagate for text selection setup.
 				const onIframeTouchStart = (ev: TouchEvent) => {
-					const t = ev.touches[0];
-					if (t) { iframeTouchStartX = t.clientX; iframeTouchStartY = t.clientY; }
+					const tt = ev.touches[0];
+					if (tt) { iframeTouchStartX = tt.clientX; iframeTouchStartY = tt.clientY; }
+					// Do NOT stopPropagation — iOS needs touchstart for selection
 				};
 
 				const onIframeTouchMove = (ev: TouchEvent) => {
-					const t = ev.touches[0];
-					if (!t) return;
-					const dx = t.clientX - iframeTouchStartX;
-					const dy = t.clientY - iframeTouchStartY;
-					if (Math.abs(dx) > Math.abs(dy)) {
-						// Horizontal — block foliate's swipe paginator entirely.
-						ev.stopImmediatePropagation();
-						ev.preventDefault();
-					}
+					ev.stopImmediatePropagation();
 				};
 
-				const IFRAME_EDGE = 0.15;
-				const IFRAME_TAP_PX = 20;
-
+				// Block foliate's touchend (prevents snap/page-turn).
+				// Since this capture-phase handler kills propagation, the 
+				// separate bubble-phase touchend for selection can't fire.
+				// So we dispatch the selection event from here instead.
 				const onIframeTouchEnd = (ev: TouchEvent) => {
-					const t = ev.changedTouches[0];
-					if (!t) return;
-					const dx = Math.abs(t.clientX - iframeTouchStartX);
-					const dy = Math.abs(t.clientY - iframeTouchStartY);
-					if (dx > IFRAME_TAP_PX || dy > IFRAME_TAP_PX) return; // drag, not tap
-					const relX = iframeTouchStartX / (doc.documentElement.clientWidth || 1);
-					if (relX < IFRAME_EDGE) view.prev();
-					else if (relX > 1 - IFRAME_EDGE) view.next();
+					ev.stopImmediatePropagation();
+					// Give the browser time to finalize selection handles, then dispatch
+					setTimeout(() => {
+						if (!mounted) return;
+						const sel = doc.defaultView?.getSelection();
+						if (sel && !sel.isCollapsed && sel.toString().trim().length >= 2) {
+							dispatchSelectionEvent();
+						}
+					}, 250);
 				};
 
+				// Arrow keys when iframe has focus; ignore while selection active.
+				const onIframeKeyDown = (ev: KeyboardEvent) => {
+					const tag = (ev.target as HTMLElement)?.tagName;
+					if (tag === "INPUT" || tag === "TEXTAREA") return;
+					const isel = doc.getSelection();
+					if (isel && !isel.isCollapsed) return;
+					if (ev.key === "ArrowRight" || ev.key === "ArrowDown") view.next();
+					else if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") view.prev();
+				};
+
+				// passive:false required: foliate also uses passive:false so we need to be
+				// able to match. For touchmove specifically, passive:false lets stopImmediatePropagation
+				// fully work before foliate's non-passive handler runs. Our handlers never
+				// call preventDefault so native text selection (a browser built-in) is unaffected.
 				doc.addEventListener("touchstart", onIframeTouchStart, { passive: true, capture: true });
 				doc.addEventListener("touchmove", onIframeTouchMove, { passive: false, capture: true });
-				doc.addEventListener("touchend", onIframeTouchEnd, { passive: true, capture: true });
-				// ── End touch guard ──────────────────────────────────────────────────
+				doc.addEventListener("touchend", onIframeTouchEnd, { capture: true });
+				doc.addEventListener("keydown", onIframeKeyDown);
+				// -- end iframe touch guard --
 					// Wire up text-selection so the selection menu works inside the EPUB iframe
 					const getIframeOffset = () => {
 						// frameElement gives exact iframe position (works because sandbox has allow-same-origin)
@@ -304,18 +303,11 @@ export default function EPUBReader({
 						dispatchSelectionEvent();
 					});
 
-					// iOS/Android: fire after touchend with enough delay for the
-					// browser to finalise the selection handles.
-					doc.addEventListener("touchend", () => {
-						if (!mounted) return;
-						setTimeout(() => {
-							if (mounted) dispatchSelectionEvent();
-						}, 200);
-					});
-
 					// pointerup covers Apple Pencil (pen), touch fallback, and
 					// any device that doesn't fire touchend (e.g. some Android WebViews).
 					// Skip mouse — mouseup already handled above.
+					// Note: touch-based selection dispatch is handled in onIframeTouchEnd above
+					// since our capture-phase stopImmediatePropagation blocks bubble-phase listeners.
 					doc.addEventListener("pointerup", (ev: Event) => {
 						if (!mounted) return;
 						const pe = ev as PointerEvent;
@@ -331,8 +323,7 @@ export default function EPUBReader({
 					//    the page doesn't jump (critical for iPad Pencil + mobile).
 					// 2. On mobile, selectionchange is often the ONLY reliable way
 					//    to know selection has completed — dispatch immediately.
-					let suppressDismiss = false;
-					let selectionDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+						let selectionDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 					doc.addEventListener("selectionchange", () => {
 						if (!mounted) return;
 						const sel = doc.defaultView?.getSelection();
@@ -373,29 +364,25 @@ export default function EPUBReader({
 							}
 						} catch {}
 
-						window.dispatchEvent(
-							new CustomEvent("foliate-selection", {
-								detail: {
-									text,
-									cfi,
-									x: offset.left + topRect.left + topRect.width / 2,
-									// subtract 8px so the menu bottom lands just above the selection
-									y: offset.top + topRect.top - 8,
+// Anchor menu BELOW the selection so it doesn't compete with the
+					// native OS Copy/Web-Search toolbar which appears above the selection.
+					const bottomRect = rects[rects.length - 1] ?? topRect;
+					window.dispatchEvent(
+						new CustomEvent("foliate-selection", {
+							detail: {
+								text,
+								cfi,
+								x: offset.left + bottomRect.left + bottomRect.width / 2,
+								y: offset.top + bottomRect.bottom + 8,
 								},
 							}),
 						);
 
-						// Dismiss the browser's native Copy/Share/Web-search toolbar.
-						// Set suppressDismiss so our dismiss-handler doesn't collapse the custom UI.
-						suppressDismiss = true;
-						doc.defaultView?.getSelection()?.removeAllRanges();
-						setTimeout(() => { suppressDismiss = false; }, 500);
 					}
 
 					doc.addEventListener("selectionchange", () => {
 						if (!mounted) return;
-						if (suppressDismiss) return;
-						const sel = doc.defaultView?.getSelection();
+								const sel = doc.defaultView?.getSelection();
 						if (!sel || sel.isCollapsed || !sel.toString().trim()) {
 							setTimeout(() => {
 								if (!mounted) return;
@@ -662,11 +649,12 @@ export default function EPUBReader({
 						<button
 							type="button"
 							title="Table of Contents"
+							aria-label="Table of Contents"
 							onClick={() => {
 								setShowToc((v) => !v);
 								setShowSearch(false);
 							}}
-							className={`hover:bg-accent rounded p-1.5 ${showToc ? "bg-accent" : ""}`}
+							className={`hover:bg-accent active:bg-accent/70 rounded p-2 sm:p-1.5 transition-colors ${showToc ? "bg-accent" : ""}`}
 						>
 							<List className="h-4 w-4" />
 						</button>
@@ -674,11 +662,12 @@ export default function EPUBReader({
 					<button
 						type="button"
 						title="Search"
+						aria-label="Search book"
 						onClick={() => {
 							setShowSearch((v) => !v);
 							setShowToc(false);
 						}}
-						className={`hover:bg-accent rounded p-1.5 ${showSearch ? "bg-accent" : ""}`}
+						className={`hover:bg-accent active:bg-accent/70 rounded p-2 sm:p-1.5 transition-colors ${showSearch ? "bg-accent" : ""}`}
 					>
 						<Search className="h-4 w-4" />
 					</button>
@@ -690,24 +679,27 @@ export default function EPUBReader({
 					<button
 						type="button"
 						title="Previous page"
+						aria-label="Previous page"
 						onClick={() => folViewRef.current?.prev()}
-						className="hover:bg-accent rounded p-1.5"
+						className="hover:bg-accent active:bg-accent/70 rounded p-2 sm:p-1.5 transition-colors"
 					>
-						<ChevronLeft className="h-4 w-4" />
+						<ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
 					</button>
 					<button
 						type="button"
 						title="Next page"
+						aria-label="Next page"
 						onClick={() => folViewRef.current?.next()}
-						className="hover:bg-accent rounded p-1.5"
+						className="hover:bg-accent active:bg-accent/70 rounded p-2 sm:p-1.5 transition-colors"
 					>
-						<ChevronRight className="h-4 w-4" />
+						<ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" />
 					</button>
 					<button
 						type="button"
 						title="Settings"
+						aria-label="Reader settings"
 						onClick={() => setShowSettings(!showSettings)}
-						className={`hover:bg-accent rounded p-1.5 ${showSettings ? "bg-accent" : ""}`}
+						className={`hover:bg-accent active:bg-accent/70 rounded p-2 sm:p-1.5 transition-colors ${showSettings ? "bg-accent" : ""}`}
 					>
 						<Settings className="h-4 w-4" />
 					</button>

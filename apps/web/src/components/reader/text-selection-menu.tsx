@@ -119,7 +119,8 @@ export default function TextSelectionMenu({
 				setShowNoteInput(false);
 				setNoteText("");
 				setPendingHighlight(null);
-				setMenuPosition({ x: detail.x, y: Math.max(60, detail.y) });
+				// detail.y is now the BOTTOM of the selection + 8 px
+				setMenuPosition({ x: detail.x, y: detail.y });
 			} else {
 				setTimeout(() => {
 					if (selectionSource.current === "foliate") {
@@ -387,8 +388,9 @@ export default function TextSelectionMenu({
 			className="bg-card fixed z-50 flex flex-col rounded-xl border shadow-2xl"
 			style={{
 				left: `clamp(100px, ${menuPosition.x}px, calc(100vw - 100px))`,
-				top: `clamp(56px, ${menuPosition.y}px, calc(100vh - 60px))`,
-				transform: "translate(-50%, -100%)",
+				// Menu is anchored BELOW the selection; clamp so it never goes off-screen
+				top: `clamp(60px, ${menuPosition.y}px, calc(100vh - 120px))`,
+				transform: "translate(-50%, 0)",
 				minWidth: showNoteInput ? "280px" : undefined,
 			}}
 			onMouseDown={(e) => e.preventDefault()}

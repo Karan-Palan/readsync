@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { BookMarked, GripVertical, MessageSquarePlus, Send } from "lucide-react";
+import { BookMarked, MessageSquarePlus, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import MarkdownContent from "@/components/markdown-content";
@@ -25,13 +25,6 @@ interface ChatMessage {
 	content: string;
 }
 
-function splitSections(content: string): string[] {
-	return content
-		.split(/\n{2,}/)
-		.map((x) => x.trim())
-		.filter(Boolean);
-}
-
 function insertAtLine(base: string, insert: string, line: number): string {
 	const lines = base.length ? base.split("\n") : [];
 	const safeLine = Math.max(1, Math.min(line, lines.length + 1));
@@ -51,14 +44,13 @@ export default function AIChatPanel({
 }: AIChatPanelProps) {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [question, setQuestion] = useState("");
-	const [sections, setSections] = useState<string[]>([]);
-	const [dragIndex, setDragIndex] = useState<number | null>(null);
 	const [selectionText, setSelectionText] = useState("");
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [modalContent, setModalContent] = useState("");
 	const [insertLine, setInsertLine] = useState(1);
 	const [targetMode, setTargetMode] = useState<"new" | "append">("new");
 	const [initialized, setInitialized] = useState(false);
+	const [isThinking, setIsThinking] = useState(false);
 	const responseAreaRef = useRef<HTMLDivElement>(null);
 
 	const aiQueryMutation = useMutation(trpc.ai.query.mutationOptions());
@@ -67,7 +59,6 @@ export default function AIChatPanel({
 	const updateHighlightMutation = useMutation(trpc.highlight.update.mutationOptions());
 
 	const isPseudo = highlight.id.startsWith("__");
-	const isBusy = aiQueryMutation.isPending || quickQueryMutation.isPending;
 
 	const latestAssistant = useMemo(() => {
 		for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -78,17 +69,8 @@ export default function AIChatPanel({
 
 	const orderedAssistantContent = useMemo(() => {
 		if (!latestAssistant) return "";
-		if (!sections.length) return latestAssistant.content;
-		return sections.join("\n\n");
-	}, [latestAssistant, sections]);
-
-	useEffect(() => {
-		if (!latestAssistant) {
-			setSections([]);
-			return;
-		}
-		setSections(splitSections(latestAssistant.content));
-	}, [latestAssistant?.id]);
+		return latestAssistant.content;
+	}, [latestAssistant]);
 
 	useEffect(() => {
 		if (initialized) return;
@@ -110,6 +92,7 @@ export default function AIChatPanel({
 		}
 
 		const run = async () => {
+			setIsThinking(true);
 			try {
 				if (isPseudo) {
 					const result = await quickQueryMutation.mutateAsync({
@@ -141,23 +124,14 @@ export default function AIChatPanel({
 				const message = error instanceof Error ? error.message : "AI request failed";
 				toast.error(message);
 			} finally {
+				setIsThinking(false);
 				setInitialized(true);
 			}
 		};
 
 		run();
-	}, [
-		initialized,
-		chatMode,
-		highlight.aiResponse,
-		isPseudo,
-		quickQueryMutation,
-		highlight.text,
-		action,
-		aiQueryMutation,
-		highlight.id,
-		onResponseReceived,
-	]);
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [initialized]);
 
 	const askFollowUp = async () => {
 		const text = question.trim();
@@ -169,6 +143,7 @@ export default function AIChatPanel({
 		};
 		setMessages((prev) => [...prev, userMessage]);
 		setQuestion("");
+		setIsThinking(true);
 
 		// Build prompt: in chat mode just send the question (+ conversation history);
 		// otherwise prepend the highlighted passage for context.
@@ -194,6 +169,8 @@ export default function AIChatPanel({
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Failed to send message";
 			toast.error(message);
+		} finally {
+			setIsThinking(false);
 		}
 	};
 
@@ -269,7 +246,7 @@ export default function AIChatPanel({
 	};
 
 	return (
-		<div className="flex h-full flex-col" data-ai-panel="true">
+		<div className="flex min-h-0 flex-1 flex-col" data-ai-panel="true">
 			{!chatMode && highlight.text && (
 				<div className="border-b px-4 py-3">
 					<p className="text-muted-foreground line-clamp-3 text-xs italic">
@@ -315,10 +292,10 @@ export default function AIChatPanel({
 						</div>
 					))}
 
-					{isBusy && (
+					{isThinking && (messages.length === 0 || messages[messages.length - 1]?.role === "user") && (
 						<div className="text-muted-foreground flex items-center gap-2 text-sm">
 							<div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-							Thinking...
+							Thinking…
 						</div>
 					)}
 				</div>
@@ -335,48 +312,9 @@ export default function AIChatPanel({
 						</button>
 					</div>
 				)}
-
-				{latestAssistant && sections.length > 0 && (
-					<div className="mt-4 border-t pt-3">
-						<p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-							Draggable Summary Sections
-						</p>
-						<div className="space-y-2">
-							{sections.map((section, index) => (
-								<div
-									key={`${section.slice(0, 40)}-${index}`}
-									draggable
-									onDragStart={() => setDragIndex(index)}
-									onDragOver={(e) => e.preventDefault()}
-									onDrop={() => {
-										if (dragIndex == null || dragIndex === index) return;
-										setSections((prev) => {
-											const next = [...prev];
-											const [moved] = next.splice(dragIndex, 1);
-											next.splice(index, 0, moved);
-											return next;
-										});
-										setDragIndex(null);
-									}}
-									className="bg-muted/30 flex items-start gap-2 rounded-md border p-2"
-								>
-									<GripVertical className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
-									<p className="line-clamp-3 text-xs leading-relaxed">{section}</p>
-									<button
-										type="button"
-										onClick={() => openAddModal(section)}
-										className="hover:bg-accent ml-auto rounded px-2 py-1 text-[11px]"
-									>
-										Add
-									</button>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
 			</div>
 
-			<div className="border-t px-4 py-3">
+			<div className="shrink-0 border-t px-4 py-3">
 				<div className="flex items-end gap-2">
 					<textarea
 						value={question}
@@ -394,7 +332,7 @@ export default function AIChatPanel({
 					<button
 						type="button"
 						onClick={askFollowUp}
-						disabled={isBusy || !question.trim()}
+						disabled={isThinking || !question.trim()}
 						className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center gap-1 rounded-md px-3 text-xs disabled:opacity-50"
 					>
 						<Send className="h-3.5 w-3.5" />

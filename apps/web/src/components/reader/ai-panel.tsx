@@ -1,7 +1,7 @@
 "use client";
 
 import { WifiOff, X } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AIChatPanel from "@/components/reader/ai-chat-panel";
 import type { AIAction, Highlight } from "@/types/reader";
 
@@ -130,18 +130,20 @@ function DrawerVariant({
 			/>
 
 			<PanelHeader onClose={onClose} />
-			{isOnline ? (
-				<AIChatPanel
-					bookId={bookId}
-					highlight={highlight}
-					action={action}
-					chatMode={chatMode}
-					onResponseReceived={onResponseReceived}
-					onHighlightCreated={onHighlightCreated}
-				/>
-			) : (
-				<OfflinePlaceholder />
-			)}
+			<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+				{isOnline ? (
+					<AIChatPanel
+						bookId={bookId}
+						highlight={highlight}
+						action={action}
+						chatMode={chatMode}
+						onResponseReceived={onResponseReceived}
+						onHighlightCreated={onHighlightCreated}
+					/>
+				) : (
+					<OfflinePlaceholder />
+				)}
+			</div>
 		</div>
 	);
 }
@@ -158,9 +160,26 @@ function BottomSheetVariant({
 	onResponseReceived,
 	onHighlightCreated,
 }: AIPanelProps) {
-	const [heightVh, setHeightVh] = useState(55);
+	const [heightVh, setHeightVh] = useState(65);
 	const startY = useRef(0);
 	const startH = useRef(0);
+	// Track virtual keyboard height so the panel shifts up above the keyboard on
+	// iOS/Android — fixed-position elements don't reposition automatically.
+	const [keyboardOffset, setKeyboardOffset] = useState(0);
+	useEffect(() => {
+		const vp = window.visualViewport;
+		if (!vp) return;
+		const handle = () => {
+			const offset = Math.max(0, Math.round(window.innerHeight - vp.height - (vp.offsetTop ?? 0)));
+			setKeyboardOffset(offset);
+		};
+		vp.addEventListener("resize", handle);
+		vp.addEventListener("scroll", handle);
+		return () => {
+			vp.removeEventListener("resize", handle);
+			vp.removeEventListener("scroll", handle);
+		};
+	}, []);
 
 	const onHandleTouchStart = useCallback(
 		(e: React.TouchEvent) => {
@@ -192,8 +211,12 @@ function BottomSheetVariant({
 			<div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />
 
 			<div
-				className="bg-card fixed right-0 bottom-0 left-0 z-50 flex flex-col rounded-t-xl shadow-xl"
-				style={{ height: `${heightVh}vh` }}
+				className="bg-card fixed right-0 left-0 z-50 flex flex-col rounded-t-xl shadow-xl"
+				style={{
+					bottom: `${keyboardOffset}px`,
+					height: `${heightVh}dvh`,
+					maxHeight: `calc(100dvh - ${keyboardOffset}px)`,
+				}}
 				data-ai-panel="true"
 			>
 				<div
@@ -206,7 +229,7 @@ function BottomSheetVariant({
 				</div>
 
 				<PanelHeader onClose={onClose} />
-				<div className="min-h-0 flex-1 overflow-hidden">
+				<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 					{isOnline ? (
 						<AIChatPanel
 							bookId={bookId}
@@ -231,7 +254,12 @@ function PanelHeader({ onClose }: { onClose: () => void }) {
 	return (
 		<div className="flex items-center justify-between border-b px-4 py-3">
 			<h3 className="text-sm font-semibold">AI Assistant</h3>
-			<button type="button" onClick={onClose} className="hover:bg-accent rounded-md p-1">
+			<button
+				type="button"
+				onClick={onClose}
+				className="hover:bg-accent active:bg-accent/70 rounded-md p-1.5 transition-colors"
+				aria-label="Close AI panel"
+			>
 				<X className="h-4 w-4" />
 			</button>
 		</div>
