@@ -16,6 +16,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
+				<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link
 					rel="preconnect"
@@ -27,7 +28,7 @@ export default function RootLayout({
 					rel="stylesheet"
 				/>
 			</head>
-			<body className="antialiased">
+			<body className="antialiased min-h-svh">
 				<Providers>{children}</Providers>
 			</body>
 		</html>

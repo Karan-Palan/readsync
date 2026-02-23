@@ -299,6 +299,7 @@ export default function TextSelectionMenu({
 				minWidth: showNoteInput ? "280px" : undefined,
 			}}
 			onMouseDown={(e) => e.preventDefault()}
+			onTouchStart={(e) => e.preventDefault()}
 		>
 			{!showNoteInput ? (
 				/* Main action bar */
