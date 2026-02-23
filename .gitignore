@@ -54,5 +54,4 @@ temp
 /AGENTS.md.bak
 # END Ruler Generated Files
 
-# foliate-js is copied from node_modules at build time by next.config.ts
-apps/web/public/foliate-js/
+# foliate-js static files are committed so Vercel can serve them without needing to copy at build time
