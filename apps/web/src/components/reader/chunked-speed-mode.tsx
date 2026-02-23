@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { SpeedReadingShell, useSpeedReading } from "@/components/reader/use-speed-reading";
+import {
+	SpeedReadingShell,
+	useSpeedReading,
+} from "@/components/reader/use-speed-reading";
 
 interface ChunkedSpeedModeProps {
 	text: string;
@@ -28,7 +31,13 @@ export default function ChunkedSpeedMode({
 		progress,
 		handleTouchStart,
 		handleTouchMove,
-	} = useSpeedReading({ text, startFraction, step: chunkSize, onExit, onFractionChange });
+	} = useSpeedReading({
+		text,
+		startFraction,
+		step: chunkSize,
+		onExit,
+		onFractionChange,
+	});
 
 	return (
 		<SpeedReadingShell
@@ -42,7 +51,7 @@ export default function ChunkedSpeedMode({
 			setWpm={setWpm}
 			empty={words.length === 0}
 			display={
-				<span className="text-center font-(family-name:--font-literata) text-3xl tracking-wide md:text-5xl">
+				<span className="font-(family-name:--font-literata) text-center text-3xl tracking-wide md:text-5xl">
 					{words.slice(currentIndex, currentIndex + chunkSize).join(" ")}
 				</span>
 			}
@@ -57,7 +66,7 @@ export default function ChunkedSpeedMode({
 						onChange={(e) => setChunkSize(Number(e.target.value))}
 						className="w-16"
 					/>
-					<span className="w-4 text-xs font-medium">{chunkSize}</span>
+					<span className="w-4 font-medium text-xs">{chunkSize}</span>
 				</div>
 			}
 		/>

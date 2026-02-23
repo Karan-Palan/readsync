@@ -28,20 +28,22 @@ export const chapterRouter = router({
 			});
 		}),
 
-	list: protectedProcedure.input(z.object({ bookId: z.string() })).query(async ({ ctx, input }) => {
-		const book = await prisma.book.findUnique({
-			where: { id: input.bookId },
-		});
+	list: protectedProcedure
+		.input(z.object({ bookId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const book = await prisma.book.findUnique({
+				where: { id: input.bookId },
+			});
 
-		if (!book || book.userId !== ctx.session.user.id) {
-			throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
-		}
+			if (!book || book.userId !== ctx.session.user.id) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
+			}
 
-		return prisma.chapter.findMany({
-			where: { bookId: input.bookId, userId: ctx.session.user.id },
-			orderBy: { order: "asc" },
-		});
-	}),
+			return prisma.chapter.findMany({
+				where: { bookId: input.bookId, userId: ctx.session.user.id },
+				orderBy: { order: "asc" },
+			});
+		}),
 
 	update: protectedProcedure
 		.input(

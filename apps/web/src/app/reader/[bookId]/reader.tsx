@@ -11,7 +11,9 @@ import AIPanel from "@/components/reader/ai-panel";
 import ChapterList from "@/components/reader/chapter-list";
 import ChunkedSpeedMode from "@/components/reader/chunked-speed-mode";
 import HighlightLayer from "@/components/reader/highlight-layer";
-import ReadingModeSelector, { type ReadingMode } from "@/components/reader/reading-mode-selector";
+import ReadingModeSelector, {
+	type ReadingMode,
+} from "@/components/reader/reading-mode-selector";
 import RSVPMode from "@/components/reader/rsvp-mode";
 import TextSelectionMenu from "@/components/reader/text-selection-menu";
 import type { AIAction, Chapter, Highlight } from "@/types/reader";
@@ -26,7 +28,7 @@ const NormalMode = dynamic(() => import("@/components/reader/normal-mode"), {
 function ReaderLoading() {
 	return (
 		<div className="flex h-full items-center justify-center">
-			<div className="border-primary h-10 w-10 animate-spin rounded-full border-4 border-t-transparent" />
+			<div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 		</div>
 	);
 }
@@ -57,10 +59,13 @@ export default function Reader({
 	const router = useRouter();
 	const { theme, setTheme } = useTheme();
 	const [currentMode, setCurrentMode] = useState<ReadingMode>("normal");
-	const [currentPosition, setCurrentPosition] = useState<unknown>(initialProgress);
+	const [currentPosition, setCurrentPosition] =
+		useState<unknown>(initialProgress);
 	const [highlights, setHighlights] = useState<Highlight[]>(initialHighlights);
 	const [chapters, setChapters] = useState<Chapter[]>(initialChapters);
-	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
+	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(
+		null,
+	);
 	const [isAIOpen, setIsAIOpen] = useState(false);
 	const [aiAction, setAiAction] = useState<AIAction | null>(null);
 	const [isChatMode, setIsChatMode] = useState(false);
@@ -78,17 +83,27 @@ export default function Reader({
 	const [showResumeDialog, setShowResumeDialog] = useState(() => {
 		const currentFraction = (initialProgress as any)?.fraction ?? 0;
 		const highestFraction = (initialHighestPosition as any)?.fraction ?? 0;
-		return !!(initialHighestPosition && highestFraction > currentFraction + 0.02);
+		return !!(
+			initialHighestPosition && highestFraction > currentFraction + 0.02
+		);
 	});
 	const [highestPosition] = useState<unknown>(initialHighestPosition);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	/** Populated by EPUBReader once the view is ready — allows programmatic navigation */
 	const navigateRef = useRef<((pos: unknown) => void) | null>(null);
 
-	const saveProgressMutation = useMutation(trpc.book.saveProgress.mutationOptions());
-	const updateCoverMutation = useMutation(trpc.book.updateCover.mutationOptions());
-	const summarizeBookMutation = useMutation(trpc.ai.summarizeBook.mutationOptions());
-	const saveSummaryMutation = useMutation(trpc.book.saveSummary.mutationOptions());
+	const saveProgressMutation = useMutation(
+		trpc.book.saveProgress.mutationOptions(),
+	);
+	const updateCoverMutation = useMutation(
+		trpc.book.updateCover.mutationOptions(),
+	);
+	const summarizeBookMutation = useMutation(
+		trpc.ai.summarizeBook.mutationOptions(),
+	);
+	const saveSummaryMutation = useMutation(
+		trpc.book.saveSummary.mutationOptions(),
+	);
 
 	const handleCoverExtracted = useCallback(
 		(coverDataUrl: string) => {
@@ -126,12 +141,15 @@ export default function Reader({
 		setHighlights((prev) => [highlight, ...prev]);
 	}, []);
 
-	const handleAIAction = useCallback((highlight: Highlight, action: AIAction) => {
-		setActiveHighlight(highlight);
-		setAiAction(action);
-		setIsChatMode(false);
-		setIsAIOpen(true);
-	}, []);
+	const handleAIAction = useCallback(
+		(highlight: Highlight, action: AIAction) => {
+			setActiveHighlight(highlight);
+			setAiAction(action);
+			setIsChatMode(false);
+			setIsAIOpen(true);
+		},
+		[],
+	);
 
 	const handleCloseAI = useCallback(() => {
 		setIsAIOpen(false);
@@ -143,7 +161,9 @@ export default function Reader({
 	const handleAIResponse = useCallback(
 		(id: string, response: string) => {
 			setHighlights((prev) =>
-				prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
+				prev.map((h) =>
+					h.id === id ? { ...h, aiAction, aiResponse: response } : h,
+				),
 			);
 		},
 		[aiAction],
@@ -172,10 +192,13 @@ export default function Reader({
 		setIsAIOpen(true);
 	}, []);
 
-	const handleChapterCreate = useCallback((startPage: number, endPage: number) => {
-		setChapterFormDefaults({ startPage, endPage });
-		setIsChapterListOpen(true);
-	}, []);
+	const handleChapterCreate = useCallback(
+		(startPage: number, endPage: number) => {
+			setChapterFormDefaults({ startPage, endPage });
+			setIsChapterListOpen(true);
+		},
+		[],
+	);
 
 	// AI shortcut: open a free-chat AI panel (no auto-run, user types first)
 	const handleQuickAI = useCallback(() => {
@@ -227,7 +250,11 @@ export default function Reader({
 			// Also save progress to server
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 			debounceRef.current = setTimeout(() => {
-				saveProgressMutation.mutate({ bookId: book.id, position: { fraction }, fraction });
+				saveProgressMutation.mutate({
+					bookId: book.id,
+					position: { fraction },
+					fraction,
+				});
 			}, 2000);
 		},
 		[book.id, saveProgressMutation],
@@ -252,16 +279,18 @@ export default function Reader({
 
 	return (
 		// h-dvh: true viewport height that accounts for mobile browser chrome
-		<div className="bg-background relative flex h-dvh flex-col overflow-hidden">
+		<div className="relative flex h-dvh flex-col overflow-hidden bg-background">
 			{/* Resume dialog */}
 			{showResumeDialog && highestPosition != null && (
 				<div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
-					<div className="bg-card mx-4 w-full max-w-sm rounded-xl border p-6 shadow-2xl">
+					<div className="mx-4 w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl">
 						<h3 className="mb-2 font-semibold">Resume Reading?</h3>
-						<p className="text-muted-foreground mb-4 text-sm">
+						<p className="mb-4 text-muted-foreground text-sm">
 							You previously reached{" "}
-							<strong>{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%</strong>. Jump
-							back there?
+							<strong>
+								{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%
+							</strong>
+							. Jump back there?
 						</p>
 						<div className="flex gap-2">
 							<button
@@ -272,16 +301,18 @@ export default function Reader({
 									setCurrentPosition(highestPosition);
 									setShowResumeDialog(false);
 								}}
-								className="bg-primary text-primary-foreground flex-1 rounded-md px-4 py-2 text-sm"
+								className="flex-1 rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm"
 							>
-								Jump to furthest ({Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%)
+								Jump to furthest (
+								{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%)
 							</button>
 							<button
 								type="button"
 								onClick={() => setShowResumeDialog(false)}
-								className="hover:bg-accent flex-1 rounded-md border px-4 py-2 text-sm"
+								className="flex-1 rounded-md border px-4 py-2 text-sm hover:bg-accent"
 							>
-								Stay here ({Math.round(((initialProgress as any)?.fraction ?? 0) * 100)}%)
+								Stay here (
+								{Math.round(((initialProgress as any)?.fraction ?? 0) * 100)}%)
 							</button>
 						</div>
 					</div>
@@ -292,28 +323,34 @@ export default function Reader({
 				<button
 					type="button"
 					onClick={() => router.push("/library" as any)}
-					className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"
+					className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
 				>
 					<ArrowLeft className="h-4 w-4" />
 					<span className="hidden sm:inline">Back</span>
 				</button>
 
-				<h2 className="max-w-[45%] truncate text-sm font-medium sm:max-w-[55%]">{book.title}</h2>
+				<h2 className="max-w-[45%] truncate font-medium text-sm sm:max-w-[55%]">
+					{book.title}
+				</h2>
 
 				<div className="flex items-center gap-2">
 					<button
 						type="button"
 						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-						className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors"
+						className="rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
 						title="Toggle theme"
 					>
-						{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+						{theme === "dark" ? (
+							<Sun className="h-4 w-4" />
+						) : (
+							<Moon className="h-4 w-4" />
+						)}
 					</button>
 					<button
 						type="button"
 						onClick={handleSummarizeBook}
 						disabled={summarizeBookMutation.isPending || !bookText}
-						className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50"
+						className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs transition-colors hover:bg-primary/20 disabled:opacity-50"
 						title="Generate a full book summary"
 					>
 						<BookOpen className="h-3.5 w-3.5" />
@@ -322,7 +359,7 @@ export default function Reader({
 					<button
 						type="button"
 						onClick={handleQuickAI}
-						className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+						className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs transition-colors hover:bg-primary/20"
 						title="AI: explain or discuss selection"
 					>
 						<Sparkles className="h-3.5 w-3.5" />
@@ -331,7 +368,7 @@ export default function Reader({
 					<button
 						type="button"
 						onClick={() => setIsChapterListOpen(!isChapterListOpen)}
-						className="text-muted-foreground hover:text-foreground text-sm"
+						className="text-muted-foreground text-sm hover:text-foreground"
 					>
 						<span className="hidden sm:inline">Chapters</span>
 						<span className="text-xs sm:hidden">Ch.</span>
@@ -376,7 +413,7 @@ export default function Reader({
 						/>
 
 						{/* Width control — positioned top-right, above overlay */}
-						<div className="bg-card/90 absolute top-2 right-3 z-20 flex items-center gap-2 rounded-lg border px-3 py-1.5 shadow-md backdrop-blur">
+						<div className="absolute top-2 right-3 z-20 flex items-center gap-2 rounded-lg border bg-card/90 px-3 py-1.5 shadow-md backdrop-blur">
 							<span className="text-muted-foreground text-xs">Width</span>
 							<input
 								type="range"
@@ -387,7 +424,7 @@ export default function Reader({
 								onChange={(e) => setFocusWidthPct(Number(e.target.value))}
 								className="w-20 sm:w-28"
 							/>
-							<span className="text-muted-foreground w-7 text-right font-mono text-xs">
+							<span className="w-7 text-right font-mono text-muted-foreground text-xs">
 								{focusWidthPct}%
 							</span>
 						</div>
@@ -396,7 +433,7 @@ export default function Reader({
 
 				{/*  RSVP: full-screen overlay so NormalMode stays mounted below  */}
 				{currentMode === "rsvp" && (
-					<div className="bg-background absolute inset-0 z-30">
+					<div className="absolute inset-0 z-30 bg-background">
 						<RSVPMode
 							text={bookText}
 							startFraction={readingFraction}
@@ -408,7 +445,7 @@ export default function Reader({
 
 				{/*  Chunked: same pattern as RSVP  */}
 				{currentMode === "chunked" && (
-					<div className="bg-background absolute inset-0 z-30">
+					<div className="absolute inset-0 z-30 bg-background">
 						<ChunkedSpeedMode
 							text={bookText}
 							startFraction={readingFraction}
@@ -461,7 +498,10 @@ export default function Reader({
 			</div>
 
 			{/*  Mode selector bar  */}
-			<ReadingModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
+			<ReadingModeSelector
+				currentMode={currentMode}
+				onModeChange={setCurrentMode}
+			/>
 		</div>
 	);
 }

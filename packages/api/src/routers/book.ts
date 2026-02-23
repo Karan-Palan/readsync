@@ -17,18 +17,20 @@ export const bookRouter = router({
 		});
 	}),
 
-	get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-		const book = await prisma.book.findUnique({
-			where: { id: input.id },
-			include: { readingProgress: true, highlights: true, chapters: true },
-		});
+	get: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const book = await prisma.book.findUnique({
+				where: { id: input.id },
+				include: { readingProgress: true, highlights: true, chapters: true },
+			});
 
-		if (!book || book.userId !== ctx.session.user.id) {
-			throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
-		}
+			if (!book || book.userId !== ctx.session.user.id) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
+			}
 
-		return book;
-	}),
+			return book;
+		}),
 
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
@@ -55,7 +57,9 @@ export const bookRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const existing = await prisma.readingProgress.findUnique({
-				where: { userId_bookId: { userId: ctx.session.user.id, bookId: input.bookId } },
+				where: {
+					userId_bookId: { userId: ctx.session.user.id, bookId: input.bookId },
+				},
 			});
 
 			const currentFraction = input.fraction ?? 0;
@@ -67,8 +71,13 @@ export const bookRouter = router({
 					: (existing?.highestPosition ?? input.position);
 
 			return prisma.readingProgress.upsert({
-				where: { userId_bookId: { userId: ctx.session.user.id, bookId: input.bookId } },
-				update: { position: input.position, highestPosition: newHighestPosition },
+				where: {
+					userId_bookId: { userId: ctx.session.user.id, bookId: input.bookId },
+				},
+				update: {
+					position: input.position,
+					highestPosition: newHighestPosition,
+				},
 				create: {
 					userId: ctx.session.user.id,
 					bookId: input.bookId,
@@ -123,14 +132,20 @@ export const bookRouter = router({
 	saveSummary: protectedProcedure
 		.input(z.object({ bookId: z.string(), content: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			const book = await prisma.book.findUnique({ where: { id: input.bookId } });
+			const book = await prisma.book.findUnique({
+				where: { id: input.bookId },
+			});
 			if (!book || book.userId !== ctx.session.user.id) {
 				throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
 			}
 			return prisma.bookSummary.upsert({
 				where: { bookId: input.bookId },
 				update: { content: input.content },
-				create: { userId: ctx.session.user.id, bookId: input.bookId, content: input.content },
+				create: {
+					userId: ctx.session.user.id,
+					bookId: input.bookId,
+					content: input.content,
+				},
 			});
 		}),
 
@@ -138,7 +153,11 @@ export const bookRouter = router({
 		return prisma.bookSummary.findMany({
 			where: { userId: ctx.session.user.id },
 			orderBy: { updatedAt: "desc" },
-			include: { book: { select: { id: true, title: true, coverUrl: true, fileType: true } } },
+			include: {
+				book: {
+					select: { id: true, title: true, coverUrl: true, fileType: true },
+				},
+			},
 		});
 	}),
 });

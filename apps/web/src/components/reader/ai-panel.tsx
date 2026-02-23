@@ -2,9 +2,8 @@
 
 import { X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-
-import type { AIAction, Highlight } from "@/types/reader";
 import AIChatPanel from "@/components/reader/ai-chat-panel";
+import type { AIAction, Highlight } from "@/types/reader";
 
 interface AIPanelProps {
 	bookId: string;
@@ -89,12 +88,15 @@ function DrawerVariant({
 		[width],
 	);
 
-	const onResizePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-		if (!dragging.current) return;
-		const delta = startX.current - e.clientX;
-		const maxW = Math.round(window.innerWidth * 0.85);
-		setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
-	}, []);
+	const onResizePointerMove = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			if (!dragging.current) return;
+			const delta = startX.current - e.clientX;
+			const maxW = Math.round(window.innerWidth * 0.85);
+			setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
+		},
+		[],
+	);
 
 	const onResizePointerUp = useCallback(() => {
 		dragging.current = false;
@@ -102,12 +104,12 @@ function DrawerVariant({
 
 	return (
 		<div
-			className="bg-card fixed top-0 right-0 z-50 flex h-full flex-col border-l shadow-xl"
+			className="fixed top-0 right-0 z-50 flex h-full flex-col border-l bg-card shadow-xl"
 			style={{ width, maxWidth: "85vw" }}
 			data-ai-panel="true"
 		>
 			<div
-				className="hover:bg-primary/20 active:bg-primary/40 absolute top-0 left-0 z-10 h-full w-3 cursor-col-resize touch-none transition-colors select-none"
+				className="absolute top-0 left-0 z-10 h-full w-3 cursor-col-resize touch-none select-none transition-colors hover:bg-primary/20 active:bg-primary/40"
 				onPointerDown={onResizePointerDown}
 				onPointerMove={onResizePointerMove}
 				onPointerUp={onResizePointerUp}
@@ -172,7 +174,7 @@ function BottomSheetVariant({
 			<div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />
 
 			<div
-				className="bg-card fixed right-0 bottom-0 left-0 z-50 flex flex-col rounded-t-xl shadow-xl"
+				className="fixed right-0 bottom-0 left-0 z-50 flex flex-col rounded-t-xl bg-card shadow-xl"
 				style={{ height: `${heightVh}vh` }}
 				data-ai-panel="true"
 			>
@@ -182,7 +184,7 @@ function BottomSheetVariant({
 					onTouchMove={onHandleTouchMove}
 					onTouchEnd={onHandleTouchEnd}
 				>
-					<div className="bg-muted-foreground/30 h-1 w-10 rounded-full" />
+					<div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
 				</div>
 
 				<PanelHeader onClose={onClose} />
@@ -206,8 +208,12 @@ function BottomSheetVariant({
 function PanelHeader({ onClose }: { onClose: () => void }) {
 	return (
 		<div className="flex items-center justify-between border-b px-4 py-3">
-			<h3 className="text-sm font-semibold">AI Assistant</h3>
-			<button type="button" onClick={onClose} className="hover:bg-accent rounded-md p-1">
+			<h3 className="font-semibold text-sm">AI Assistant</h3>
+			<button
+				type="button"
+				onClick={onClose}
+				className="rounded-md p-1 hover:bg-accent"
+			>
 				<X className="h-4 w-4" />
 			</button>
 		</div>

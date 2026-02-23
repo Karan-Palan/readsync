@@ -20,7 +20,7 @@ export const dashboardRouter = router({
 		});
 		const finishedBooks = allProgress.filter((p) => {
 			const fraction = (p.highestPosition as any)?.fraction;
-			return typeof fraction === "number" && fraction >= 0.90;
+			return typeof fraction === "number" && fraction >= 0.9;
 		});
 		const booksFinished = finishedBooks.length;
 
@@ -58,7 +58,9 @@ export const dashboardRouter = router({
 		});
 
 		// Book summaries generated
-		const summariesGenerated = await prisma.bookSummary.count({ where: { userId } });
+		const summariesGenerated = await prisma.bookSummary.count({
+			where: { userId },
+		});
 
 		// Reading streak (consecutive days with reading progress updates)
 		const progressDates = await prisma.readingProgress.findMany({
@@ -73,7 +75,9 @@ export const dashboardRouter = router({
 		const accountCreated = user.createdAt;
 		const daysSinceSignup = Math.max(
 			1,
-			Math.floor((now.getTime() - accountCreated.getTime()) / (1000 * 60 * 60 * 24)),
+			Math.floor(
+				(now.getTime() - accountCreated.getTime()) / (1000 * 60 * 60 * 24),
+			),
 		);
 		const booksPerDay = booksFinished / daysSinceSignup;
 		const projectedBooksPerYear = Math.round(booksPerDay * 365);

@@ -4,6 +4,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { trpc } from "@/utils/trpc";
 
 interface BookCardProps {
@@ -38,31 +40,42 @@ export default function BookCard({ book, onDeleted }: BookCardProps) {
 	return (
 		<button
 			type="button"
-			className="group bg-card hover:bg-accent relative w-full cursor-pointer overflow-hidden rounded-lg border transition-colors"
+			className="group relative w-full cursor-pointer overflow-hidden rounded-lg border bg-card transition-colors hover:bg-accent"
 			onClick={() => router.push(`/reader/${book.id}` as any)}
 		>
-			<div className="bg-muted flex aspect-3/4 items-center justify-center">
+			<div className="flex aspect-3/4 items-center justify-center bg-muted">
 				{book.coverUrl ? (
-					<img src={book.coverUrl} alt={book.title} className="h-full w-full object-cover" />
+					<img
+						src={book.coverUrl}
+						alt={book.title}
+						className="h-full w-full object-cover"
+					/>
 				) : (
-					<span className="text-muted-foreground text-3xl font-bold">{initials}</span>
+					<span className="font-bold text-3xl text-muted-foreground">
+						{initials}
+					</span>
 				)}
 			</div>
-			<div className="p-2">
-				<p className="truncate text-sm font-medium">{book.title}</p>
-				<p className="text-muted-foreground text-xs uppercase">{book.fileType}</p>
+			<div className="flex items-center justify-between p-2">
+				<p className="truncate font-medium text-sm">{book.title}</p>
+				<Badge variant="secondary" className="shrink-0 text-xs uppercase">
+					{book.fileType}
+				</Badge>
 			</div>
 
-			<button
-				type="button"
-				className="bg-destructive text-destructive-foreground absolute top-2 right-2 hidden rounded-md p-1.5 opacity-0 transition-opacity group-hover:block group-hover:opacity-100"
-				onClick={(e) => {
-					e.stopPropagation();
-					deleteMutation.mutate({ id: book.id });
-				}}
-			>
-				<Trash2 className="h-4 w-4" />
-			</button>
+			<div className="absolute top-2 right-2 hidden group-hover:block">
+				<Button
+					variant="destructive"
+					size="icon"
+					className="h-7 w-7"
+					onClick={(e) => {
+						e.stopPropagation();
+						deleteMutation.mutate({ id: book.id });
+					}}
+				>
+					<Trash2 className="h-4 w-4" />
+				</Button>
+			</div>
 		</button>
 	);
 }

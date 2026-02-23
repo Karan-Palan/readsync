@@ -23,7 +23,9 @@ export const ourFileRouter = {
 			return { userId: session.user.id };
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			const fileType = file.name.toLowerCase().endsWith(".epub") ? "EPUB" : "PDF";
+			const fileType = file.name.toLowerCase().endsWith(".epub")
+				? "EPUB"
+				: "PDF";
 
 			const title = file.name.replace(/\.(pdf|epub)$/i, "").trim();
 

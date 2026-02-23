@@ -21,14 +21,14 @@ export default function ReadingModeSelector({
 	onModeChange,
 }: ReadingModeSelectorProps) {
 	return (
-		<div className="bg-card/95 relative z-40 flex shrink-0 items-center justify-center border-t px-4 py-2 backdrop-blur">
-			<div className="bg-card flex items-center gap-1 rounded-full border p-1 shadow">
+		<div className="relative z-40 flex shrink-0 items-center justify-center border-t bg-card/95 px-4 py-2 backdrop-blur">
+			<div className="flex items-center gap-1 rounded-full border bg-card p-1 shadow">
 				{modes.map(({ mode, icon: Icon, label }) => (
 					<button
 						key={mode}
 						type="button"
 						onClick={() => onModeChange(mode)}
-						className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+						className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-xs transition-colors ${
 							currentMode === mode
 								? "bg-primary text-primary-foreground"
 								: "text-muted-foreground hover:text-foreground"

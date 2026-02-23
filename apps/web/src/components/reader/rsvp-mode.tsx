@@ -1,6 +1,9 @@
 "use client";
 
-import { SpeedReadingShell, useSpeedReading } from "@/components/reader/use-speed-reading";
+import {
+	SpeedReadingShell,
+	useSpeedReading,
+} from "@/components/reader/use-speed-reading";
 
 interface RSVPModeProps {
 	text: string;
@@ -25,7 +28,13 @@ export default function RSVPMode({
 		progress,
 		handleTouchStart,
 		handleTouchMove,
-	} = useSpeedReading({ text, startFraction, step: 1, onExit, onFractionChange });
+	} = useSpeedReading({
+		text,
+		startFraction,
+		step: 1,
+		onExit,
+		onFractionChange,
+	});
 
 	const currentWord = words[currentIndex] ?? "";
 	const orpIndex = Math.floor(currentWord.length * 0.3);

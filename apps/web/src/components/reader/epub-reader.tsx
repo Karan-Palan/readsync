@@ -1,7 +1,20 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, List, Search, Settings, X } from "lucide-react";
-import React, { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+	ChevronLeft,
+	ChevronRight,
+	List,
+	Search,
+	Settings,
+	X,
+} from "lucide-react";
+import React, {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 import { type EPUBHighlight, getHighlightRgba } from "@/types/reader";
 
@@ -14,11 +27,18 @@ type FoliateView = HTMLElement & {
 	next: () => void;
 	goTo: (dest: string | number | object) => void;
 	getCFI: (index: number, range?: Range) => string;
-	addAnnotation: (annotation: { value: string }, remove?: boolean) => Promise<unknown>;
+	addAnnotation: (
+		annotation: { value: string },
+		remove?: boolean,
+	) => Promise<unknown>;
 	deleteAnnotation: (annotation: { value: string }) => Promise<void>;
 	renderer?: {
 		setStyles?: (css: string) => void;
-		getContents?: () => { index: number; overlayer?: unknown; doc?: Document }[];
+		getContents?: () => {
+			index: number;
+			overlayer?: unknown;
+			doc?: Document;
+		}[];
 	};
 	book?: {
 		toc?: TocItem[];
@@ -119,7 +139,8 @@ export default function EPUBReader({
 				view.addEventListener("relocate", (e: Event) => {
 					if (!mounted) return;
 					const detail = (e as CustomEvent).detail ?? {};
-					const fraction = typeof detail.fraction === "number" ? detail.fraction : 0;
+					const fraction =
+						typeof detail.fraction === "number" ? detail.fraction : 0;
 					const cfi: string | null = detail.cfi ?? null;
 					// Skip if the position hasn't actually changed
 					if (cfi !== null && cfi === lastCfi) return;
@@ -142,17 +163,22 @@ export default function EPUBReader({
 					try {
 						const r = (view as any).renderer;
 						if (r?.setStyles) {
-							r.setStyles(`html { font-size: ${fontSizeRef.current}% !important; }`);
+							r.setStyles(
+								`html { font-size: ${fontSizeRef.current}% !important; }`,
+							);
 						}
 					} catch {}
 
 					// Wire up text-selection so the selection menu works inside the EPUB iframe
 					const getIframeOffset = () => {
 						// frameElement gives exact iframe position (works because sandbox has allow-same-origin)
-						const frameEl = doc.defaultView?.frameElement as HTMLIFrameElement | null;
+						const frameEl = doc.defaultView
+							?.frameElement as HTMLIFrameElement | null;
 						if (frameEl) return frameEl.getBoundingClientRect();
 						// fallback: use the foliate-view element bounds
-						return folViewRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
+						return (
+							folViewRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 }
+						);
 					};
 
 					doc.addEventListener("mouseup", () => {
@@ -212,7 +238,9 @@ export default function EPUBReader({
 								if (!mounted) return;
 								const sel2 = doc.defaultView?.getSelection();
 								if (!sel2 || sel2.isCollapsed) {
-									window.dispatchEvent(new CustomEvent("foliate-selection", { detail: null }));
+									window.dispatchEvent(
+										new CustomEvent("foliate-selection", { detail: null }),
+									);
 								}
 							}, 150);
 						}
@@ -235,7 +263,8 @@ export default function EPUBReader({
 				view.addEventListener("draw-annotation", (e: Event) => {
 					const { draw, annotation } = (e as CustomEvent).detail ?? {};
 					if (!draw || !annotation) return;
-					const color = highlightColorMap.current.get(annotation.value) ?? "yellow";
+					const color =
+						highlightColorMap.current.get(annotation.value) ?? "yellow";
 					const fill = getHighlightRgba(color);
 					// Overlayer.highlight is a static method on the Overlayer class
 					draw((rects: DOMRectList) => {
@@ -256,7 +285,9 @@ export default function EPUBReader({
 						g.addEventListener("click", () => {
 							// Find the highlight by CFI
 							const cfi = annotation.value;
-							window.dispatchEvent(new CustomEvent("foliate-highlight-click", { detail: { cfi } }));
+							window.dispatchEvent(
+								new CustomEvent("foliate-highlight-click", { detail: { cfi } }),
+							);
 						});
 						return g;
 					});
@@ -281,7 +312,10 @@ export default function EPUBReader({
 							const sections = view.book?.sections ?? [];
 							const idx = Math.max(
 								0,
-								Math.min(sections.length - 1, Math.floor(p.fraction * sections.length)),
+								Math.min(
+									sections.length - 1,
+									Math.floor(p.fraction * sections.length),
+								),
 							);
 							try {
 								view.goTo({ index: idx });
@@ -311,7 +345,10 @@ export default function EPUBReader({
 					try {
 						view.goTo({ index: savedPos.index });
 					} catch {}
-				} else if (typeof savedPos?.fraction === "number" && savedPos.fraction > 0) {
+				} else if (
+					typeof savedPos?.fraction === "number" &&
+					savedPos.fraction > 0
+				) {
 					try {
 						// Approximate: jump to the section that covers this fraction
 						const sections = view.book?.sections ?? [];
@@ -327,7 +364,11 @@ export default function EPUBReader({
 				const handleKey = (e: KeyboardEvent) => {
 					const tag = (e.target as HTMLElement)?.tagName;
 					if (tag === "INPUT" || tag === "TEXTAREA") return;
-					if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ") {
+					if (
+						e.key === "ArrowRight" ||
+						e.key === "ArrowDown" ||
+						e.key === " "
+					) {
 						view.next();
 					} else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
 						view.prev();
@@ -434,7 +475,7 @@ export default function EPUBReader({
 	return (
 		<div className="relative flex h-full w-full flex-col overflow-hidden">
 			{/* Toolbar */}
-			<div className="bg-card/90 flex shrink-0 items-center justify-between border-b px-3 py-1.5 backdrop-blur">
+			<div className="flex shrink-0 items-center justify-between border-b bg-card/90 px-3 py-1.5 backdrop-blur">
 				<div className="flex items-center gap-0.5">
 					{toc.length > 0 && (
 						<button
@@ -444,7 +485,7 @@ export default function EPUBReader({
 								setShowToc((v) => !v);
 								setShowSearch(false);
 							}}
-							className={`hover:bg-accent rounded p-1.5 ${showToc ? "bg-accent" : ""}`}
+							className={`rounded p-1.5 hover:bg-accent ${showToc ? "bg-accent" : ""}`}
 						>
 							<List className="h-4 w-4" />
 						</button>
@@ -456,20 +497,22 @@ export default function EPUBReader({
 							setShowSearch((v) => !v);
 							setShowToc(false);
 						}}
-						className={`hover:bg-accent rounded p-1.5 ${showSearch ? "bg-accent" : ""}`}
+						className={`rounded p-1.5 hover:bg-accent ${showSearch ? "bg-accent" : ""}`}
 					>
 						<Search className="h-4 w-4" />
 					</button>
 				</div>
 
-				<span className="text-muted-foreground text-xs font-medium tabular-nums">{progress}%</span>
+				<span className="font-medium text-muted-foreground text-xs tabular-nums">
+					{progress}%
+				</span>
 
 				<div className="flex items-center gap-0.5">
 					<button
 						type="button"
 						title="Previous page"
 						onClick={() => folViewRef.current?.prev()}
-						className="hover:bg-accent rounded p-1.5"
+						className="rounded p-1.5 hover:bg-accent"
 					>
 						<ChevronLeft className="h-4 w-4" />
 					</button>
@@ -477,7 +520,7 @@ export default function EPUBReader({
 						type="button"
 						title="Next page"
 						onClick={() => folViewRef.current?.next()}
-						className="hover:bg-accent rounded p-1.5"
+						className="rounded p-1.5 hover:bg-accent"
 					>
 						<ChevronRight className="h-4 w-4" />
 					</button>
@@ -485,7 +528,7 @@ export default function EPUBReader({
 						type="button"
 						title="Settings"
 						onClick={() => setShowSettings(!showSettings)}
-						className={`hover:bg-accent rounded p-1.5 ${showSettings ? "bg-accent" : ""}`}
+						className={`rounded p-1.5 hover:bg-accent ${showSettings ? "bg-accent" : ""}`}
 					>
 						<Settings className="h-4 w-4" />
 					</button>
@@ -494,7 +537,7 @@ export default function EPUBReader({
 
 			{/* Settings panel */}
 			{showSettings && (
-				<div className="bg-card shrink-0 border-b px-4 py-2">
+				<div className="shrink-0 border-b bg-card px-4 py-2">
 					<label className="flex items-center gap-2 text-sm">
 						<span className="text-muted-foreground text-xs">Font size</span>
 						<input
@@ -514,11 +557,11 @@ export default function EPUBReader({
 			<div className="relative flex min-h-0 flex-1 overflow-hidden">
 				{/* TOC sidebar */}
 				{showToc && toc.length > 0 && (
-					<div className="bg-card flex w-64 shrink-0 flex-col overflow-hidden border-r">
+					<div className="flex w-64 shrink-0 flex-col overflow-hidden border-r bg-card">
 						<div className="flex items-center justify-between border-b px-3 py-2">
-							<span className="text-sm font-medium">Contents</span>
+							<span className="font-medium text-sm">Contents</span>
 							<button type="button" onClick={() => setShowToc(false)}>
-								<X className="text-muted-foreground h-4 w-4" />
+								<X className="h-4 w-4 text-muted-foreground" />
 							</button>
 						</div>
 						<div className="flex-1 overflow-y-auto">
@@ -536,15 +579,18 @@ export default function EPUBReader({
 
 				{/* Search panel */}
 				{showSearch && (
-					<EpubSearch view={folViewRef.current} onClose={() => setShowSearch(false)} />
+					<EpubSearch
+						view={folViewRef.current}
+						onClose={() => setShowSearch(false)}
+					/>
 				)}
 			</div>
 
 			{/* Loading overlay */}
 			{isLoading && (
-				<div className="bg-background/80 absolute inset-0 z-30 flex items-center justify-center backdrop-blur-sm">
+				<div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
 					<div className="flex flex-col items-center gap-3">
-						<div className="border-primary h-10 w-10 animate-spin rounded-full border-4 border-t-transparent" />
+						<div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 						<p className="text-muted-foreground text-sm">Loading book…</p>
 					</div>
 				</div>
@@ -552,10 +598,12 @@ export default function EPUBReader({
 
 			{/* Error overlay */}
 			{error && !isLoading && (
-				<div className="bg-background/80 absolute inset-0 z-30 flex items-center justify-center">
-					<div className="border-destructive bg-destructive/10 max-w-md rounded-lg border p-6 text-center">
-						<p className="text-destructive font-semibold">Failed to load book</p>
-						<p className="text-muted-foreground mt-2 text-sm">{error}</p>
+				<div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80">
+					<div className="max-w-md rounded-lg border border-destructive bg-destructive/10 p-6 text-center">
+						<p className="font-semibold text-destructive">
+							Failed to load book
+						</p>
+						<p className="mt-2 text-muted-foreground text-sm">{error}</p>
 					</div>
 				</div>
 			)}
@@ -650,7 +698,7 @@ function TocList({
 					<button
 						type="button"
 						onClick={() => onNavigate(item.href)}
-						className="hover:bg-accent w-full py-1.5 text-left text-sm"
+						className="w-full py-1.5 text-left text-sm hover:bg-accent"
 						style={{
 							paddingLeft: `${12 + depth * 14}px`,
 							paddingRight: "12px",
@@ -659,7 +707,11 @@ function TocList({
 						{item.label}
 					</button>
 					{item.subitems?.length ? (
-						<TocList items={item.subitems} onNavigate={onNavigate} depth={depth + 1} />
+						<TocList
+							items={item.subitems}
+							onNavigate={onNavigate}
+							depth={depth + 1}
+						/>
 					) : null}
 				</li>
 			))}
@@ -667,9 +719,17 @@ function TocList({
 	);
 }
 
-function EpubSearch({ view, onClose }: { view: FoliateView | null; onClose: () => void }) {
+function EpubSearch({
+	view,
+	onClose,
+}: {
+	view: FoliateView | null;
+	onClose: () => void;
+}) {
 	const [query, setQuery] = useState("");
-	const [results, setResults] = useState<{ excerpt: string; href: string }[]>([]);
+	const [results, setResults] = useState<{ excerpt: string; href: string }[]>(
+		[],
+	);
 	const [isBusy, setIsBusy] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -716,9 +776,9 @@ function EpubSearch({ view, onClose }: { view: FoliateView | null; onClose: () =
 	}, [view, query]);
 
 	return (
-		<div className="bg-card flex w-72 shrink-0 flex-col overflow-hidden border-l">
+		<div className="flex w-72 shrink-0 flex-col overflow-hidden border-l bg-card">
 			<div className="flex items-center gap-2 border-b px-3 py-2">
-				<Search className="text-muted-foreground h-4 w-4 shrink-0" />
+				<Search className="h-4 w-4 shrink-0 text-muted-foreground" />
 				<input
 					ref={inputRef}
 					type="text"
@@ -736,11 +796,11 @@ function EpubSearch({ view, onClose }: { view: FoliateView | null; onClose: () =
 							setResults([]);
 						}}
 					>
-						<X className="text-muted-foreground h-4 w-4" />
+						<X className="h-4 w-4 text-muted-foreground" />
 					</button>
 				)}
 				<button type="button" onClick={onClose}>
-					<X className="text-muted-foreground h-4 w-4" />
+					<X className="h-4 w-4 text-muted-foreground" />
 				</button>
 			</div>
 			<div className="px-3 py-2">
@@ -748,21 +808,23 @@ function EpubSearch({ view, onClose }: { view: FoliateView | null; onClose: () =
 					type="button"
 					onClick={handleSearch}
 					disabled={isBusy || !query.trim()}
-					className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded py-1.5 text-xs disabled:opacity-50"
+					className="w-full rounded bg-primary py-1.5 text-primary-foreground text-xs hover:bg-primary/90 disabled:opacity-50"
 				>
 					{isBusy ? "Searching…" : "Search"}
 				</button>
 			</div>
 			<div className="flex-1 overflow-y-auto">
 				{results.length === 0 && !isBusy && query && (
-					<p className="text-muted-foreground px-3 py-4 text-center text-xs">No results found</p>
+					<p className="px-3 py-4 text-center text-muted-foreground text-xs">
+						No results found
+					</p>
 				)}
 				{results.map((r, i) => (
 					<button
 						// biome-ignore lint/suspicious/noArrayIndexKey: search results have no stable key
 						key={i}
 						type="button"
-						className="hover:bg-accent w-full border-b px-3 py-2 text-left text-xs"
+						className="w-full border-b px-3 py-2 text-left text-xs hover:bg-accent"
 					>
 						{r.excerpt}
 					</button>

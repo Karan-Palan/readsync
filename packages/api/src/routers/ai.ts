@@ -3,9 +3,8 @@ import prisma from "@readsync/db";
 import { TRPCError } from "@trpc/server";
 import { generateText } from "ai";
 import { z } from "zod";
-
-import { enforceAiUsageCap, incrementAiUsage } from "../lib/ai-usage";
 import { protectedProcedure, router } from "../index";
+import { enforceAiUsageCap, incrementAiUsage } from "../lib/ai-usage";
 
 // Groq via OpenAI-compatible endpoint
 const groq = createOpenAI({
@@ -129,7 +128,11 @@ export const aiRouter = router({
 			await prisma.bookSummary.upsert({
 				where: { bookId: input.bookId },
 				update: { content: text },
-				create: { userId: ctx.session.user.id, bookId: input.bookId, content: text },
+				create: {
+					userId: ctx.session.user.id,
+					bookId: input.bookId,
+					content: text,
+				},
 			});
 
 			await incrementAiUsage(ctx.session.user.id);

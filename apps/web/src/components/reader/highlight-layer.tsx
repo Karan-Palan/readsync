@@ -45,7 +45,9 @@ export default function HighlightLayer({
 
 			// Match against stored highlights by partial text overlap
 			const matched = highlights.find(
-				(h) => clickedText.includes(h.text.slice(0, 40)) || h.text.includes(clickedText),
+				(h) =>
+					clickedText.includes(h.text.slice(0, 40)) ||
+					h.text.includes(clickedText),
 			);
 			if (matched) {
 				handlerRef.current(matched);

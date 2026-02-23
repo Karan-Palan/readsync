@@ -1,7 +1,13 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -30,7 +36,9 @@ export default function PDFReader({
 }: PDFReaderProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [numPages, setNumPages] = useState<number>(0);
-	const [currentPage, setCurrentPage] = useState<number>((position as any)?.page ?? 1);
+	const [currentPage, setCurrentPage] = useState<number>(
+		(position as any)?.page ?? 1,
+	);
 	const [fontSize, setFontSize] = useState(16);
 	const [showSettings, setShowSettings] = useState(false);
 	const [pageWidth, setPageWidth] = useState(680);
@@ -54,7 +62,11 @@ export default function PDFReader({
 		const { scrollTop, scrollHeight } = containerRef.current;
 		const pageHeight = scrollHeight / numPages;
 		const visiblePage = Math.floor(scrollTop / pageHeight) + 1;
-		if (visiblePage !== currentPage && visiblePage >= 1 && visiblePage <= numPages) {
+		if (
+			visiblePage !== currentPage &&
+			visiblePage >= 1 &&
+			visiblePage <= numPages
+		) {
 			setCurrentPage(visiblePage);
 			onPositionChange({ page: visiblePage });
 		}
@@ -90,14 +102,14 @@ export default function PDFReader({
 					<button
 						type="button"
 						onClick={() => setShowSettings(!showSettings)}
-						className="bg-card text-muted-foreground hover:bg-accent rounded-md border px-3 py-1 text-xs"
+						className="rounded-md border bg-card px-3 py-1 text-muted-foreground text-xs hover:bg-accent"
 					>
 						Aa
 					</button>
 				</div>
 
 				{showSettings && (
-					<div className="bg-card mb-4 rounded-md border p-3 shadow-lg">
+					<div className="mb-4 rounded-md border bg-card p-3 shadow-lg">
 						<label className="flex items-center gap-2 text-xs">
 							Font size
 							<input
@@ -128,7 +140,7 @@ export default function PDFReader({
 					}}
 					loading={
 						<div className="flex items-center justify-center py-20">
-							<div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+							<div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 						</div>
 					}
 				>
@@ -150,12 +162,12 @@ export default function PDFReader({
 
 			{/* Page indicator & nav */}
 			{numPages > 0 && (
-				<div className="bg-card/80 fixed bottom-20 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full px-3 py-1 shadow backdrop-blur">
+				<div className="fixed bottom-20 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-card/80 px-3 py-1 shadow backdrop-blur">
 					<button
 						type="button"
 						onClick={() => goToPage(currentPage - 1)}
 						disabled={currentPage <= 1}
-						className="hover:bg-accent rounded p-0.5 disabled:opacity-30"
+						className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
 					>
 						<ChevronLeft className="h-4 w-4" />
 					</button>
@@ -166,7 +178,7 @@ export default function PDFReader({
 						type="button"
 						onClick={() => goToPage(currentPage + 1)}
 						disabled={currentPage >= numPages}
-						className="hover:bg-accent rounded p-0.5 disabled:opacity-30"
+						className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
 					>
 						<ChevronRight className="h-4 w-4" />
 					</button>

@@ -1,11 +1,23 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Lightbulb, List, MessageSquare, MessageSquarePlus, Save, Sparkles, X } from "lucide-react";
+import {
+	Lightbulb,
+	List,
+	MessageSquare,
+	MessageSquarePlus,
+	Save,
+	Sparkles,
+	X,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getPdfPageNumber } from "@/lib/pdf-utils";
-import { type AIAction, type Highlight, HIGHLIGHT_COLORS } from "@/types/reader";
+import {
+	type AIAction,
+	HIGHLIGHT_COLORS,
+	type Highlight,
+} from "@/types/reader";
 import { trpc } from "@/utils/trpc";
 
 interface TextSelectionMenuProps {
@@ -39,13 +51,19 @@ export default function TextSelectionMenu({
 	const [selectedText, setSelectedText] = useState("");
 	const [showNoteInput, setShowNoteInput] = useState(false);
 	const [noteText, setNoteText] = useState("");
-	const [pendingHighlight, setPendingHighlight] = useState<Highlight | null>(null);
+	const [pendingHighlight, setPendingHighlight] = useState<Highlight | null>(
+		null,
+	);
 	const [selectedCfi, setSelectedCfi] = useState<string | undefined>(undefined);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const selectionSource = useRef<"document" | "foliate" | null>(null);
 
-	const createHighlightMutation = useMutation(trpc.highlight.create.mutationOptions());
-	const updateHighlightMutation = useMutation(trpc.highlight.update.mutationOptions());
+	const createHighlightMutation = useMutation(
+		trpc.highlight.create.mutationOptions(),
+	);
+	const updateHighlightMutation = useMutation(
+		trpc.highlight.update.mutationOptions(),
+	);
 
 	const handleDocSelectionChange = useCallback(() => {
 		const selection = window.getSelection();
@@ -101,7 +119,8 @@ export default function TextSelectionMenu({
 
 	useEffect(() => {
 		document.addEventListener("selectionchange", handleDocSelectionChange);
-		return () => document.removeEventListener("selectionchange", handleDocSelectionChange);
+		return () =>
+			document.removeEventListener("selectionchange", handleDocSelectionChange);
 	}, [handleDocSelectionChange]);
 
 	useEffect(() => {
@@ -130,7 +149,8 @@ export default function TextSelectionMenu({
 			}
 		};
 		window.addEventListener("foliate-selection", handleFoliateSelection);
-		return () => window.removeEventListener("foliate-selection", handleFoliateSelection);
+		return () =>
+			window.removeEventListener("foliate-selection", handleFoliateSelection);
 	}, []);
 
 	const createHighlight = useCallback(
@@ -211,7 +231,10 @@ export default function TextSelectionMenu({
 		});
 
 		if (noteText.trim()) {
-			await updateHighlightMutation.mutateAsync({ id: result.id, note: noteText.trim() });
+			await updateHighlightMutation.mutateAsync({
+				id: result.id,
+				note: noteText.trim(),
+			});
 		}
 
 		const highlight: Highlight = {
@@ -268,7 +291,7 @@ export default function TextSelectionMenu({
 	return (
 		<div
 			ref={menuRef}
-			className="bg-card fixed z-50 flex flex-col rounded-xl border shadow-2xl"
+			className="fixed z-50 flex flex-col rounded-xl border bg-card shadow-2xl"
 			style={{
 				left: `clamp(100px, ${menuPosition.x}px, calc(100vw - 100px))`,
 				top: `clamp(56px, ${menuPosition.y}px, calc(100vh - 60px))`,
@@ -286,18 +309,18 @@ export default function TextSelectionMenu({
 							key={c.id}
 							type="button"
 							onClick={() => handleHighlightColor(c.id)}
-							className={`${c.bg} hover:border-border h-6 w-6 flex-shrink-0 rounded-full border-2 border-transparent transition-transform hover:scale-110`}
+							className={`${c.bg} h-6 w-6 flex-shrink-0 rounded-full border-2 border-transparent transition-transform hover:scale-110 hover:border-border`}
 							title={`Highlight ${c.label}`}
 						/>
 					))}
 
-					<div className="bg-border mx-1 h-5 w-px" />
+					<div className="mx-1 h-5 w-px bg-border" />
 
 					{/* Note */}
 					<button
 						type="button"
 						onClick={handleNoteOpen}
-						className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
 						title="Add note"
 					>
 						<Save className="h-3.5 w-3.5" />
@@ -308,7 +331,7 @@ export default function TextSelectionMenu({
 					<button
 						type="button"
 						onClick={() => createHighlight("yellow", "SUMMARIZE")}
-						className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
 						title="Summarize"
 					>
 						<MessageSquare className="h-3.5 w-3.5" />
@@ -317,7 +340,7 @@ export default function TextSelectionMenu({
 					<button
 						type="button"
 						onClick={() => createHighlight("yellow", "EXTRACT")}
-						className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
 						title="Extract insights"
 					>
 						<Sparkles className="h-3.5 w-3.5" />
@@ -326,7 +349,7 @@ export default function TextSelectionMenu({
 					<button
 						type="button"
 						onClick={() => createHighlight("yellow", "DISCUSS")}
-						className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
 						title="Discuss this idea"
 					>
 						<Lightbulb className="h-3.5 w-3.5" />
@@ -335,7 +358,7 @@ export default function TextSelectionMenu({
 					<button
 						type="button"
 						onClick={handleChapterCreate}
-						className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
 						title="Create chapter"
 					>
 						<List className="h-3.5 w-3.5" />
@@ -345,26 +368,33 @@ export default function TextSelectionMenu({
 					<button
 						type="button"
 						onClick={dismiss}
-						className="hover:bg-accent ml-0.5 rounded-md p-1"
+						className="ml-0.5 rounded-md p-1 hover:bg-accent"
 						title="Dismiss"
 					>
-						<X className="text-muted-foreground h-3 w-3" />
+						<X className="h-3 w-3 text-muted-foreground" />
 					</button>
 				</div>
 			) : (
 				/* Note input */
-				<div className="flex flex-col gap-2 p-3" onMouseDown={(e) => e.stopPropagation()}>
+				<div
+					className="flex flex-col gap-2 p-3"
+					onMouseDown={(e) => e.stopPropagation()}
+				>
 					<div className="flex items-center justify-between">
-						<span className="text-xs font-medium">Add a note</span>
-						<button type="button" onClick={dismiss} className="hover:bg-accent rounded p-0.5">
-							<X className="text-muted-foreground h-3.5 w-3.5" />
+						<span className="font-medium text-xs">Add a note</span>
+						<button
+							type="button"
+							onClick={dismiss}
+							className="rounded p-0.5 hover:bg-accent"
+						>
+							<X className="h-3.5 w-3.5 text-muted-foreground" />
 						</button>
 					</div>
-					<p className="bg-muted/50 text-muted-foreground line-clamp-2 rounded px-2 py-1 text-xs italic">
+					<p className="line-clamp-2 rounded bg-muted/50 px-2 py-1 text-muted-foreground text-xs italic">
 						&ldquo;{selectedText}&rdquo;
 					</p>
 					<textarea
-						className="bg-background focus:ring-ring min-h-[80px] w-full resize-none rounded-md border p-2 text-xs focus:ring-2 focus:outline-none"
+						className="min-h-[80px] w-full resize-none rounded-md border bg-background p-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
 						placeholder="Your note…"
 						value={noteText}
 						onChange={(e) => setNoteText(e.target.value)}
@@ -376,7 +406,7 @@ export default function TextSelectionMenu({
 							type="button"
 							onClick={handleNoteSave}
 							disabled={createHighlightMutation.isPending}
-							className="bg-primary text-primary-foreground flex flex-1 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
+							className="flex flex-1 items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-primary-foreground text-xs disabled:opacity-50"
 						>
 							<MessageSquarePlus className="h-3.5 w-3.5" />
 							Save
@@ -384,7 +414,7 @@ export default function TextSelectionMenu({
 						<button
 							type="button"
 							onClick={() => setShowNoteInput(false)}
-							className="hover:bg-accent rounded-md px-3 py-1.5 text-xs"
+							className="rounded-md px-3 py-1.5 text-xs hover:bg-accent"
 						>
 							Back
 						</button>

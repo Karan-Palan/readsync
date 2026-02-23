@@ -66,11 +66,14 @@ export default function ChapterForm({
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: modal backdrop interaction pattern */}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: modal backdrop, dismissed via Escape or button */}
 			<div className="absolute inset-0 bg-black/50" onClick={onClose} />
-			<div className="bg-card relative z-10 w-full max-w-sm rounded-lg border p-6 shadow-xl">
-				<h3 className="mb-4 text-sm font-semibold">New Chapter</h3>
+			<div className="relative z-10 w-full max-w-sm rounded-lg border bg-card p-6 shadow-xl">
+				<h3 className="mb-4 font-semibold text-sm">New Chapter</h3>
 				<form onSubmit={handleSubmit} className="flex flex-col gap-3">
 					<div>
-						<label htmlFor="chapter-name" className="text-muted-foreground mb-1 block text-xs">
+						<label
+							htmlFor="chapter-name"
+							className="mb-1 block text-muted-foreground text-xs"
+						>
 							Chapter Name
 						</label>
 						<input
@@ -79,14 +82,14 @@ export default function ChapterForm({
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							placeholder="e.g. Introduction"
-							className="bg-background focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+							className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 						/>
 					</div>
 					<div className="grid grid-cols-2 gap-3">
 						<div>
 							<label
 								htmlFor="chapter-start-page"
-								className="text-muted-foreground mb-1 block text-xs"
+								className="mb-1 block text-muted-foreground text-xs"
 							>
 								Start Page
 							</label>
@@ -96,13 +99,13 @@ export default function ChapterForm({
 								min={1}
 								value={startPage}
 								onChange={(e) => setStartPage(Number(e.target.value))}
-								className="bg-background focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+								className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 							/>
 						</div>
 						<div>
 							<label
 								htmlFor="chapter-end-page"
-								className="text-muted-foreground mb-1 block text-xs"
+								className="mb-1 block text-muted-foreground text-xs"
 							>
 								End Page
 							</label>
@@ -112,7 +115,7 @@ export default function ChapterForm({
 								min={1}
 								value={endPage}
 								onChange={(e) => setEndPage(Number(e.target.value))}
-								className="bg-background focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+								className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 							/>
 						</div>
 					</div>
@@ -120,14 +123,14 @@ export default function ChapterForm({
 						<button
 							type="button"
 							onClick={onClose}
-							className="text-muted-foreground hover:bg-accent rounded-md px-4 py-2 text-sm"
+							className="rounded-md px-4 py-2 text-muted-foreground text-sm hover:bg-accent"
 						>
 							Cancel
 						</button>
 						<button
 							type="submit"
 							disabled={!name.trim() || createMutation.isPending}
-							className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+							className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90 disabled:opacity-50"
 						>
 							{createMutation.isPending ? "Creating..." : "Create"}
 						</button>
