@@ -228,8 +228,8 @@ export default function EPUBReader({
 					} catch {}
 
 					// Inject CSS to allow text selection + dark mode into EPUB content.
-					// touch-action: auto + -webkit-touch-callout: default = native
-					// selection handles on mobile/iPad Pencil.
+					// touch-action: pan-y lets vertical scrolling work but blocks
+					// horizontal browser gestures so foliate's swipe paginator won't fire.
 					// When the app is in dark mode, we use color-scheme:dark so the
 					// browser UA stylesheet switches to dark (white → canvas, etc.)
 					// and force a neutral dark background/light text on html/body.
@@ -238,8 +238,8 @@ export default function EPUBReader({
 						const selStyle = doc.createElement("style");
 						selStyle.id = "__readsync_theme__";
 						selStyle.textContent = [
-							"* { -webkit-user-select: text !important; user-select: text !important; touch-action: auto !important; }",
-							"body { -webkit-touch-callout: default !important; }",
+							"* { -webkit-user-select: text !important; user-select: text !important; touch-action: pan-y !important; }",
+							"body { -webkit-touch-callout: none !important; }",
 							"::selection { background: rgba(168,85,247,0.35); color: inherit; }",
 							"::-moz-selection { background: rgba(168,85,247,0.35); color: inherit; }",
 							isDark
@@ -248,7 +248,48 @@ export default function EPUBReader({
 						].join("\n");
 						(doc.head ?? doc.documentElement).appendChild(selStyle);
 					} catch {}
+				// Capture-phase touch guard inside iframe doc ──────────────────────
+				// Foliate adds touchstart/touchmove/touchend on `doc` WITHOUT capture,
+				// so our capture handlers fire first. We stopImmediatePropagation on
+				// horizontal moves so foliate's #onTouchMove never runs.
+				let iframeTouchStartX = 0;
+				let iframeTouchStartY = 0;
 
+				const onIframeTouchStart = (ev: TouchEvent) => {
+					const t = ev.touches[0];
+					if (t) { iframeTouchStartX = t.clientX; iframeTouchStartY = t.clientY; }
+				};
+
+				const onIframeTouchMove = (ev: TouchEvent) => {
+					const t = ev.touches[0];
+					if (!t) return;
+					const dx = t.clientX - iframeTouchStartX;
+					const dy = t.clientY - iframeTouchStartY;
+					if (Math.abs(dx) > Math.abs(dy)) {
+						// Horizontal — block foliate's swipe paginator entirely.
+						ev.stopImmediatePropagation();
+						ev.preventDefault();
+					}
+				};
+
+				const IFRAME_EDGE = 0.15;
+				const IFRAME_TAP_PX = 20;
+
+				const onIframeTouchEnd = (ev: TouchEvent) => {
+					const t = ev.changedTouches[0];
+					if (!t) return;
+					const dx = Math.abs(t.clientX - iframeTouchStartX);
+					const dy = Math.abs(t.clientY - iframeTouchStartY);
+					if (dx > IFRAME_TAP_PX || dy > IFRAME_TAP_PX) return; // drag, not tap
+					const relX = iframeTouchStartX / (doc.documentElement.clientWidth || 1);
+					if (relX < IFRAME_EDGE) view.prev();
+					else if (relX > 1 - IFRAME_EDGE) view.next();
+				};
+
+				doc.addEventListener("touchstart", onIframeTouchStart, { passive: true, capture: true });
+				doc.addEventListener("touchmove", onIframeTouchMove, { passive: false, capture: true });
+				doc.addEventListener("touchend", onIframeTouchEnd, { passive: true, capture: true });
+				// ── End touch guard ──────────────────────────────────────────────────
 					// Wire up text-selection so the selection menu works inside the EPUB iframe
 					const getIframeOffset = () => {
 						// frameElement gives exact iframe position (works because sandbox has allow-same-origin)
@@ -290,6 +331,7 @@ export default function EPUBReader({
 					//    the page doesn't jump (critical for iPad Pencil + mobile).
 					// 2. On mobile, selectionchange is often the ONLY reliable way
 					//    to know selection has completed — dispatch immediately.
+					let suppressDismiss = false;
 					let selectionDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 					doc.addEventListener("selectionchange", () => {
 						if (!mounted) return;
@@ -342,10 +384,17 @@ export default function EPUBReader({
 								},
 							}),
 						);
+
+						// Dismiss the browser's native Copy/Share/Web-search toolbar.
+						// Set suppressDismiss so our dismiss-handler doesn't collapse the custom UI.
+						suppressDismiss = true;
+						doc.defaultView?.getSelection()?.removeAllRanges();
+						setTimeout(() => { suppressDismiss = false; }, 500);
 					}
 
 					doc.addEventListener("selectionchange", () => {
 						if (!mounted) return;
+						if (suppressDismiss) return;
 						const sel = doc.defaultView?.getSelection();
 						if (!sel || sel.isCollapsed || !sel.toString().trim()) {
 							setTimeout(() => {
@@ -540,8 +589,8 @@ export default function EPUBReader({
 				const s = doc.createElement("style");
 				s.id = "__readsync_theme__";
 				s.textContent = [
-					"* { -webkit-user-select: text !important; user-select: text !important; touch-action: auto !important; }",
-					"body { -webkit-touch-callout: default !important; }",
+					"* { -webkit-user-select: text !important; user-select: text !important; touch-action: pan-y !important; }",
+					"body { -webkit-touch-callout: none !important; }",
 					"::selection { background: rgba(168,85,247,0.35); color: inherit; }",
 					"::-moz-selection { background: rgba(168,85,247,0.35); color: inherit; }",
 					isDark
