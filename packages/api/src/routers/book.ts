@@ -85,6 +85,35 @@ export const bookRouter = router({
 			});
 		}),
 
+	logSession: protectedProcedure
+		.input(
+			z.object({
+				bookId: z.string(),
+				minutesRead: z.number().int().min(0),
+				pagesRead: z.number().int().min(0),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session.user.id;
+			// Truncate to start of today in UTC
+			const today = new Date();
+			today.setUTCHours(0, 0, 0, 0);
+			return prisma.readingSession.upsert({
+				where: { userId_bookId_date: { userId, bookId: input.bookId, date: today } },
+				update: {
+					minutesRead: { increment: input.minutesRead },
+					pagesRead: { increment: input.pagesRead },
+				},
+				create: {
+					userId,
+					bookId: input.bookId,
+					date: today,
+					minutesRead: input.minutesRead,
+					pagesRead: input.pagesRead,
+				},
+			});
+		}),
+
 	getProgress: protectedProcedure
 		.input(z.object({ bookId: z.string() }))
 		.query(async ({ ctx, input }) => {

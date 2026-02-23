@@ -103,6 +103,60 @@ export const dashboardRouter = router({
 		};
 	}),
 
+	// Reading activity: time and pages read per day/week/month
+	activityStats: protectedProcedure.query(async ({ ctx }) => {
+		const userId = ctx.session.user.id;
+		const now = new Date();
+
+		const todayStart = new Date(now);
+		todayStart.setUTCHours(0, 0, 0, 0);
+
+		const weekStart = new Date(todayStart);
+		weekStart.setUTCDate(weekStart.getUTCDate() - 6);
+
+		const monthStart = new Date(todayStart);
+		monthStart.setUTCDate(monthStart.getUTCDate() - 29);
+
+		const sessions = await prisma.readingSession.findMany({
+			where: { userId, date: { gte: monthStart } },
+			select: { date: true, minutesRead: true, pagesRead: true },
+			orderBy: { date: "asc" },
+		});
+
+		const sum = (rows: typeof sessions) =>
+			rows.reduce(
+				(acc, r) => ({
+					minutesRead: acc.minutesRead + r.minutesRead,
+					pagesRead: acc.pagesRead + r.pagesRead,
+				}),
+				{ minutesRead: 0, pagesRead: 0 },
+			);
+
+		const today = sum(sessions.filter((s) => s.date >= todayStart));
+		const thisWeek = sum(sessions.filter((s) => s.date >= weekStart));
+		const thisMonth = sum(sessions);
+
+		// Build a per-day array for charts (last 30 days, fill missing days with 0)
+		const dailyMap = new Map<string, { minutesRead: number; pagesRead: number }>();
+		for (const s of sessions) {
+			const key = s.date.toISOString().slice(0, 10);
+			const prev = dailyMap.get(key) ?? { minutesRead: 0, pagesRead: 0 };
+			dailyMap.set(key, {
+				minutesRead: prev.minutesRead + s.minutesRead,
+				pagesRead: prev.pagesRead + s.pagesRead,
+			});
+		}
+		const dailyData: { date: string; minutesRead: number; pagesRead: number }[] = [];
+		for (let i = 29; i >= 0; i--) {
+			const d = new Date(todayStart);
+			d.setUTCDate(d.getUTCDate() - i);
+			const key = d.toISOString().slice(0, 10);
+			dailyData.push({ date: key, ...(dailyMap.get(key) ?? { minutesRead: 0, pagesRead: 0 }) });
+		}
+
+		return { today, thisWeek, thisMonth, dailyData };
+	}),
+
 	// Set or update the yearly reading goal
 	setGoal: protectedProcedure
 		.input(

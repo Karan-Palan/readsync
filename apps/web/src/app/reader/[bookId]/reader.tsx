@@ -87,6 +87,10 @@ export default function Reader({
 	});
 	const [highestPosition] = useState<unknown>(initialHighestPosition);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	// Session tracking refs (time + pages read)
+	const sessionStartRef = useRef<number>(Date.now());
+	const accPagesRef = useRef<number>(0);
+	const lastFractionRef = useRef<number>((initialProgress as any)?.fraction ?? 0);
 	/** Populated by EPUBReader once the view is ready — allows programmatic navigation */
 	const navigateRef = useRef<((pos: unknown) => void) | null>(null);
 	const [isFullscreen, setIsFullscreen] = useState(false);
@@ -155,25 +159,69 @@ export default function Reader({
 
 	// Sync isFullscreen with the native Fullscreen API (Esc key, etc.)
 	useEffect(() => {
-		const handler = () => setIsFullscreen(!!document.fullscreenElement);
+		const handler = () => {
+			const doc = document as any;
+			setIsFullscreen(
+				!!(document.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement),
+			);
+		};
 		document.addEventListener("fullscreenchange", handler);
-		return () => document.removeEventListener("fullscreenchange", handler);
+		document.addEventListener("webkitfullscreenchange", handler);
+		document.addEventListener("mozfullscreenchange", handler);
+		document.addEventListener("MSFullscreenChange", handler);
+		return () => {
+			document.removeEventListener("fullscreenchange", handler);
+			document.removeEventListener("webkitfullscreenchange", handler);
+			document.removeEventListener("mozfullscreenchange", handler);
+			document.removeEventListener("MSFullscreenChange", handler);
+		};
 	}, []);
 
 	const toggleFullscreen = useCallback(() => {
-		if (!document.fullscreenElement) {
-			document.documentElement.requestFullscreen().catch(() => {
-				// fallback: CSS-only fullscreen (e.g. iOS Safari)
-				setIsFullscreen((v) => !v);
-			});
+		const doc = document as any;
+		const docEl = document.documentElement as any;
+
+		// Check current fullscreen state across prefixed APIs
+		const isCurrentlyFullscreen = !!(
+			document.fullscreenElement ||
+			doc.webkitFullscreenElement ||
+			doc.mozFullScreenElement ||
+			doc.msFullscreenElement
+		);
+
+		if (!isCurrentlyFullscreen) {
+			// Try standard, then webkit (Safari/iPad), then moz, then ms
+			if (docEl.requestFullscreen) {
+				docEl.requestFullscreen().catch(() => setIsFullscreen(true));
+			} else if (docEl.webkitRequestFullscreen) {
+				docEl.webkitRequestFullscreen();
+				setIsFullscreen(true);
+			} else if (docEl.mozRequestFullScreen) {
+				docEl.mozRequestFullScreen();
+			} else if (docEl.msRequestFullscreen) {
+				docEl.msRequestFullscreen();
+			} else {
+				// Pure CSS fallback (e.g. older iOS Safari)
+				setIsFullscreen(true);
+			}
 		} else {
-			document.exitFullscreen().catch(() => {
+			if (document.exitFullscreen) {
+				document.exitFullscreen().catch(() => setIsFullscreen(false));
+			} else if (doc.webkitExitFullscreen) {
+				doc.webkitExitFullscreen();
 				setIsFullscreen(false);
-			});
+			} else if (doc.mozCancelFullScreen) {
+				doc.mozCancelFullScreen();
+			} else if (doc.msExitFullscreen) {
+				doc.msExitFullscreen();
+			} else {
+				setIsFullscreen(false);
+			}
 		}
 	}, []);
 
 	const saveProgressMutation = useMutation(trpc.book.saveProgress.mutationOptions());
+	const logSessionMutation = useMutation(trpc.book.logSession.mutationOptions());
 	const updateCoverMutation = useMutation(trpc.book.updateCover.mutationOptions());
 	const summarizeBookMutation = useMutation(trpc.ai.summarizeBook.mutationOptions());
 	const saveSummaryMutation = useMutation(trpc.book.saveSummary.mutationOptions());
@@ -195,6 +243,12 @@ export default function Reader({
 					? ((position as { fraction: number }).fraction ?? 0)
 					: 0;
 			if (fraction) setReadingFraction(fraction);
+
+			// Track pages read forward
+			if (fraction > lastFractionRef.current) {
+				accPagesRef.current += (fraction - lastFractionRef.current) * (book.totalPages ?? 300);
+			}
+			lastFractionRef.current = fraction;
 
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 			debounceRef.current = setTimeout(() => {
@@ -229,6 +283,38 @@ export default function Reader({
 		},
 		[book.id, userId, saveProgressMutation],
 	);
+
+	// Flush accumulated reading session to the API (time + pages)
+	const flushSession = useCallback(() => {
+		const elapsed = (Date.now() - sessionStartRef.current) / 60000;
+		const minutes = Math.max(0, Math.round(elapsed));
+		const pages = Math.max(0, Math.round(accPagesRef.current));
+		// Reset accumulators regardless
+		accPagesRef.current = 0;
+		sessionStartRef.current = Date.now();
+		if ((minutes > 0 || pages > 0) && navigator.onLine) {
+			logSessionMutation.mutate({ bookId: book.id, minutesRead: minutes, pagesRead: pages });
+		}
+	}, [book.id, logSessionMutation]);
+
+	// Flush on tab hide/close and reset timer on tab focus
+	useEffect(() => {
+		const handleVisibility = () => {
+			if (document.visibilityState === "hidden") {
+				flushSession();
+			} else {
+				// User came back — restart the timer so backgrounded time isn't counted
+				sessionStartRef.current = Date.now();
+			}
+		};
+		document.addEventListener("visibilitychange", handleVisibility);
+		return () => {
+			document.removeEventListener("visibilitychange", handleVisibility);
+			// Flush on unmount (navigate away)
+			flushSession();
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	useEffect(() => {
 		return () => {
@@ -437,14 +523,14 @@ export default function Reader({
 									setCurrentPosition(highestPosition);
 									setShowResumeDialog(false);
 								}}
-								className="bg-primary text-primary-foreground flex-1 rounded-md px-4 py-2 text-sm"
+									className="bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 flex-1 rounded-md px-4 py-2 text-sm transition-colors"
 							>
 								Jump to furthest ({Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%)
 							</button>
 							<button
 								type="button"
 								onClick={() => setShowResumeDialog(false)}
-								className="hover:bg-accent flex-1 rounded-md border px-4 py-2 text-sm"
+									className="hover:bg-accent active:bg-accent/70 flex-1 rounded-md border px-4 py-2 text-sm transition-colors"
 							>
 								Stay here ({Math.round(((initialProgress as any)?.fraction ?? 0) * 100)}%)
 							</button>
@@ -458,7 +544,8 @@ export default function Reader({
 					<button
 						type="button"
 						onClick={() => router.push("/library" as any)}
-						className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"
+						className="text-muted-foreground hover:text-foreground active:text-foreground/70 flex items-center gap-1 rounded-md p-1.5 text-sm transition-colors"
+						aria-label="Back to library"
 					>
 						<ArrowLeft className="h-4 w-4" />
 						<span className="hidden sm:inline">Back</span>
@@ -466,21 +553,23 @@ export default function Reader({
 
 					<h2 className="max-w-[45%] truncate text-sm font-medium sm:max-w-[55%]">{book.title}</h2>
 
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-1 sm:gap-2">
 						<button
 							type="button"
 							onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-							className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors"
+							className="text-muted-foreground hover:text-foreground active:bg-accent rounded-md p-2 transition-colors"
 							title="Toggle theme"
+							aria-label="Toggle theme"
 						>
-							{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+							{theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
 						</button>
 						<button
 							type="button"
 							onClick={handleSummarizeBook}
 							disabled={summarizeBookMutation.isPending || !bookText}
-							className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50"
+							className="bg-primary/10 text-primary hover:bg-primary/20 active:bg-primary/30 flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 							title="Generate a full book summary"
+							aria-label="Generate book summary"
 						>
 							<BookOpen className="h-3.5 w-3.5" />
 							<span className="hidden sm:inline">Summary</span>
@@ -488,8 +577,9 @@ export default function Reader({
 						<button
 							type="button"
 							onClick={handleQuickAI}
-							className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+							className="bg-primary/10 text-primary hover:bg-primary/20 active:bg-primary/30 flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors"
 							title="AI: explain or discuss selection"
+							aria-label="Open AI assistant"
 						>
 							<Sparkles className="h-3.5 w-3.5" />
 							<span className="hidden sm:inline">AI</span>
@@ -497,7 +587,8 @@ export default function Reader({
 						<button
 							type="button"
 							onClick={() => setIsChapterListOpen(!isChapterListOpen)}
-							className="text-muted-foreground hover:text-foreground text-sm"
+							className="text-muted-foreground hover:text-foreground active:text-foreground/70 rounded-md px-2 py-1.5 text-sm transition-colors"
+							aria-label="Toggle chapters panel"
 						>
 							<span className="hidden sm:inline">Chapters</span>
 							<span className="text-xs sm:hidden">Ch.</span>
@@ -505,10 +596,11 @@ export default function Reader({
 						<button
 							type="button"
 							onClick={toggleFullscreen}
-							className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors"
+							className="text-muted-foreground hover:text-foreground active:bg-accent rounded-md p-2 transition-colors"
 							title="Fullscreen (hide all chrome)"
+							aria-label="Toggle fullscreen"
 						>
-							<Maximize2 className="h-4 w-4" />
+							<Maximize2 className="h-5 w-5" />
 						</button>
 					</div>
 				</header>
@@ -649,8 +741,9 @@ export default function Reader({
 					<button
 						type="button"
 						onClick={toggleFullscreen}
-						className="border-border/50 bg-background/80 text-muted-foreground hover:text-foreground flex items-center gap-2 rounded-full border px-4 py-2 text-sm shadow-lg backdrop-blur transition-opacity"
+						className="border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-background/95 active:bg-background flex items-center gap-2 rounded-full border px-4 py-2 text-sm shadow-lg backdrop-blur transition-all"
 						title="Exit fullscreen"
+						aria-label="Exit fullscreen"
 					>
 						<Minimize2 className="h-4 w-4" />
 						<span>Exit fullscreen</span>

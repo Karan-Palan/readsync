@@ -15,7 +15,8 @@ model User {
   highlights    Highlight[]
   chapters      Chapter[]
   bookSummaries BookSummary[]
-  readingGoals  ReadingGoal[]
+  readingGoals    ReadingGoal[]
+  readingSessions ReadingSession[]
 
   @@unique([email])
   @@map("user")

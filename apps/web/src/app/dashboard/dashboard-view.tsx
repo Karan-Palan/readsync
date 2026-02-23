@@ -7,6 +7,7 @@ import {
 	BookOpen,
 	BookOpenCheck,
 	Brain,
+	Clock,
 	FileText,
 	Flame,
 	MessageSquare,
@@ -275,8 +276,66 @@ function ReadingBenefitsCard({
 
 // Main component
 
+type ActivityPeriod = "today" | "week" | "month";
+
+function ReadingActivityCard({
+	activity,
+}: {
+	activity: {
+		today: { minutesRead: number; pagesRead: number };
+		thisWeek: { minutesRead: number; pagesRead: number };
+		thisMonth: { minutesRead: number; pagesRead: number };
+	};
+}) {
+	const [period, setPeriod] = useState<ActivityPeriod>("today");
+	const periodData =
+		period === "today" ? activity.today : period === "week" ? activity.thisWeek : activity.thisMonth;
+	const labels: Record<ActivityPeriod, string> = { today: "Today", week: "This Week", month: "This Month" };
+
+	return (
+		<Card>
+			<CardHeader>
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<CardTitle className="flex items-center gap-2">
+						<Clock className="h-4 w-4 text-blue-500" />
+						Reading Activity
+					</CardTitle>
+					<div className="flex gap-1">
+						{(["today", "week", "month"] as ActivityPeriod[]).map((p) => (
+							<Button
+								key={p}
+								size="sm"
+								variant={period === p ? "default" : "ghost"}
+								onClick={() => setPeriod(p)}
+							>
+								{labels[p]}
+							</Button>
+						))}
+					</div>
+				</div>
+				<CardDescription>Time spent reading and pages covered</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<div className="grid grid-cols-2 gap-4">
+					<div className="bg-muted/50 flex flex-col gap-1 rounded-lg p-4">
+						<Clock className="mb-1 h-5 w-5 text-blue-500" />
+						<p className="text-3xl font-bold tabular-nums">{periodData.minutesRead}</p>
+						<p className="text-muted-foreground text-xs">minutes read</p>
+					</div>
+					<div className="bg-muted/50 flex flex-col gap-1 rounded-lg p-4">
+						<BookOpen className="mb-1 h-5 w-5 text-violet-500" />
+						<p className="text-3xl font-bold tabular-nums">{periodData.pagesRead}</p>
+						<p className="text-muted-foreground text-xs">pages read</p>
+					</div>
+				</div>
+			</CardContent>
+		</Card>
+	);
+}
+
 export default function DashboardView({ userName }: { userName: string }) {
 	const { data, isLoading } = useQuery(trpc.dashboard.stats.queryOptions());
+	const { data: activityData } = useQuery(trpc.dashboard.activityStats.queryOptions());
 
 	if (isLoading || !data) {
 		return <Loader size="h-8 w-8" label="Loading dashboard..." />;
@@ -347,6 +406,17 @@ export default function DashboardView({ userName }: { userName: string }) {
 				booksFinishedThisYear={data.booksFinishedThisYear}
 				projectedBooksPerYear={data.projectedBooksPerYear}
 			/>
+
+			{/* Reading Activity (time + pages) */}
+			{activityData && (
+				<ReadingActivityCard
+					activity={{
+						today: activityData.today,
+						thisWeek: activityData.thisWeek,
+						thisMonth: activityData.thisMonth,
+					}}
+				/>
+			)}
 
 			{/* AI Feature Usage */}
 			<AIFeatureUsageCard aiFeatureUsage={data.aiFeatureUsage} />

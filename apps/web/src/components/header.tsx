@@ -12,8 +12,6 @@ import UserMenu from "./user-menu";
 
 const NAV_LINKS = [
 	{ to: "/library", label: "Library" },
-	{ to: "/notes", label: "Notes" },
-	{ to: "/summaries", label: "Summaries" },
 	{ to: "/dashboard", label: "Dashboard" },
 ] as const;
 
