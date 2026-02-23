@@ -11,7 +11,9 @@
 		"UPLOADTHING_TOKEN",
 		"POLAR_ACCESS_TOKEN",
 		"POLAR_SUCCESS_URL",
-		"NODE_ENV"
+		"NODE_ENV",
+		"GOOGLE_CLIENT_ID",
+		"GOOGLE_CLIENT_SECRET"
 	],
 	"tasks": {
 		"build": {

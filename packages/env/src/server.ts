@@ -14,6 +14,8 @@ export const env = createEnv({
 		OPENAI_API_KEY: z.string().min(1).optional(),
 		GROQ_API_KEY: z.string().min(1).optional(),
 		UPLOADTHING_TOKEN: z.string().min(1).optional(),
+		GOOGLE_CLIENT_ID: z.string().min(1),
+		GOOGLE_CLIENT_SECRET: z.string().min(1),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

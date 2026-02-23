@@ -16,7 +16,7 @@ import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "./ui/sonner";
 
 function InnerProviders({ children }: { children: React.ReactNode }) {
-	const { canInstall, promptInstall } = usePWAInstall();
+	const { canInstall, promptInstall, isIOSInstallable } = usePWAInstall();
 	const [isSyncing, setIsSyncing] = useState(false);
 	const { data: session } = authClient.useSession();
 
@@ -42,7 +42,7 @@ function InnerProviders({ children }: { children: React.ReactNode }) {
 	}, [session?.user?.id]);
 
 	return (
-		<PWAInstallContext.Provider value={{ canInstall, promptInstall }}>
+		<PWAInstallContext.Provider value={{ canInstall, promptInstall, isIOSInstallable }}>
 			{children}
 			<SyncIndicator isSyncing={isSyncing} />
 			<PWAInstallBanner />
