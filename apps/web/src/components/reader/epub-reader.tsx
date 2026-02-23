@@ -8,6 +8,7 @@ import {
 	Settings,
 	X,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import React, {
 	type ReactNode,
 	useCallback,
@@ -78,6 +79,7 @@ export default function EPUBReader({
 	book,
 	position,
 	highlights = [],
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars — destructure below
 	onPositionChange,
 	onTextExtracted,
 	onCoverExtracted,
@@ -85,6 +87,10 @@ export default function EPUBReader({
 	navigateRef,
 	children,
 }: EPUBReaderProps) {
+	const { resolvedTheme } = useTheme();
+	const themeRef = useRef(resolvedTheme);
+	useEffect(() => { themeRef.current = resolvedTheme; }, [resolvedTheme]);
+
 	const viewerRef = useRef<HTMLDivElement>(null);
 	const folViewRef = useRef<FoliateView | null>(null);
 
@@ -129,7 +135,13 @@ export default function EPUBReader({
 
 				// Create the foliate-view web component and mount it
 				const view = document.createElement("foliate-view") as FoliateView;
-				view.style.cssText = "display:block;width:100%;height:100%;";
+				// touch-action:manipulation prevents double-tap zoom but crucially
+				// does NOT block the browser from delivering touch events to iframe
+				// content for text selection. Using 'none' was preventing all mobile
+				// touch highlighting because browsers suppress selection when any
+				// ancestor has touch-action:none.
+				view.style.cssText =
+					"display:block;width:100%;height:100%;touch-action:manipulation;"
 				viewerRef.current.appendChild(view);
 				folViewRef.current = view;
 
@@ -169,6 +181,28 @@ export default function EPUBReader({
 						}
 					} catch {}
 
+					// Inject CSS to allow text selection + dark mode into EPUB content.
+					// touch-action: auto + -webkit-touch-callout: default = native
+					// selection handles on mobile/iPad Pencil.
+					// When the app is in dark mode, we use color-scheme:dark so the
+					// browser UA stylesheet switches to dark (white → canvas, etc.)
+					// and force a neutral dark background/light text on html/body.
+					try {
+						const isDark = themeRef.current === "dark";
+						const selStyle = doc.createElement("style");
+						selStyle.id = "__readsync_theme__";
+						selStyle.textContent = [
+							"* { -webkit-user-select: text !important; user-select: text !important; touch-action: auto !important; }",
+							"body { -webkit-touch-callout: default !important; }",
+							"::selection { background: rgba(168,85,247,0.35); color: inherit; }",
+							"::-moz-selection { background: rgba(168,85,247,0.35); color: inherit; }",
+							isDark
+								? ":root { color-scheme: dark; } html, body { background: #1a1a18 !important; color: #e8e6e0 !important; }"
+								: "",
+						].join("\n");
+						(doc.head ?? doc.documentElement).appendChild(selStyle);
+					} catch {}
+
 					// Wire up text-selection so the selection menu works inside the EPUB iframe
 					const getIframeOffset = () => {
 						// frameElement gives exact iframe position (works because sandbox has allow-same-origin)
@@ -186,13 +220,50 @@ export default function EPUBReader({
 						dispatchSelectionEvent();
 					});
 
-					// iOS Safari fires touchend instead of mouseup
+					// iOS/Android: fire after touchend with enough delay for the
+					// browser to finalise the selection handles.
 					doc.addEventListener("touchend", () => {
 						if (!mounted) return;
-						// Small delay so the browser finalises the selection
 						setTimeout(() => {
 							if (mounted) dispatchSelectionEvent();
-						}, 80);
+						}, 200);
+					});
+
+					// pointerup covers Apple Pencil (pen), touch fallback, and
+					// any device that doesn't fire touchend (e.g. some Android WebViews).
+					// Skip mouse — mouseup already handled above.
+					doc.addEventListener("pointerup", (ev: Event) => {
+						if (!mounted) return;
+						const pe = ev as PointerEvent;
+						if (pe.pointerType !== "mouse") {
+							setTimeout(() => {
+								if (mounted) dispatchSelectionEvent();
+							}, 200);
+						}
+					});
+
+					// When a non-trivial text selection forms inside the EPUB iframe:
+					// 1. Cancel any in-progress foliate swipe/navigation gesture so
+					//    the page doesn't jump (critical for iPad Pencil + mobile).
+					// 2. On mobile, selectionchange is often the ONLY reliable way
+					//    to know selection has completed — dispatch immediately.
+					let selectionDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+					doc.addEventListener("selectionchange", () => {
+						if (!mounted) return;
+						const sel = doc.defaultView?.getSelection();
+						if (sel && !sel.isCollapsed && sel.toString().trim().length > 1) {
+							// Cancel foliate's paginator gesture
+							try {
+								folViewRef.current?.dispatchEvent(
+									new PointerEvent("pointercancel", { bubbles: true }),
+								);
+							} catch {}
+							// Debounced dispatch so we wait for selection to finalise
+							if (selectionDebounceTimer) clearTimeout(selectionDebounceTimer);
+							selectionDebounceTimer = setTimeout(() => {
+								if (mounted) dispatchSelectionEvent();
+							}, 120);
+						}
 					});
 
 					function dispatchSelectionEvent() {
@@ -420,6 +491,31 @@ export default function EPUBReader({
 			}
 		} catch {}
 	}, [fontSize]);
+
+	// When the user toggles dark/light mode, update the already-loaded EPUB iframes
+	useEffect(() => {
+		const isDark = resolvedTheme === "dark";
+		const contents = folViewRef.current?.renderer?.getContents?.() ?? [];
+		for (const { doc } of contents) {
+			if (!doc) continue;
+			try {
+				// Remove old injected theme style and replace it
+				doc.getElementById("__readsync_theme__")?.remove();
+				const s = doc.createElement("style");
+				s.id = "__readsync_theme__";
+				s.textContent = [
+					"* { -webkit-user-select: text !important; user-select: text !important; touch-action: auto !important; }",
+					"body { -webkit-touch-callout: default !important; }",
+					"::selection { background: rgba(168,85,247,0.35); color: inherit; }",
+					"::-moz-selection { background: rgba(168,85,247,0.35); color: inherit; }",
+					isDark
+						? ":root { color-scheme: dark; } html, body { background: #1a1a18 !important; color: #e8e6e0 !important; }"
+						: "",
+				].join("\n");
+				(doc.head ?? doc.documentElement).appendChild(s);
+			} catch {}
+		}
+	}, [resolvedTheme]);
 
 	// Sync annotations whenever highlights change (or view becomes ready)
 	useEffect(() => {
