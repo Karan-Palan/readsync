@@ -138,8 +138,39 @@ export default function EPUBReader({
 				viewerRef.current.appendChild(view);
 				folViewRef.current = view;
 
-				// Track reading progress — deduplicate by CFI so selection events
-				// that cause a re-render don't spuriously trigger a saveProgress call
+			// iOS Safari: block horizontal swipe gestures from reaching foliate's
+			// paginator so that finger drags can be used for text selection instead.
+			// On Android/desktop the swipe paginator works correctly, no guard needed.
+			const ua = navigator.userAgent;
+			const isIOS =
+				/iPad|iPhone|iPod/.test(ua) ||
+				(navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+			let touchStartX = 0;
+			let touchStartY = 0;
+
+			const handleTouchStart = (e: TouchEvent) => {
+				const t = e.touches[0];
+				if (t) {
+					touchStartX = t.clientX;
+					touchStartY = t.clientY;
+				}
+			};
+
+			const handleTouchMove = (e: TouchEvent) => {
+				const t = e.touches[0];
+				if (!t) return;
+				const deltaX = t.clientX - touchStartX;
+				const deltaY = t.clientY - touchStartY;
+				if (Math.abs(deltaX) > Math.abs(deltaY)) {
+					e.preventDefault();
+				}
+			};
+
+			if (isIOS && viewerRef.current) {
+				viewerRef.current.addEventListener("touchstart", handleTouchStart, { passive: true });
+				viewerRef.current.addEventListener("touchmove", handleTouchMove, { passive: false });
+			}
 				let lastCfi: string | null = null;
 				view.addEventListener("relocate", (e: Event) => {
 					if (!mounted) return;
@@ -421,6 +452,10 @@ export default function EPUBReader({
 
 				return () => {
 					document.removeEventListener("keydown", handleKey);
+					if (isIOS && viewerRef.current) {
+						viewerRef.current.removeEventListener("touchstart", handleTouchStart);
+						viewerRef.current.removeEventListener("touchmove", handleTouchMove);
+					}
 				};
 			} catch (err) {
 				console.error("EPUB load error:", err);
