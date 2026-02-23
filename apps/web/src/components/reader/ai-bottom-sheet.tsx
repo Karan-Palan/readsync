@@ -60,7 +60,7 @@ export default function AIBottomSheet({
 
 			{/* Sheet */}
 			<div
-				className="fixed right-0 bottom-0 left-0 z-50 flex flex-col rounded-t-xl bg-card shadow-xl"
+				className="bg-card fixed right-0 bottom-0 left-0 z-50 flex flex-col rounded-t-xl shadow-xl"
 				style={{ height: `${heightVh}vh` }}
 				data-ai-panel="true"
 			>
@@ -71,17 +71,13 @@ export default function AIBottomSheet({
 					onTouchMove={onHandleTouchMove}
 					onTouchEnd={onHandleTouchEnd}
 				>
-					<div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+					<div className="bg-muted-foreground/30 h-1 w-10 rounded-full" />
 				</div>
 
 				{/* Header */}
 				<div className="flex items-center justify-between px-4 pb-2">
-					<h3 className="font-semibold text-sm">AI Assistant</h3>
-					<button
-						type="button"
-						onClick={onClose}
-						className="rounded-md p-1 hover:bg-accent"
-					>
+					<h3 className="text-sm font-semibold">AI Assistant</h3>
+					<button type="button" onClick={onClose} className="hover:bg-accent rounded-md p-1">
 						<X className="h-4 w-4" />
 					</button>
 				</div>

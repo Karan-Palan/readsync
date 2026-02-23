@@ -38,12 +38,10 @@ function HighlightCard({ highlight: h }: { highlight: HighlightItem }) {
 	return (
 		<div className={`rounded-lg border-l-4 px-4 py-3 ${colorClass}`}>
 			{/* Quoted text */}
-			<p className="mb-2 font-medium text-sm italic">&ldquo;{h.text}&rdquo;</p>
+			<p className="mb-2 text-sm font-medium italic">&ldquo;{h.text}&rdquo;</p>
 
 			{/* Manual note only */}
-			{h.note && !h.aiResponse && (
-				<p className="text-muted-foreground text-sm">{h.note}</p>
-			)}
+			{h.note && !h.aiResponse && <p className="text-muted-foreground text-sm">{h.note}</p>}
 
 			{/* AI response saved as note */}
 			{h.note && h.aiResponse && (
@@ -67,9 +65,7 @@ function HighlightCard({ highlight: h }: { highlight: HighlightItem }) {
 // Main component
 
 export default function Notes() {
-	const { data: highlights = [], isLoading } = useQuery(
-		trpc.highlight.listAll.queryOptions(),
-	);
+	const { data: highlights = [], isLoading } = useQuery(trpc.highlight.listAll.queryOptions());
 
 	if (isLoading) {
 		return <Loader size="h-8 w-8" />;
@@ -85,10 +81,7 @@ export default function Notes() {
 
 	// Group highlights by book
 	const byBook = highlights.reduce<
-		Record<
-			string,
-			{ book: (typeof highlights)[0]["book"]; items: typeof highlights }
-		>
+		Record<string, { book: (typeof highlights)[0]["book"]; items: typeof highlights }>
 	>((acc, h) => {
 		const bookId = h.book.id;
 		if (!acc[bookId]) {
@@ -100,14 +93,14 @@ export default function Notes() {
 
 	return (
 		<div className="overflow-y-auto px-4 py-6 sm:px-8">
-			<h1 className="mb-6 font-bold text-2xl">My Notes</h1>
+			<h1 className="mb-6 text-2xl font-bold">My Notes</h1>
 
 			<div className="space-y-10">
 				{Object.values(byBook).map(({ book, items }) => (
 					<section key={book.id}>
 						<Link
 							href={`/reader/${book.id}` as any}
-							className="mb-3 flex items-center gap-2 font-semibold text-lg hover:underline"
+							className="mb-3 flex items-center gap-2 text-lg font-semibold hover:underline"
 						>
 							<BookOpen className="h-5 w-5" />
 							{book.title}

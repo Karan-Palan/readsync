@@ -1,4 +1,4 @@
-//  Shared Reader Types 
+//  Shared Reader Types
 // Single source of truth for types used across reader components.
 
 /** AI actions available on highlights and quick queries */
@@ -35,7 +35,7 @@ export interface Chapter {
 	order: number;
 }
 
-//  Highlight Colors 
+//  Highlight Colors
 
 export interface HighlightColorDef {
 	id: string;
@@ -82,21 +82,15 @@ export const HIGHLIGHT_COLORS: HighlightColorDef[] = [
 
 /** Look up a color by id → RGBA. Falls back to yellow. */
 export function getHighlightRgba(colorId?: string | null): string {
-	return (
-		HIGHLIGHT_COLORS.find((c) => c.id === colorId)?.rgba ??
-		HIGHLIGHT_COLORS[0].rgba
-	);
+	return HIGHLIGHT_COLORS.find((c) => c.id === colorId)?.rgba ?? HIGHLIGHT_COLORS[0].rgba;
 }
 
 /** Look up a color by id → accent classes. Falls back to yellow. */
 export function getHighlightAccent(colorId?: string | null): string {
-	return (
-		HIGHLIGHT_COLORS.find((c) => c.id === colorId)?.accent ??
-		HIGHLIGHT_COLORS[0].accent
-	);
+	return HIGHLIGHT_COLORS.find((c) => c.id === colorId)?.accent ?? HIGHLIGHT_COLORS[0].accent;
 }
 
-//  AI Action Labels 
+//  AI Action Labels
 
 export const AI_ACTION_LABELS: Record<AIAction, string> = {
 	EXPLAIN: "Explanation",
@@ -105,5 +99,5 @@ export const AI_ACTION_LABELS: Record<AIAction, string> = {
 	DISCUSS: "Discussion",
 };
 
-//  Data attribute for AI panel click-through guard ─
+//  Data attribute for AI panel click-through guard 
 export const AI_PANEL_ATTR = "data-ai-panel" as const;

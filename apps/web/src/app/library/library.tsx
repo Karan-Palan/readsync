@@ -12,8 +12,7 @@ import { UploadButton } from "@/utils/uploadthing";
 
 // Constants
 
-const BOOK_GRID =
-	"grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5";
+const BOOK_GRID = "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5";
 const SKELETON_COUNT = 10;
 
 // Types
@@ -33,7 +32,7 @@ type BookItem = {
 
 function SectionHeading({ label }: { label: string }) {
 	return (
-		<h2 className="mb-4 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
+		<h2 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wide uppercase">
 			{label}
 		</h2>
 	);
@@ -48,27 +47,18 @@ interface BookLinkCardProps {
 	subLabel: string;
 }
 
-function BookLinkCard({
-	bookId,
-	title,
-	href,
-	accent,
-	icon,
-	subLabel,
-}: BookLinkCardProps) {
+function BookLinkCard({ bookId, title, href, accent, icon, subLabel }: BookLinkCardProps) {
 	const router = useRouter();
 	return (
 		<button
 			key={bookId}
 			type="button"
-			className="group relative w-full cursor-pointer overflow-hidden rounded-lg border bg-card transition-colors hover:bg-accent"
+			className="group bg-card hover:bg-accent relative w-full cursor-pointer overflow-hidden rounded-lg border transition-colors"
 			onClick={() => router.push(href as any)}
 		>
-			<div className={`flex aspect-3/4 items-center justify-center ${accent}`}>
-				{icon}
-			</div>
+			<div className={`flex aspect-3/4 items-center justify-center ${accent}`}>{icon}</div>
 			<div className="p-2">
-				<p className="truncate font-medium text-sm">{title}</p>
+				<p className="truncate text-sm font-medium">{title}</p>
 				<p className="text-muted-foreground text-xs">{subLabel}</p>
 			</div>
 		</button>
@@ -99,7 +89,7 @@ export default function Library() {
 		<div className="container mx-auto max-w-6xl px-4 py-6">
 			{/* Header */}
 			<div className="mb-6 flex items-center justify-between">
-				<h1 className="font-bold text-2xl">Library</h1>
+				<h1 className="text-2xl font-bold">Library</h1>
 				<UploadButton
 					endpoint="bookUploader"
 					onClientUploadComplete={() => {
@@ -133,11 +123,7 @@ export default function Library() {
 			{books.length > 0 && (
 				<div className={BOOK_GRID}>
 					{books.map((book) => (
-						<BookCard
-							key={book.id}
-							book={book}
-							onDeleted={() => booksQuery.refetch()}
-						/>
+						<BookCard key={book.id} book={book} onDeleted={() => booksQuery.refetch()} />
 					))}
 				</div>
 			)}

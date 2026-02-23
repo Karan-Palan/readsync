@@ -1,28 +1,19 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import {
-	Lightbulb,
-	List,
-	MessageSquare,
-	MessageSquarePlus,
-	Save,
-	Sparkles,
-	X,
-} from "lucide-react";
+import { Lightbulb, List, MessageSquare, MessageSquarePlus, Save, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getPdfPageNumber } from "@/lib/pdf-utils";
-import {
-	type AIAction,
-	HIGHLIGHT_COLORS,
-	type Highlight,
-} from "@/types/reader";
+import { putHighlight } from "@/lib/offline-db";
+import { type AIAction, HIGHLIGHT_COLORS, type Highlight } from "@/types/reader";
 import { trpc } from "@/utils/trpc";
 
 interface TextSelectionMenuProps {
 	bookId: string;
+	userId: string;
 	fileType: string;
+	isOnline: boolean;
 	onHighlightCreated: (highlight: Highlight) => void;
 	onAIAction: (highlight: Highlight, action: AIAction) => void;
 	onChapterCreate: (startPage: number, endPage: number) => void;
@@ -42,7 +33,9 @@ interface FoliateSelectionDetail {
 
 export default function TextSelectionMenu({
 	bookId,
+	userId,
 	fileType,
+	isOnline,
 	onHighlightCreated,
 	onAIAction,
 	onChapterCreate,
@@ -51,19 +44,13 @@ export default function TextSelectionMenu({
 	const [selectedText, setSelectedText] = useState("");
 	const [showNoteInput, setShowNoteInput] = useState(false);
 	const [noteText, setNoteText] = useState("");
-	const [pendingHighlight, setPendingHighlight] = useState<Highlight | null>(
-		null,
-	);
+	const [pendingHighlight, setPendingHighlight] = useState<Highlight | null>(null);
 	const [selectedCfi, setSelectedCfi] = useState<string | undefined>(undefined);
 	const menuRef = useRef<HTMLDivElement>(null);
 	const selectionSource = useRef<"document" | "foliate" | null>(null);
 
-	const createHighlightMutation = useMutation(
-		trpc.highlight.create.mutationOptions(),
-	);
-	const updateHighlightMutation = useMutation(
-		trpc.highlight.update.mutationOptions(),
-	);
+	const createHighlightMutation = useMutation(trpc.highlight.create.mutationOptions());
+	const updateHighlightMutation = useMutation(trpc.highlight.update.mutationOptions());
 
 	const handleDocSelectionChange = useCallback(() => {
 		const selection = window.getSelection();
@@ -119,8 +106,7 @@ export default function TextSelectionMenu({
 
 	useEffect(() => {
 		document.addEventListener("selectionchange", handleDocSelectionChange);
-		return () =>
-			document.removeEventListener("selectionchange", handleDocSelectionChange);
+		return () => document.removeEventListener("selectionchange", handleDocSelectionChange);
 	}, [handleDocSelectionChange]);
 
 	useEffect(() => {
@@ -149,8 +135,7 @@ export default function TextSelectionMenu({
 			}
 		};
 		window.addEventListener("foliate-selection", handleFoliateSelection);
-		return () =>
-			window.removeEventListener("foliate-selection", handleFoliateSelection);
+		return () => window.removeEventListener("foliate-selection", handleFoliateSelection);
 	}, []);
 
 	const createHighlight = useCallback(
@@ -159,29 +144,82 @@ export default function TextSelectionMenu({
 
 			const pageNumber = fileType === "PDF" ? getPdfPageNumber() : undefined;
 
-			const result = await createHighlightMutation.mutateAsync({
-				bookId,
-				text: selectedText,
-				color,
-				pageNumber,
-				startCfi: selectedCfi,
-			});
+			let highlight: Highlight;
 
-			const highlight: Highlight = {
-				id: result.id,
-				text: result.text,
-				color: result.color,
-				startCfi: result.startCfi,
-				endCfi: result.endCfi,
-				pageNumber: result.pageNumber,
-				aiAction: null,
-				aiResponse: null,
-				note: null,
-			};
+			if (!isOnline) {
+				// Offline: create local highlight with temp ID
+				const tempId = crypto.randomUUID();
+				highlight = {
+					id: tempId,
+					text: selectedText,
+					color,
+					startCfi: selectedCfi ?? null,
+					endCfi: null,
+					pageNumber: pageNumber ?? null,
+					aiAction: null,
+					aiResponse: null,
+					note: null,
+				};
+
+				await putHighlight({
+					id: tempId,
+					bookId,
+					userId,
+					text: selectedText,
+					color,
+					startCfi: selectedCfi ?? null,
+					endCfi: null,
+					pageNumber: pageNumber ?? null,
+					aiAction: null,
+					aiResponse: null,
+					note: null,
+					createdAt: Date.now(),
+					syncStatus: "pending_create",
+					tempId,
+				}).catch(() => {});
+			} else {
+				const result = await createHighlightMutation.mutateAsync({
+					bookId,
+					text: selectedText,
+					color,
+					pageNumber,
+					startCfi: selectedCfi,
+				});
+
+				highlight = {
+					id: result.id,
+					text: result.text,
+					color: result.color,
+					startCfi: result.startCfi,
+					endCfi: result.endCfi,
+					pageNumber: result.pageNumber,
+					aiAction: null,
+					aiResponse: null,
+					note: null,
+				};
+
+				// Persist to IDB as synced
+				await putHighlight({
+					id: result.id,
+					bookId,
+					userId,
+					text: result.text,
+					color: result.color,
+					startCfi: result.startCfi ?? null,
+					endCfi: result.endCfi ?? null,
+					pageNumber: result.pageNumber ?? null,
+					aiAction: null,
+					aiResponse: null,
+					note: null,
+					createdAt: Date.now(),
+					syncStatus: "synced",
+					tempId: null,
+				}).catch(() => {});
+			}
 
 			onHighlightCreated(highlight);
 
-			if (action) {
+			if (action && isOnline) {
 				onAIAction(highlight, action);
 			}
 
@@ -196,9 +234,11 @@ export default function TextSelectionMenu({
 		},
 		[
 			bookId,
+			userId,
 			selectedText,
 			selectedCfi,
 			fileType,
+			isOnline,
 			createHighlightMutation,
 			onHighlightCreated,
 			onAIAction,
@@ -221,33 +261,84 @@ export default function TextSelectionMenu({
 		if (!selectedText) return;
 
 		const pageNumber = fileType === "PDF" ? getPdfPageNumber() : undefined;
+		const trimmedNote = noteText.trim() || null;
 
-		const result = await createHighlightMutation.mutateAsync({
-			bookId,
-			text: selectedText,
-			color: "yellow",
-			pageNumber,
-			startCfi: selectedCfi,
-		});
+		let highlight: Highlight;
 
-		if (noteText.trim()) {
-			await updateHighlightMutation.mutateAsync({
-				id: result.id,
-				note: noteText.trim(),
+		if (!isOnline) {
+			const tempId = crypto.randomUUID();
+			highlight = {
+				id: tempId,
+				text: selectedText,
+				color: "yellow",
+				startCfi: selectedCfi ?? null,
+				endCfi: null,
+				pageNumber: pageNumber ?? null,
+				aiAction: null,
+				aiResponse: null,
+				note: trimmedNote,
+			};
+			await putHighlight({
+				id: tempId,
+				bookId,
+				userId,
+				text: selectedText,
+				color: "yellow",
+				startCfi: selectedCfi ?? null,
+				endCfi: null,
+				pageNumber: pageNumber ?? null,
+				aiAction: null,
+				aiResponse: null,
+				note: trimmedNote,
+				createdAt: Date.now(),
+				syncStatus: "pending_create",
+				tempId,
+			}).catch(() => {});
+		} else {
+			const result = await createHighlightMutation.mutateAsync({
+				bookId,
+				text: selectedText,
+				color: "yellow",
+				pageNumber,
+				startCfi: selectedCfi,
 			});
-		}
 
-		const highlight: Highlight = {
-			id: result.id,
-			text: result.text,
-			color: result.color,
-			startCfi: result.startCfi,
-			endCfi: result.endCfi,
-			pageNumber: result.pageNumber,
-			aiAction: null,
-			aiResponse: null,
-			note: noteText.trim() || null,
-		};
+			if (noteText.trim()) {
+				await updateHighlightMutation.mutateAsync({
+					id: result.id,
+					note: noteText.trim(),
+				});
+			}
+
+			highlight = {
+				id: result.id,
+				text: result.text,
+				color: result.color,
+				startCfi: result.startCfi,
+				endCfi: result.endCfi,
+				pageNumber: result.pageNumber,
+				aiAction: null,
+				aiResponse: null,
+				note: trimmedNote,
+			};
+
+			await putHighlight({
+				id: result.id,
+				bookId,
+				userId,
+				text: result.text,
+				color: result.color,
+				startCfi: result.startCfi ?? null,
+				endCfi: result.endCfi ?? null,
+				pageNumber: result.pageNumber ?? null,
+				aiAction: null,
+				aiResponse: null,
+				note: trimmedNote,
+				createdAt: Date.now(),
+				syncStatus: "synced",
+				tempId: null,
+			}).catch(() => {});
+		}
 
 		onHighlightCreated(highlight);
 		setMenuPosition(null);
@@ -259,10 +350,12 @@ export default function TextSelectionMenu({
 		window.getSelection()?.removeAllRanges();
 	}, [
 		bookId,
+		userId,
 		selectedText,
 		selectedCfi,
 		noteText,
 		fileType,
+		isOnline,
 		createHighlightMutation,
 		updateHighlightMutation,
 		onHighlightCreated,
@@ -291,7 +384,7 @@ export default function TextSelectionMenu({
 	return (
 		<div
 			ref={menuRef}
-			className="fixed z-50 flex flex-col rounded-xl border bg-card shadow-2xl"
+			className="bg-card fixed z-50 flex flex-col rounded-xl border shadow-2xl"
 			style={{
 				left: `clamp(100px, ${menuPosition.x}px, calc(100vw - 100px))`,
 				top: `clamp(56px, ${menuPosition.y}px, calc(100vh - 60px))`,
@@ -310,18 +403,18 @@ export default function TextSelectionMenu({
 							key={c.id}
 							type="button"
 							onClick={() => handleHighlightColor(c.id)}
-							className={`${c.bg} h-6 w-6 flex-shrink-0 rounded-full border-2 border-transparent transition-transform hover:scale-110 hover:border-border`}
+							className={`${c.bg} hover:border-border h-6 w-6 flex-shrink-0 rounded-full border-2 border-transparent transition-transform hover:scale-110`}
 							title={`Highlight ${c.label}`}
 						/>
 					))}
 
-					<div className="mx-1 h-5 w-px bg-border" />
+					<div className="bg-border mx-1 h-5 w-px" />
 
 					{/* Note */}
 					<button
 						type="button"
 						onClick={handleNoteOpen}
-						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
+						className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
 						title="Add note"
 					>
 						<Save className="h-3.5 w-3.5" />
@@ -329,37 +422,41 @@ export default function TextSelectionMenu({
 					</button>
 
 					{/* AI actions */}
-					<button
-						type="button"
-						onClick={() => createHighlight("yellow", "SUMMARIZE")}
-						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
-						title="Summarize"
-					>
-						<MessageSquare className="h-3.5 w-3.5" />
-						<span className="hidden sm:inline">Summary</span>
-					</button>
-					<button
-						type="button"
-						onClick={() => createHighlight("yellow", "EXTRACT")}
-						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
-						title="Extract insights"
-					>
-						<Sparkles className="h-3.5 w-3.5" />
-						<span className="hidden sm:inline">Extract</span>
-					</button>
-					<button
-						type="button"
-						onClick={() => createHighlight("yellow", "DISCUSS")}
-						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
-						title="Discuss this idea"
-					>
-						<Lightbulb className="h-3.5 w-3.5" />
-						<span className="hidden sm:inline">Discuss</span>
-					</button>
+					{isOnline && (
+						<>
+							<button
+								type="button"
+								onClick={() => createHighlight("yellow", "SUMMARIZE")}
+								className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+								title="Summarize"
+							>
+								<MessageSquare className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Summary</span>
+							</button>
+							<button
+								type="button"
+								onClick={() => createHighlight("yellow", "EXTRACT")}
+								className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+								title="Extract insights"
+							>
+								<Sparkles className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Extract</span>
+							</button>
+							<button
+								type="button"
+								onClick={() => createHighlight("yellow", "DISCUSS")}
+								className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
+								title="Discuss this idea"
+							>
+								<Lightbulb className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Discuss</span>
+							</button>
+						</>
+					)}
 					<button
 						type="button"
 						onClick={handleChapterCreate}
-						className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs hover:bg-accent"
+						className="hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs"
 						title="Create chapter"
 					>
 						<List className="h-3.5 w-3.5" />
@@ -369,33 +466,26 @@ export default function TextSelectionMenu({
 					<button
 						type="button"
 						onClick={dismiss}
-						className="ml-0.5 rounded-md p-1 hover:bg-accent"
+						className="hover:bg-accent ml-0.5 rounded-md p-1"
 						title="Dismiss"
 					>
-						<X className="h-3 w-3 text-muted-foreground" />
+						<X className="text-muted-foreground h-3 w-3" />
 					</button>
 				</div>
 			) : (
 				/* Note input */
-				<div
-					className="flex flex-col gap-2 p-3"
-					onMouseDown={(e) => e.stopPropagation()}
-				>
+				<div className="flex flex-col gap-2 p-3" onMouseDown={(e) => e.stopPropagation()}>
 					<div className="flex items-center justify-between">
-						<span className="font-medium text-xs">Add a note</span>
-						<button
-							type="button"
-							onClick={dismiss}
-							className="rounded p-0.5 hover:bg-accent"
-						>
-							<X className="h-3.5 w-3.5 text-muted-foreground" />
+						<span className="text-xs font-medium">Add a note</span>
+						<button type="button" onClick={dismiss} className="hover:bg-accent rounded p-0.5">
+							<X className="text-muted-foreground h-3.5 w-3.5" />
 						</button>
 					</div>
-					<p className="line-clamp-2 rounded bg-muted/50 px-2 py-1 text-muted-foreground text-xs italic">
+					<p className="bg-muted/50 text-muted-foreground line-clamp-2 rounded px-2 py-1 text-xs italic">
 						&ldquo;{selectedText}&rdquo;
 					</p>
 					<textarea
-						className="min-h-[80px] w-full resize-none rounded-md border bg-background p-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+						className="bg-background focus:ring-ring min-h-[80px] w-full resize-none rounded-md border p-2 text-xs focus:ring-2 focus:outline-none"
 						placeholder="Your note…"
 						value={noteText}
 						onChange={(e) => setNoteText(e.target.value)}
@@ -407,7 +497,7 @@ export default function TextSelectionMenu({
 							type="button"
 							onClick={handleNoteSave}
 							disabled={createHighlightMutation.isPending}
-							className="flex flex-1 items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-primary-foreground text-xs disabled:opacity-50"
+							className="bg-primary text-primary-foreground flex flex-1 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
 						>
 							<MessageSquarePlus className="h-3.5 w-3.5" />
 							Save
@@ -415,7 +505,7 @@ export default function TextSelectionMenu({
 						<button
 							type="button"
 							onClick={() => setShowNoteInput(false)}
-							className="rounded-md px-3 py-1.5 text-xs hover:bg-accent"
+							className="hover:bg-accent rounded-md px-3 py-1.5 text-xs"
 						>
 							Back
 						</button>

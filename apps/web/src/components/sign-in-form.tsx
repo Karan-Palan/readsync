@@ -10,11 +10,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-export default function SignInForm({
-	onSwitchToSignUp,
-}: {
-	onSwitchToSignUp: () => void;
-}) {
+export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
 	const router = useRouter();
 	const { isPending } = authClient.useSession();
 
@@ -53,8 +49,8 @@ export default function SignInForm({
 	}
 
 	return (
-		<div className="w-full rounded-xl border bg-card p-6 shadow-sm">
-			<h1 className="mb-6 text-center font-bold text-3xl">Welcome Back</h1>
+		<div className="bg-card w-full rounded-xl border p-6 shadow-sm">
+			<h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
 
 			<form
 				onSubmit={(e) => {

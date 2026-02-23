@@ -57,20 +57,18 @@ export const highlightRouter = router({
 			});
 		}),
 
-	list: protectedProcedure
-		.input(z.object({ bookId: z.string() }))
-		.query(async ({ ctx, input }) => {
-			const book = await prisma.book.findUnique({
-				where: { id: input.bookId },
-			});
-			if (!book || book.userId !== ctx.session.user.id) {
-				throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
-			}
-			return prisma.highlight.findMany({
-				where: { bookId: input.bookId, userId: ctx.session.user.id },
-				orderBy: { createdAt: "desc" },
-			});
-		}),
+	list: protectedProcedure.input(z.object({ bookId: z.string() })).query(async ({ ctx, input }) => {
+		const book = await prisma.book.findUnique({
+			where: { id: input.bookId },
+		});
+		if (!book || book.userId !== ctx.session.user.id) {
+			throw new TRPCError({ code: "NOT_FOUND", message: "Book not found" });
+		}
+		return prisma.highlight.findMany({
+			where: { bookId: input.bookId, userId: ctx.session.user.id },
+			orderBy: { createdAt: "desc" },
+		});
+	}),
 
 	/** All highlights for the current user across all books */
 	listAll: protectedProcedure.query(async ({ ctx }) => {

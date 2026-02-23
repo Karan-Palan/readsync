@@ -19,23 +19,14 @@ import { useState } from "react";
 
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/utils/trpc";
 
 // Constants
 
-const AI_ACTION_LABELS: Record<
-	string,
-	{ label: string; icon: React.ReactNode }
-> = {
+const AI_ACTION_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
 	EXPLAIN: { label: "Explain", icon: <Search className="h-4 w-4" /> },
 	SUMMARIZE: { label: "Summarize", icon: <FileText className="h-4 w-4" /> },
 	EXTRACT: { label: "Extract", icon: <Sparkles className="h-4 w-4" /> },
@@ -44,23 +35,13 @@ const AI_ACTION_LABELS: Record<
 
 // Sub-components
 
-function StatCard({
-	icon,
-	label,
-	value,
-}: {
-	icon: React.ReactNode;
-	label: string;
-	value: number;
-}) {
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
 	return (
 		<Card>
 			<CardContent className="flex items-center gap-3 pt-4">
-				<div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
-					{icon}
-				</div>
+				<div className="bg-muted flex h-9 w-9 items-center justify-center rounded-md">{icon}</div>
 				<div>
-					<p className="font-bold text-2xl tabular-nums">{value}</p>
+					<p className="text-2xl font-bold tabular-nums">{value}</p>
 					<p className="text-muted-foreground text-xs">{label}</p>
 				</div>
 			</CardContent>
@@ -88,7 +69,7 @@ function MetricCard({
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<p className="font-bold text-3xl tabular-nums">{value}</p>
+				<p className="text-3xl font-bold tabular-nums">{value}</p>
 				<p className="text-muted-foreground text-xs">{description}</p>
 			</CardContent>
 		</Card>
@@ -114,9 +95,7 @@ function ReadingGoalCard({
 
 	const goalTarget = readingGoal?.targetBooks ?? 0;
 	const goalProgress =
-		goalTarget > 0
-			? Math.min(100, (booksFinishedThisYear / goalTarget) * 100)
-			: 0;
+		goalTarget > 0 ? Math.min(100, (booksFinishedThisYear / goalTarget) * 100) : 0;
 
 	const setGoalMutation = useMutation(
 		trpc.dashboard.setGoal.mutationOptions({
@@ -171,9 +150,7 @@ function ReadingGoalCard({
 							onChange={(e) => setGoalInput(e.target.value)}
 							className="w-24"
 						/>
-						<span className="text-muted-foreground text-xs">
-							books this year
-						</span>
+						<span className="text-muted-foreground text-xs">books this year</span>
 						<Button
 							size="sm"
 							disabled={!goalInput || setGoalMutation.isPending}
@@ -185,11 +162,7 @@ function ReadingGoalCard({
 						>
 							Save
 						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setIsEditingGoal(false)}
-						>
+						<Button variant="ghost" size="sm" onClick={() => setIsEditingGoal(false)}>
 							Cancel
 						</Button>
 					</div>
@@ -197,10 +170,8 @@ function ReadingGoalCard({
 					<div className="space-y-2">
 						<Progress value={goalProgress} className="h-3" />
 						<div className="flex justify-between text-xs">
-							<span className="text-muted-foreground">
-								{booksFinishedThisYear} finished
-							</span>
-							<span className="font-medium text-muted-foreground">
+							<span className="text-muted-foreground">{booksFinishedThisYear} finished</span>
+							<span className="text-muted-foreground font-medium">
 								{goalTarget - booksFinishedThisYear > 0
 									? `${goalTarget - booksFinishedThisYear} to go`
 									: "Goal reached! 🎉"}
@@ -209,13 +180,9 @@ function ReadingGoalCard({
 						{projectedBooksPerYear > 0 && (
 							<p className="text-muted-foreground text-xs">
 								At your current pace you&apos;ll hit{" "}
-								<span className="font-medium text-foreground">
-									{projectedBooksPerYear}
-								</span>{" "}
-								books this year
-								{projectedBooksPerYear >= goalTarget
-									? " — you're on track!"
-									: " — keep going!"}
+								<span className="text-foreground font-medium">{projectedBooksPerYear}</span> books
+								this year
+								{projectedBooksPerYear >= goalTarget ? " — you're on track!" : " — keep going!"}
 							</p>
 						)}
 					</div>
@@ -225,11 +192,7 @@ function ReadingGoalCard({
 	);
 }
 
-function AIFeatureUsageCard({
-	aiFeatureUsage,
-}: {
-	aiFeatureUsage: Record<string, number>;
-}) {
+function AIFeatureUsageCard({ aiFeatureUsage }: { aiFeatureUsage: Record<string, number> }) {
 	return (
 		<Card>
 			<CardHeader>
@@ -244,32 +207,25 @@ function AIFeatureUsageCard({
 			<CardContent>
 				{Object.keys(aiFeatureUsage).length === 0 ? (
 					<p className="text-muted-foreground text-sm">
-						No AI features used yet — highlight some text and try Explain,
-						Summarize, Extract, or Discuss!
+						No AI features used yet — highlight some text and try Explain, Summarize, Extract, or
+						Discuss!
 					</p>
 				) : (
 					<div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-						{Object.entries(AI_ACTION_LABELS).map(
-							([action, { label, icon }]) => {
-								const count = aiFeatureUsage[action] ?? 0;
-								return (
-									<div
-										key={action}
-										className="flex items-center gap-3 rounded-md bg-muted/50 p-3"
-									>
-										<div className="flex h-8 w-8 items-center justify-center rounded-md bg-background">
-											{icon}
-										</div>
-										<div>
-											<p className="font-semibold text-lg tabular-nums">
-												{count}
-											</p>
-											<p className="text-muted-foreground text-xs">{label}</p>
-										</div>
+						{Object.entries(AI_ACTION_LABELS).map(([action, { label, icon }]) => {
+							const count = aiFeatureUsage[action] ?? 0;
+							return (
+								<div key={action} className="bg-muted/50 flex items-center gap-3 rounded-md p-3">
+									<div className="bg-background flex h-8 w-8 items-center justify-center rounded-md">
+										{icon}
 									</div>
-								);
-							},
-						)}
+									<div>
+										<p className="text-lg font-semibold tabular-nums">{count}</p>
+										<p className="text-muted-foreground text-xs">{label}</p>
+									</div>
+								</div>
+							);
+						})}
 					</div>
 				)}
 			</CardContent>
@@ -307,7 +263,7 @@ function ReadingBenefitsCard({
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					{benefits.map(({ value, label }) => (
 						<div key={label} className="space-y-1">
-							<p className="font-bold text-2xl tabular-nums">{value}</p>
+							<p className="text-2xl font-bold tabular-nums">{value}</p>
 							<p className="text-muted-foreground text-xs">{label}</p>
 						</div>
 					))}
@@ -326,16 +282,13 @@ export default function DashboardView({ userName }: { userName: string }) {
 		return <Loader size="h-8 w-8" label="Loading dashboard..." />;
 	}
 
-	const totalAiCalls = Object.values(data.aiFeatureUsage).reduce(
-		(a, b) => a + b,
-		0,
-	);
+	const totalAiCalls = Object.values(data.aiFeatureUsage).reduce((a, b) => a + b, 0);
 
 	return (
 		<div className="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
 			{/* Header */}
 			<div>
-				<h1 className="font-semibold text-xl">Dashboard</h1>
+				<h1 className="text-xl font-semibold">Dashboard</h1>
 				<p className="text-muted-foreground text-sm">
 					Welcome back, {userName}. Here&apos;s your reading overview.
 				</p>

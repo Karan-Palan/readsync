@@ -1,3 +1,9 @@
+Tl;dr
+Started praciticising speed reading after watching Tim Ferris's video. Found other speed reading methods, they do work!
+Apart from that, I was currently reading "Antifragile", and there were many instances where I didn't understand the whole context, or wanted to discuss an idea with AI
+So created this for personal use to solve those problems.
+Will be using it a month or so, if I find it better than reading on my Ipad, will do notion integration
+
 # ReadSync
 
 An AI-powered reading companion that helps you read smarter. Upload EPUBs and PDFs, track your reading progress, highlight passages, get AI-powered explanations and summaries, and monitor your reading habits — all in one place.
@@ -18,19 +24,19 @@ Built with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-st
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript (strict) |
-| Styling | Tailwind CSS + shadcn/ui |
-| API | tRPC (end-to-end type-safe) |
-| ORM | Prisma 7 |
-| Database | PostgreSQL |
-| Auth | Better Auth |
-| AI | Groq (OpenAI-compatible) via Vercel AI SDK |
-| File Upload | UploadThing |
-| Monorepo | Turborepo + bun workspaces |
-| Linting | Biome |
+| Layer       | Technology                                 |
+| ----------- | ------------------------------------------ |
+| Framework   | Next.js 16 (App Router)                    |
+| Language    | TypeScript (strict)                        |
+| Styling     | Tailwind CSS + shadcn/ui                   |
+| API         | tRPC (end-to-end type-safe)                |
+| ORM         | Prisma 7                                   |
+| Database    | PostgreSQL                                 |
+| Auth        | Better Auth                                |
+| AI          | Groq (OpenAI-compatible) via Vercel AI SDK |
+| File Upload | UploadThing                                |
+| Monorepo    | Turborepo + bun workspaces                 |
+| Linting     | Biome                                      |
 
 ## Getting Started
 
@@ -108,16 +114,16 @@ readsync/
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `bun run dev` | Start all apps in dev mode |
-| `bun run build` | Build all apps |
+| Command               | Description                             |
+| --------------------- | --------------------------------------- |
+| `bun run dev`         | Start all apps in dev mode              |
+| `bun run build`       | Build all apps                          |
 | `bun run check-types` | TypeScript type-check across workspaces |
-| `bun run db:push` | Push Prisma schema to database |
-| `bun run db:generate` | Generate Prisma client |
-| `bun run db:migrate` | Run database migrations |
-| `bun run db:studio` | Open Prisma Studio |
-| `bun run check` | Biome lint & format |
+| `bun run db:push`     | Push Prisma schema to database          |
+| `bun run db:generate` | Generate Prisma client                  |
+| `bun run db:migrate`  | Run database migrations                 |
+| `bun run db:studio`   | Open Prisma Studio                      |
+| `bun run check`       | Biome lint & format                     |
 
 ## Deployment
 

@@ -5,11 +5,7 @@ import { notFound, redirect } from "next/navigation";
 
 import Reader from "./reader";
 
-export default async function ReaderPage({
-	params,
-}: {
-	params: Promise<{ bookId: string }>;
-}) {
+export default async function ReaderPage({ params }: { params: Promise<{ bookId: string }> }) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -44,6 +40,7 @@ export default async function ReaderPage({
 
 	return (
 		<Reader
+			userId={session.user.id}
 			book={{
 				id: book.id,
 				title: book.title,

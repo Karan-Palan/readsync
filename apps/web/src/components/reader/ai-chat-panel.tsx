@@ -1,12 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import {
-	BookMarked,
-	GripVertical,
-	MessageSquarePlus,
-	Send,
-} from "lucide-react";
+import { BookMarked, GripVertical, MessageSquarePlus, Send } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import MarkdownContent from "@/components/markdown-content";
@@ -68,12 +63,8 @@ export default function AIChatPanel({
 
 	const aiQueryMutation = useMutation(trpc.ai.query.mutationOptions());
 	const quickQueryMutation = useMutation(trpc.ai.quickQuery.mutationOptions());
-	const createHighlightMutation = useMutation(
-		trpc.highlight.create.mutationOptions(),
-	);
-	const updateHighlightMutation = useMutation(
-		trpc.highlight.update.mutationOptions(),
-	);
+	const createHighlightMutation = useMutation(trpc.highlight.create.mutationOptions());
+	const updateHighlightMutation = useMutation(trpc.highlight.update.mutationOptions());
 
 	const isPseudo = highlight.id.startsWith("__");
 	const isBusy = aiQueryMutation.isPending || quickQueryMutation.isPending;
@@ -147,8 +138,7 @@ export default function AIChatPanel({
 					]);
 				}
 			} catch (error) {
-				const message =
-					error instanceof Error ? error.message : "AI request failed";
+				const message = error instanceof Error ? error.message : "AI request failed";
 				toast.error(message);
 			} finally {
 				setInitialized(true);
@@ -184,8 +174,7 @@ export default function AIChatPanel({
 		// otherwise prepend the highlighted passage for context.
 		const parts: string[] = [];
 		if (!chatMode && highlight.text) parts.push(`Passage:\n${highlight.text}`);
-		if (orderedAssistantContent)
-			parts.push(`Previous context:\n${orderedAssistantContent}`);
+		if (orderedAssistantContent) parts.push(`Previous context:\n${orderedAssistantContent}`);
 		parts.push(`User:\n${text}`);
 		const prompt = parts.join("\n\n");
 
@@ -203,8 +192,7 @@ export default function AIChatPanel({
 				},
 			]);
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to send message";
+			const message = error instanceof Error ? error.message : "Failed to send message";
 			toast.error(message);
 		}
 	};
@@ -256,8 +244,7 @@ export default function AIChatPanel({
 			setIsModalOpen(false);
 			setSelectionText("");
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to add highlight";
+			const message = error instanceof Error ? error.message : "Failed to add highlight";
 			toast.error(message);
 		}
 	};
@@ -285,7 +272,7 @@ export default function AIChatPanel({
 		<div className="flex h-full flex-col" data-ai-panel="true">
 			{!chatMode && highlight.text && (
 				<div className="border-b px-4 py-3">
-					<p className="line-clamp-3 text-muted-foreground text-xs italic">
+					<p className="text-muted-foreground line-clamp-3 text-xs italic">
 						&ldquo;{highlight.text}&rdquo;
 					</p>
 				</div>
@@ -303,7 +290,7 @@ export default function AIChatPanel({
 							className={
 								msg.role === "user"
 									? "ml-6 rounded-xl border px-3 py-2 text-sm"
-									: "mr-6 rounded-xl border bg-muted/20 px-3 py-2"
+									: "bg-muted/20 mr-6 rounded-xl border px-3 py-2"
 							}
 						>
 							{msg.role === "assistant" ? (
@@ -318,7 +305,7 @@ export default function AIChatPanel({
 									<button
 										type="button"
 										onClick={() => openAddModal(msg.content)}
-										className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-accent"
+										className="hover:bg-accent inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
 									>
 										<BookMarked className="h-3.5 w-3.5" />
 										Add to highlights
@@ -329,8 +316,8 @@ export default function AIChatPanel({
 					))}
 
 					{isBusy && (
-						<div className="flex items-center gap-2 text-muted-foreground text-sm">
-							<div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+						<div className="text-muted-foreground flex items-center gap-2 text-sm">
+							<div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
 							Thinking...
 						</div>
 					)}
@@ -341,7 +328,7 @@ export default function AIChatPanel({
 						<button
 							type="button"
 							onClick={() => openAddModal(selectionText)}
-							className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary text-xs hover:bg-primary/20"
+							className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs"
 						>
 							<MessageSquarePlus className="h-3.5 w-3.5" />
 							Add selected to highlights
@@ -351,7 +338,7 @@ export default function AIChatPanel({
 
 				{latestAssistant && sections.length > 0 && (
 					<div className="mt-4 border-t pt-3">
-						<p className="mb-2 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+						<p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
 							Draggable Summary Sections
 						</p>
 						<div className="space-y-2">
@@ -371,16 +358,14 @@ export default function AIChatPanel({
 										});
 										setDragIndex(null);
 									}}
-									className="flex items-start gap-2 rounded-md border bg-muted/30 p-2"
+									className="bg-muted/30 flex items-start gap-2 rounded-md border p-2"
 								>
-									<GripVertical className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-									<p className="line-clamp-3 text-xs leading-relaxed">
-										{section}
-									</p>
+									<GripVertical className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
+									<p className="line-clamp-3 text-xs leading-relaxed">{section}</p>
 									<button
 										type="button"
 										onClick={() => openAddModal(section)}
-										className="ml-auto rounded px-2 py-1 text-[11px] hover:bg-accent"
+										className="hover:bg-accent ml-auto rounded px-2 py-1 text-[11px]"
 									>
 										Add
 									</button>
@@ -396,11 +381,7 @@ export default function AIChatPanel({
 					<textarea
 						value={question}
 						onChange={(e) => setQuestion(e.target.value)}
-						placeholder={
-							chatMode
-								? "Ask the AI anything…"
-								: "Ask a follow-up about this passage…"
-						}
+						placeholder={chatMode ? "Ask the AI anything…" : "Ask a follow-up about this passage…"}
 						onKeyDown={(e) => {
 							if (e.key === "Enter" && !e.shiftKey) {
 								e.preventDefault();
@@ -408,13 +389,13 @@ export default function AIChatPanel({
 							}
 						}}
 						rows={2}
-						className="min-h-10 flex-1 resize-none rounded-md border bg-background px-3 py-2 text-sm"
+						className="bg-background min-h-10 flex-1 resize-none rounded-md border px-3 py-2 text-sm"
 					/>
 					<button
 						type="button"
 						onClick={askFollowUp}
 						disabled={isBusy || !question.trim()}
-						className="inline-flex h-9 items-center gap-1 rounded-md bg-primary px-3 text-primary-foreground text-xs hover:bg-primary/90 disabled:opacity-50"
+						className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center gap-1 rounded-md px-3 text-xs disabled:opacity-50"
 					>
 						<Send className="h-3.5 w-3.5" />
 						Send
@@ -424,9 +405,9 @@ export default function AIChatPanel({
 
 			{isModalOpen && (
 				<div className="fixed inset-0 z-110 flex items-center justify-center bg-black/50 px-4">
-					<div className="w-full max-w-lg rounded-lg border bg-card p-4 shadow-xl">
-						<h4 className="mb-2 font-semibold text-sm">Add to highlights</h4>
-						<p className="mb-3 text-muted-foreground text-xs">
+					<div className="bg-card w-full max-w-lg rounded-lg border p-4 shadow-xl">
+						<h4 className="mb-2 text-sm font-semibold">Add to highlights</h4>
+						<p className="text-muted-foreground mb-3 text-xs">
 							Choose where this text should be inserted before saving.
 						</p>
 
@@ -434,38 +415,30 @@ export default function AIChatPanel({
 							value={modalContent}
 							onChange={(e) => setModalContent(e.target.value)}
 							rows={6}
-							className="mb-3 w-full rounded-md border bg-background px-3 py-2 text-sm"
+							className="bg-background mb-3 w-full rounded-md border px-3 py-2 text-sm"
 						/>
 
 						<div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
 							<label className="text-xs">
-								<span className="mb-1 block text-muted-foreground">
-									Insert at line
-								</span>
+								<span className="text-muted-foreground mb-1 block">Insert at line</span>
 								<input
 									type="number"
 									min={1}
 									value={insertLine}
 									onChange={(e) => setInsertLine(Number(e.target.value) || 1)}
-									className="w-full rounded-md border bg-background px-2 py-1.5"
+									className="bg-background w-full rounded-md border px-2 py-1.5"
 								/>
 							</label>
 							{!isPseudo && (
 								<label className="text-xs">
-									<span className="mb-1 block text-muted-foreground">
-										Save target
-									</span>
+									<span className="text-muted-foreground mb-1 block">Save target</span>
 									<select
 										value={targetMode}
-										onChange={(e) =>
-											setTargetMode(e.target.value as "new" | "append")
-										}
-										className="w-full rounded-md border bg-background px-2 py-1.5"
+										onChange={(e) => setTargetMode(e.target.value as "new" | "append")}
+										className="bg-background w-full rounded-md border px-2 py-1.5"
 									>
 										<option value="new">Create new highlight</option>
-										<option value="append">
-											Append to current highlight note
-										</option>
+										<option value="append">Append to current highlight note</option>
 									</select>
 								</label>
 							)}
@@ -475,18 +448,15 @@ export default function AIChatPanel({
 							<button
 								type="button"
 								onClick={() => setIsModalOpen(false)}
-								className="rounded-md border px-3 py-1.5 text-xs hover:bg-accent"
+								className="hover:bg-accent rounded-md border px-3 py-1.5 text-xs"
 							>
 								Cancel
 							</button>
 							<button
 								type="button"
 								onClick={handleSaveToHighlights}
-								disabled={
-									createHighlightMutation.isPending ||
-									updateHighlightMutation.isPending
-								}
-								className="rounded-md bg-primary px-3 py-1.5 text-primary-foreground text-xs disabled:opacity-50"
+								disabled={createHighlightMutation.isPending || updateHighlightMutation.isPending}
+								className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-xs disabled:opacity-50"
 							>
 								Save
 							</button>

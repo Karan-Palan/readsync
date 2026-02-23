@@ -5,7 +5,9 @@
 	"scripts": {
 		"dev": "next dev --port 3001",
 		"build": "next build",
-		"start": "next start"
+		"start": "next start",
+		"copy-pdf-worker": "bun -e \"import {copyFileSync} from 'fs'; import {execSync} from 'child_process'; const src = execSync(\\\"find ../../node_modules/.bun -name 'pdf.worker.min.mjs' -path '*/pdfjs-dist/build/*' 2>/dev/null | head -1\\\", {encoding:'utf-8'}).trim(); if(!src){console.log('pdfjs worker not found, skipping');process.exit(0);} copyFileSync(src,'public/pdf.worker.min.mjs'); console.log('pdf.worker.min.mjs copied from '+src)\"",
+		"postinstall": "bun run copy-pdf-worker"
 	},
 	"dependencies": {
 		"@ai-sdk/openai": "^3.0.30",
@@ -47,11 +49,14 @@
 	},
 	"devDependencies": {
 		"@readsync/config": "workspace:*",
+		"@serwist/turbopack": "latest",
 		"@tailwindcss/postcss": "^4.1.10",
 		"@tanstack/react-query-devtools": "^5.91.1",
 		"@types/node": "^20",
 		"@types/react": "^19.2.7",
 		"@types/react-dom": "^19.2.3",
+		"esbuild": "latest",
+		"serwist": "latest",
 		"tailwindcss": "^4.1.10",
 		"typescript": "catalog:"
 	}

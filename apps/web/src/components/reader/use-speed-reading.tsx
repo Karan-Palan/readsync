@@ -18,15 +18,10 @@ export function useSpeedReading({
 	onExit,
 	onFractionChange,
 }: UseSpeedReadingOptions) {
-	const words = useMemo(
-		() => text.split(/\s+/).filter((w) => w.length > 0),
-		[text],
-	);
+	const words = useMemo(() => text.split(/\s+/).filter((w) => w.length > 0), [text]);
 
 	const [currentIndex, setCurrentIndex] = useState(() =>
-		Math.floor(
-			startFraction * text.split(/\s+/).filter((w) => w.length > 0).length,
-		),
+		Math.floor(startFraction * text.split(/\s+/).filter((w) => w.length > 0).length),
 	);
 	const [wpm, setWpm] = useState(300);
 	const [isPlaying, setIsPlaying] = useState(false);
@@ -131,7 +126,7 @@ export function SpeedReadingShell({
 
 	return (
 		<div
-			className="fixed inset-0 z-30 flex flex-col items-center justify-center bg-background"
+			className="bg-background fixed inset-0 z-30 flex flex-col items-center justify-center"
 			onTouchStart={handleTouchStart}
 			onTouchMove={handleTouchMove}
 		>
@@ -139,7 +134,7 @@ export function SpeedReadingShell({
 			<button
 				type="button"
 				onClick={onExit}
-				className="absolute top-4 right-4 rounded-md px-3 py-1 text-muted-foreground text-sm hover:text-foreground"
+				className="text-muted-foreground hover:text-foreground absolute top-4 right-4 rounded-md px-3 py-1 text-sm"
 			>
 				✕ Exit
 			</button>
@@ -150,9 +145,9 @@ export function SpeedReadingShell({
 			{/* Controls */}
 			<div className="absolute bottom-20 flex flex-col items-center gap-4">
 				{/* Progress bar */}
-				<div className="h-1 w-64 rounded-full bg-muted">
+				<div className="bg-muted h-1 w-64 rounded-full">
 					<div
-						className="h-full rounded-full bg-primary transition-all"
+						className="bg-primary h-full rounded-full transition-all"
 						style={{ width: `${progress}%` }}
 					/>
 				</div>
@@ -161,7 +156,7 @@ export function SpeedReadingShell({
 					<button
 						type="button"
 						onClick={() => setIsPlaying(!isPlaying)}
-						className="rounded-md bg-primary px-6 py-2 font-medium text-primary-foreground text-sm"
+						className="bg-primary text-primary-foreground rounded-md px-6 py-2 text-sm font-medium"
 					>
 						{isPlaying ? "Pause" : "Play"}
 					</button>
@@ -179,7 +174,7 @@ export function SpeedReadingShell({
 							onChange={(e) => setWpm(Number(e.target.value))}
 							className="w-32"
 						/>
-						<span className="w-10 text-right font-medium text-xs">{wpm}</span>
+						<span className="w-10 text-right text-xs font-medium">{wpm}</span>
 					</div>
 					{extraControls}
 				</div>

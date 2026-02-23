@@ -6,16 +6,17 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import AIPanel from "@/components/reader/ai-panel";
 import ChapterList from "@/components/reader/chapter-list";
 import ChunkedSpeedMode from "@/components/reader/chunked-speed-mode";
 import HighlightLayer from "@/components/reader/highlight-layer";
-import ReadingModeSelector, {
-	type ReadingMode,
-} from "@/components/reader/reading-mode-selector";
+import ReadingModeSelector, { type ReadingMode } from "@/components/reader/reading-mode-selector";
 import RSVPMode from "@/components/reader/rsvp-mode";
 import TextSelectionMenu from "@/components/reader/text-selection-menu";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { getBook, getHighlights, getProgress, putBook, putProgress } from "@/lib/offline-db";
 import type { AIAction, Chapter, Highlight } from "@/types/reader";
 import { trpc } from "@/utils/trpc";
 
@@ -28,12 +29,13 @@ const NormalMode = dynamic(() => import("@/components/reader/normal-mode"), {
 function ReaderLoading() {
 	return (
 		<div className="flex h-full items-center justify-center">
-			<div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+			<div className="border-primary h-10 w-10 animate-spin rounded-full border-4 border-t-transparent" />
 		</div>
 	);
 }
 
 interface ReaderProps {
+	userId: string;
 	book: {
 		id: string;
 		title: string;
@@ -50,6 +52,7 @@ interface ReaderProps {
 }
 
 export default function Reader({
+	userId,
 	book,
 	initialProgress,
 	initialHighestPosition,
@@ -59,13 +62,10 @@ export default function Reader({
 	const router = useRouter();
 	const { theme, setTheme } = useTheme();
 	const [currentMode, setCurrentMode] = useState<ReadingMode>("normal");
-	const [currentPosition, setCurrentPosition] =
-		useState<unknown>(initialProgress);
+	const [currentPosition, setCurrentPosition] = useState<unknown>(initialProgress);
 	const [highlights, setHighlights] = useState<Highlight[]>(initialHighlights);
 	const [chapters, setChapters] = useState<Chapter[]>(initialChapters);
-	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(
-		null,
-	);
+	const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
 	const [isAIOpen, setIsAIOpen] = useState(false);
 	const [aiAction, setAiAction] = useState<AIAction | null>(null);
 	const [isChatMode, setIsChatMode] = useState(false);
@@ -83,15 +83,75 @@ export default function Reader({
 	const [showResumeDialog, setShowResumeDialog] = useState(() => {
 		const currentFraction = (initialProgress as any)?.fraction ?? 0;
 		const highestFraction = (initialHighestPosition as any)?.fraction ?? 0;
-		return !!(
-			initialHighestPosition && highestFraction > currentFraction + 0.02
-		);
+		return !!(initialHighestPosition && highestFraction > currentFraction + 0.02);
 	});
 	const [highestPosition] = useState<unknown>(initialHighestPosition);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	/** Populated by EPUBReader once the view is ready — allows programmatic navigation */
 	const navigateRef = useRef<((pos: unknown) => void) | null>(null);
 	const [isFullscreen, setIsFullscreen] = useState(false);
+	const [bookNotAvailableOffline, setBookNotAvailableOffline] = useState(false);
+
+	const { isOnline } = useOnlineStatus();
+
+	//  Offline init
+	useEffect(() => {
+		// Register this book so it's known in IDB
+		putBook({
+			id: book.id,
+			userId,
+			title: book.title,
+			fileUrl: book.fileUrl,
+			fileType: book.fileType,
+			coverUrl: book.coverUrl,
+			totalPages: book.totalPages,
+			cachedAt: Date.now(),
+		}).catch(() => {});
+
+		if (!navigator.onLine) {
+			// Check if book was cached before
+			getBook(book.id)
+				.then((cached) => {
+					if (!cached) setBookNotAvailableOffline(true);
+				})
+				.catch(() => {});
+
+			// Merge offline highlights
+			getHighlights(book.id)
+				.then((offlineHighlights) => {
+					if (offlineHighlights.length > 0) {
+						setHighlights((prev) => {
+							const existingIds = new Set(prev.map((h) => h.id));
+							const newOnes = offlineHighlights
+								.filter((h) => !existingIds.has(h.id))
+								.map((h) => ({
+									id: h.id,
+									text: h.text,
+									color: h.color,
+									startCfi: h.startCfi ?? null,
+									endCfi: h.endCfi ?? null,
+									pageNumber: h.pageNumber ?? null,
+									aiAction: (h.aiAction as AIAction) ?? null,
+									aiResponse: h.aiResponse ?? null,
+									note: h.note ?? null,
+								}));
+							return [...newOnes, ...prev];
+						});
+					}
+				})
+				.catch(() => {});
+
+			// Load offline progress
+			getProgress(userId, book.id)
+				.then((offlineProgress) => {
+					if (offlineProgress) {
+						setCurrentPosition(offlineProgress.position);
+					}
+				})
+				.catch(() => {});
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [book.id, userId]);
 
 	// Sync isFullscreen with the native Fullscreen API (Esc key, etc.)
 	useEffect(() => {
@@ -113,18 +173,10 @@ export default function Reader({
 		}
 	}, []);
 
-	const saveProgressMutation = useMutation(
-		trpc.book.saveProgress.mutationOptions(),
-	);
-	const updateCoverMutation = useMutation(
-		trpc.book.updateCover.mutationOptions(),
-	);
-	const summarizeBookMutation = useMutation(
-		trpc.ai.summarizeBook.mutationOptions(),
-	);
-	const saveSummaryMutation = useMutation(
-		trpc.book.saveSummary.mutationOptions(),
-	);
+	const saveProgressMutation = useMutation(trpc.book.saveProgress.mutationOptions());
+	const updateCoverMutation = useMutation(trpc.book.updateCover.mutationOptions());
+	const summarizeBookMutation = useMutation(trpc.ai.summarizeBook.mutationOptions());
+	const saveSummaryMutation = useMutation(trpc.book.saveSummary.mutationOptions());
 
 	const handleCoverExtracted = useCallback(
 		(coverDataUrl: string) => {
@@ -146,10 +198,36 @@ export default function Reader({
 
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 			debounceRef.current = setTimeout(() => {
-				saveProgressMutation.mutate({ bookId: book.id, position, fraction });
+				// Always persist to IDB (unsynced)
+				putProgress({
+					userId,
+					bookId: book.id,
+					position,
+					highestPosition: null,
+					updatedAt: Date.now(),
+					synced: false,
+				}).catch(() => {});
+
+				if (navigator.onLine) {
+					saveProgressMutation.mutate(
+						{ bookId: book.id, position, fraction },
+						{
+							onSuccess: () => {
+								putProgress({
+									userId,
+									bookId: book.id,
+									position,
+									highestPosition: null,
+									updatedAt: Date.now(),
+									synced: true,
+								}).catch(() => {});
+							},
+						},
+					);
+				}
 			}, 1500);
 		},
-		[book.id, saveProgressMutation],
+		[book.id, userId, saveProgressMutation],
 	);
 
 	useEffect(() => {
@@ -162,15 +240,12 @@ export default function Reader({
 		setHighlights((prev) => [highlight, ...prev]);
 	}, []);
 
-	const handleAIAction = useCallback(
-		(highlight: Highlight, action: AIAction) => {
-			setActiveHighlight(highlight);
-			setAiAction(action);
-			setIsChatMode(false);
-			setIsAIOpen(true);
-		},
-		[],
-	);
+	const handleAIAction = useCallback((highlight: Highlight, action: AIAction) => {
+		setActiveHighlight(highlight);
+		setAiAction(action);
+		setIsChatMode(false);
+		setIsAIOpen(true);
+	}, []);
 
 	const handleCloseAI = useCallback(() => {
 		setIsAIOpen(false);
@@ -182,9 +257,7 @@ export default function Reader({
 	const handleAIResponse = useCallback(
 		(id: string, response: string) => {
 			setHighlights((prev) =>
-				prev.map((h) =>
-					h.id === id ? { ...h, aiAction, aiResponse: response } : h,
-				),
+				prev.map((h) => (h.id === id ? { ...h, aiAction, aiResponse: response } : h)),
 			);
 		},
 		[aiAction],
@@ -213,24 +286,29 @@ export default function Reader({
 		setIsAIOpen(true);
 	}, []);
 
-	const handleChapterCreate = useCallback(
-		(startPage: number, endPage: number) => {
-			setChapterFormDefaults({ startPage, endPage });
-			setIsChapterListOpen(true);
-		},
-		[],
-	);
+	const handleChapterCreate = useCallback((startPage: number, endPage: number) => {
+		setChapterFormDefaults({ startPage, endPage });
+		setIsChapterListOpen(true);
+	}, []);
 
 	// AI shortcut: open a free-chat AI panel (no auto-run, user types first)
 	const handleQuickAI = useCallback(() => {
+		if (!isOnline) {
+			toast.info("AI requires internet connection.");
+			return;
+		}
 		const pseudo: Highlight = { id: "__chat__", text: "" };
 		setActiveHighlight(pseudo);
 		setAiAction("DISCUSS");
 		setIsChatMode(true);
 		setIsAIOpen(true);
-	}, []);
+	}, [isOnline]);
 
 	const handleSummarizeBook = useCallback(() => {
+		if (!isOnline) {
+			toast.info("AI requires internet connection.");
+			return;
+		}
 		if (!bookText) return;
 		summarizeBookMutation.mutate(
 			{
@@ -252,7 +330,7 @@ export default function Reader({
 				},
 			},
 		);
-	}, [book.id, book.title, bookText, summarizeBookMutation]);
+	}, [book.id, book.title, bookText, isOnline, summarizeBookMutation]);
 
 	// When exiting RSVP/Chunked, navigate the EPUB/PDF reader to match the fraction reached
 	const handleAltModeExit = useCallback(
@@ -271,14 +349,36 @@ export default function Reader({
 			// Also save progress to server
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 			debounceRef.current = setTimeout(() => {
-				saveProgressMutation.mutate({
+				const position = { fraction };
+				putProgress({
+					userId,
 					bookId: book.id,
-					position: { fraction },
-					fraction,
-				});
+					position,
+					highestPosition: null,
+					updatedAt: Date.now(),
+					synced: false,
+				}).catch(() => {});
+
+				if (navigator.onLine) {
+					saveProgressMutation.mutate(
+						{ bookId: book.id, position, fraction },
+						{
+							onSuccess: () => {
+								putProgress({
+									userId,
+									bookId: book.id,
+									position,
+									highestPosition: null,
+									updatedAt: Date.now(),
+									synced: true,
+								}).catch(() => {});
+							},
+						},
+					);
+				}
 			}, 2000);
 		},
-		[book.id, saveProgressMutation],
+		[book.id, userId, saveProgressMutation],
 	);
 
 	// Focus overlay gradient — keeps the center strip bright, dims edges
@@ -298,20 +398,35 @@ export default function Reader({
 	const showReader = currentMode === "normal" || currentMode === "focus";
 	const showTextSelection = showReader;
 
+	// Offline guard: book hasn't been viewed before on this device
+	if (bookNotAvailableOffline) {
+		return (
+			<div className="flex h-dvh flex-col items-center justify-center gap-4 px-4 text-center">
+				<p className="text-muted-foreground">This book is not available offline.</p>
+				<button
+					type="button"
+					onClick={() => router.push("/library" as any)}
+					className="hover:bg-accent flex items-center gap-1 rounded-md border px-4 py-2 text-sm"
+				>
+					<ArrowLeft className="h-4 w-4" />
+					Back to Library
+				</button>
+			</div>
+		);
+	}
+
 	return (
 		// h-dvh: true viewport height that accounts for mobile browser chrome
-		<div className="relative flex h-dvh flex-col overflow-hidden bg-background">
+		<div className="bg-background relative flex h-dvh flex-col overflow-hidden">
 			{/* Resume dialog */}
 			{showResumeDialog && highestPosition != null && (
 				<div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
-					<div className="mx-4 w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl">
+					<div className="bg-card mx-4 w-full max-w-sm rounded-xl border p-6 shadow-2xl">
 						<h3 className="mb-2 font-semibold">Resume Reading?</h3>
-						<p className="mb-4 text-muted-foreground text-sm">
+						<p className="text-muted-foreground mb-4 text-sm">
 							You previously reached{" "}
-							<strong>
-								{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%
-							</strong>
-							. Jump back there?
+							<strong>{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%</strong>. Jump
+							back there?
 						</p>
 						<div className="flex gap-2">
 							<button
@@ -322,18 +437,16 @@ export default function Reader({
 									setCurrentPosition(highestPosition);
 									setShowResumeDialog(false);
 								}}
-								className="flex-1 rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm"
+								className="bg-primary text-primary-foreground flex-1 rounded-md px-4 py-2 text-sm"
 							>
-								Jump to furthest (
-								{Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%)
+								Jump to furthest ({Math.round(((highestPosition as any)?.fraction ?? 0) * 100)}%)
 							</button>
 							<button
 								type="button"
 								onClick={() => setShowResumeDialog(false)}
-								className="flex-1 rounded-md border px-4 py-2 text-sm hover:bg-accent"
+								className="hover:bg-accent flex-1 rounded-md border px-4 py-2 text-sm"
 							>
-								Stay here (
-								{Math.round(((initialProgress as any)?.fraction ?? 0) * 100)}%)
+								Stay here ({Math.round(((initialProgress as any)?.fraction ?? 0) * 100)}%)
 							</button>
 						</div>
 					</div>
@@ -341,70 +454,64 @@ export default function Reader({
 			)}
 			{/* Top bar — hidden in fullscreen for distraction-free reading */}
 			{!isFullscreen && (
-			<header className="flex shrink-0 items-center justify-between border-b px-3 py-2 sm:px-4">
-				<button
-					type="button"
-					onClick={() => router.push("/library" as any)}
-					className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-				>
-					<ArrowLeft className="h-4 w-4" />
-					<span className="hidden sm:inline">Back</span>
-				</button>
+				<header className="flex shrink-0 items-center justify-between border-b px-3 py-2 sm:px-4">
+					<button
+						type="button"
+						onClick={() => router.push("/library" as any)}
+						className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						<span className="hidden sm:inline">Back</span>
+					</button>
 
-				<h2 className="max-w-[45%] truncate font-medium text-sm sm:max-w-[55%]">
-					{book.title}
-				</h2>
+					<h2 className="max-w-[45%] truncate text-sm font-medium sm:max-w-[55%]">{book.title}</h2>
 
-				<div className="flex items-center gap-2">
-					<button
-						type="button"
-						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-						className="rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
-						title="Toggle theme"
-					>
-						{theme === "dark" ? (
-							<Sun className="h-4 w-4" />
-						) : (
-							<Moon className="h-4 w-4" />
-						)}
-					</button>
-					<button
-						type="button"
-						onClick={handleSummarizeBook}
-						disabled={summarizeBookMutation.isPending || !bookText}
-						className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs transition-colors hover:bg-primary/20 disabled:opacity-50"
-						title="Generate a full book summary"
-					>
-						<BookOpen className="h-3.5 w-3.5" />
-						<span className="hidden sm:inline">Summary</span>
-					</button>
-					<button
-						type="button"
-						onClick={handleQuickAI}
-						className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs transition-colors hover:bg-primary/20"
-						title="AI: explain or discuss selection"
-					>
-						<Sparkles className="h-3.5 w-3.5" />
-						<span className="hidden sm:inline">AI</span>
-					</button>
-					<button
-						type="button"
-						onClick={() => setIsChapterListOpen(!isChapterListOpen)}
-						className="text-muted-foreground text-sm hover:text-foreground"
-					>
-						<span className="hidden sm:inline">Chapters</span>
-						<span className="text-xs sm:hidden">Ch.</span>
-					</button>
-					<button
-						type="button"
-						onClick={toggleFullscreen}
-						className="rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
-						title="Fullscreen (hide all chrome)"
-					>
-						<Maximize2 className="h-4 w-4" />
-					</button>
-				</div>
-			</header>
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+							className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors"
+							title="Toggle theme"
+						>
+							{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+						</button>
+						<button
+							type="button"
+							onClick={handleSummarizeBook}
+							disabled={summarizeBookMutation.isPending || !bookText}
+							className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50"
+							title="Generate a full book summary"
+						>
+							<BookOpen className="h-3.5 w-3.5" />
+							<span className="hidden sm:inline">Summary</span>
+						</button>
+						<button
+							type="button"
+							onClick={handleQuickAI}
+							className="bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+							title="AI: explain or discuss selection"
+						>
+							<Sparkles className="h-3.5 w-3.5" />
+							<span className="hidden sm:inline">AI</span>
+						</button>
+						<button
+							type="button"
+							onClick={() => setIsChapterListOpen(!isChapterListOpen)}
+							className="text-muted-foreground hover:text-foreground text-sm"
+						>
+							<span className="hidden sm:inline">Chapters</span>
+							<span className="text-xs sm:hidden">Ch.</span>
+						</button>
+						<button
+							type="button"
+							onClick={toggleFullscreen}
+							className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors"
+							title="Fullscreen (hide all chrome)"
+						>
+							<Maximize2 className="h-4 w-4" />
+						</button>
+					</div>
+				</header>
 			)}
 
 			{/* Reading area */}
@@ -444,7 +551,7 @@ export default function Reader({
 						/>
 
 						{/* Width control — positioned top-right, above overlay */}
-						<div className="absolute top-2 right-3 z-20 flex items-center gap-2 rounded-lg border bg-card/90 px-3 py-1.5 shadow-md backdrop-blur">
+						<div className="bg-card/90 absolute top-2 right-3 z-20 flex items-center gap-2 rounded-lg border px-3 py-1.5 shadow-md backdrop-blur">
 							<span className="text-muted-foreground text-xs">Width</span>
 							<input
 								type="range"
@@ -455,7 +562,7 @@ export default function Reader({
 								onChange={(e) => setFocusWidthPct(Number(e.target.value))}
 								className="w-20 sm:w-28"
 							/>
-							<span className="w-7 text-right font-mono text-muted-foreground text-xs">
+							<span className="text-muted-foreground w-7 text-right font-mono text-xs">
 								{focusWidthPct}%
 							</span>
 						</div>
@@ -464,7 +571,7 @@ export default function Reader({
 
 				{/*  RSVP: full-screen overlay so NormalMode stays mounted below  */}
 				{currentMode === "rsvp" && (
-					<div className="absolute inset-0 z-30 bg-background">
+					<div className="bg-background absolute inset-0 z-30">
 						<RSVPMode
 							text={bookText}
 							startFraction={readingFraction}
@@ -476,7 +583,7 @@ export default function Reader({
 
 				{/*  Chunked: same pattern as RSVP  */}
 				{currentMode === "chunked" && (
-					<div className="absolute inset-0 z-30 bg-background">
+					<div className="bg-background absolute inset-0 z-30">
 						<ChunkedSpeedMode
 							text={bookText}
 							startFraction={readingFraction}
@@ -490,7 +597,9 @@ export default function Reader({
 				{showTextSelection && (
 					<TextSelectionMenu
 						bookId={book.id}
+						userId={userId}
 						fileType={book.fileType}
+						isOnline={isOnline}
 						onHighlightCreated={handleHighlightCreated}
 						onAIAction={handleAIAction}
 						onChapterCreate={handleChapterCreate}
@@ -521,6 +630,7 @@ export default function Reader({
 						highlight={activeHighlight}
 						action={aiAction}
 						chatMode={isChatMode}
+						isOnline={isOnline}
 						onClose={handleCloseAI}
 						onHighlightCreated={handleHighlightCreated}
 						onResponseReceived={handleAIResponse}
@@ -530,10 +640,7 @@ export default function Reader({
 
 			{/*  Mode selector bar — hidden in fullscreen  */}
 			{!isFullscreen && (
-			<ReadingModeSelector
-				currentMode={currentMode}
-				onModeChange={setCurrentMode}
-			/>
+				<ReadingModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
 			)}
 
 			{/* Fullscreen exit button — floating bottom-center */}
@@ -542,7 +649,7 @@ export default function Reader({
 					<button
 						type="button"
 						onClick={toggleFullscreen}
-						className="flex items-center gap-2 rounded-full border border-border/50 bg-background/80 px-4 py-2 text-muted-foreground text-sm shadow-lg backdrop-blur transition-opacity hover:text-foreground"
+						className="border-border/50 bg-background/80 text-muted-foreground hover:text-foreground flex items-center gap-2 rounded-full border px-4 py-2 text-sm shadow-lg backdrop-blur transition-opacity"
 						title="Exit fullscreen"
 					>
 						<Minimize2 className="h-4 w-4" />

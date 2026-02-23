@@ -47,15 +47,12 @@ export default function AIDrawer({
 		[width],
 	);
 
-	const onResizePointerMove = useCallback(
-		(e: React.PointerEvent<HTMLDivElement>) => {
-			if (!dragging.current) return;
-			const delta = startX.current - e.clientX; // moving left expands
-			const maxW = Math.round(window.innerWidth * 0.85);
-			setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
-		},
-		[],
-	);
+	const onResizePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+		if (!dragging.current) return;
+		const delta = startX.current - e.clientX; // moving left expands
+		const maxW = Math.round(window.innerWidth * 0.85);
+		setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
+	}, []);
 
 	const onResizePointerUp = useCallback(() => {
 		dragging.current = false;
@@ -63,14 +60,14 @@ export default function AIDrawer({
 
 	return (
 		<div
-			className="fixed top-0 right-0 z-50 flex h-full flex-col border-l bg-card shadow-xl"
+			className="bg-card fixed top-0 right-0 z-50 flex h-full flex-col border-l shadow-xl"
 			style={{ width, maxWidth: "85vw" }}
 			data-ai-panel="true"
 		>
 			{/* Drag-resize handle — left edge, wide enough to grab easily */}
 			<div
 				ref={handleRef}
-				className="absolute top-0 left-0 z-10 h-full w-3 cursor-col-resize touch-none select-none transition-colors hover:bg-primary/20 active:bg-primary/40"
+				className="hover:bg-primary/20 active:bg-primary/40 absolute top-0 left-0 z-10 h-full w-3 cursor-col-resize touch-none transition-colors select-none"
 				onPointerDown={onResizePointerDown}
 				onPointerMove={onResizePointerMove}
 				onPointerUp={onResizePointerUp}
@@ -78,12 +75,8 @@ export default function AIDrawer({
 			/>
 
 			<div className="flex items-center justify-between border-b px-4 py-3">
-				<h3 className="font-semibold text-sm">AI Assistant</h3>
-				<button
-					type="button"
-					onClick={onClose}
-					className="rounded-md p-1 hover:bg-accent"
-				>
+				<h3 className="text-sm font-semibold">AI Assistant</h3>
+				<button type="button" onClick={onClose} className="hover:bg-accent rounded-md p-1">
 					<X className="h-4 w-4" />
 				</button>
 			</div>

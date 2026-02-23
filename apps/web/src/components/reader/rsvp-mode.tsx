@@ -1,9 +1,6 @@
 "use client";
 
-import {
-	SpeedReadingShell,
-	useSpeedReading,
-} from "@/components/reader/use-speed-reading";
+import { SpeedReadingShell, useSpeedReading } from "@/components/reader/use-speed-reading";
 
 interface RSVPModeProps {
 	text: string;

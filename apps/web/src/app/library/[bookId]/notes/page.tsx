@@ -20,11 +20,7 @@ const ACTION_LABEL: Record<string, string> = {
 	DISCUSS: "Discussion",
 };
 
-export default async function NotesPage({
-	params,
-}: {
-	params: Promise<{ bookId: string }>;
-}) {
+export default async function NotesPage({ params }: { params: Promise<{ bookId: string }> }) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session?.user) redirect("/login");
 
@@ -45,12 +41,10 @@ export default async function NotesPage({
 	if (!book.highlights.length) {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-4 px-4 text-center">
-				<p className="text-muted-foreground">
-					No highlights or notes yet for this book.
-				</p>
+				<p className="text-muted-foreground">No highlights or notes yet for this book.</p>
 				<Link
 					href={`/reader/${bookId}` as any}
-					className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm"
+					className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm"
 				>
 					Open reader
 				</Link>
@@ -63,14 +57,14 @@ export default async function NotesPage({
 			{/* Back */}
 			<Link
 				href={"/library" as any}
-				className="mb-6 inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
+				className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1 text-sm"
 			>
 				<ArrowLeft className="h-4 w-4" />
 				Library
 			</Link>
 
-			<h1 className="mb-1 font-bold text-2xl">{book.title}</h1>
-			<p className="mb-6 text-muted-foreground text-sm">
+			<h1 className="mb-1 text-2xl font-bold">{book.title}</h1>
+			<p className="text-muted-foreground mb-6 text-sm">
 				{book.highlights.length} highlight
 				{book.highlights.length !== 1 ? "s" : ""}
 			</p>
@@ -79,30 +73,21 @@ export default async function NotesPage({
 				{book.highlights.map((h) => {
 					const colorClass = COLOR_BORDER[h.color] ?? COLOR_BORDER.yellow;
 					return (
-						<div
-							key={h.id}
-							className={`rounded-lg border-l-4 px-4 py-3 ${colorClass}`}
-						>
-							<p className="mb-2 font-medium text-sm italic">
-								&ldquo;{h.text}&rdquo;
-							</p>
+						<div key={h.id} className={`rounded-lg border-l-4 px-4 py-3 ${colorClass}`}>
+							<p className="mb-2 text-sm font-medium italic">&ldquo;{h.text}&rdquo;</p>
 
-							{h.note && !h.aiResponse && (
-								<p className="text-muted-foreground text-sm">{h.note}</p>
-							)}
+							{h.note && !h.aiResponse && <p className="text-muted-foreground text-sm">{h.note}</p>}
 
 							{h.aiResponse && (
 								<div className="mt-2">
-									<p className="mb-1 font-medium text-muted-foreground text-xs uppercase tracking-wide">
-										{h.aiAction
-											? (ACTION_LABEL[h.aiAction] ?? h.aiAction)
-											: "AI"}
+									<p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+										{h.aiAction ? (ACTION_LABEL[h.aiAction] ?? h.aiAction) : "AI"}
 									</p>
 									<MarkdownContent>{h.note ?? h.aiResponse}</MarkdownContent>
 								</div>
 							)}
 
-							<p className="mt-2 text-muted-foreground text-xs">
+							<p className="text-muted-foreground mt-2 text-xs">
 								{new Date(h.createdAt).toLocaleDateString()}
 							</p>
 						</div>

@@ -40,24 +40,18 @@ export default function BookCard({ book, onDeleted }: BookCardProps) {
 	return (
 		<button
 			type="button"
-			className="group relative w-full cursor-pointer overflow-hidden rounded-lg border bg-card transition-colors hover:bg-accent"
+			className="group bg-card hover:bg-accent relative w-full cursor-pointer overflow-hidden rounded-lg border transition-colors"
 			onClick={() => router.push(`/reader/${book.id}` as any)}
 		>
-			<div className="flex aspect-3/4 items-center justify-center bg-muted">
+			<div className="bg-muted flex aspect-3/4 items-center justify-center">
 				{book.coverUrl ? (
-					<img
-						src={book.coverUrl}
-						alt={book.title}
-						className="h-full w-full object-cover"
-					/>
+					<img src={book.coverUrl} alt={book.title} className="h-full w-full object-cover" />
 				) : (
-					<span className="font-bold text-3xl text-muted-foreground">
-						{initials}
-					</span>
+					<span className="text-muted-foreground text-3xl font-bold">{initials}</span>
 				)}
 			</div>
 			<div className="flex items-center justify-between p-2">
-				<p className="truncate font-medium text-sm">{book.title}</p>
+				<p className="truncate text-sm font-medium">{book.title}</p>
 				<Badge variant="secondary" className="shrink-0 text-xs uppercase">
 					{book.fileType}
 				</Badge>

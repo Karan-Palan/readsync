@@ -75,9 +75,7 @@ export default function NormalMode({
 	// Unsupported format fallback
 	return (
 		<div className="flex h-full items-center justify-center">
-			<p className="text-muted-foreground">
-				Unsupported file format: {book.fileType}
-			</p>
+			<p className="text-muted-foreground">Unsupported file format: {book.fileType}</p>
 		</div>
 	);
 }

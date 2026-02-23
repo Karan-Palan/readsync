@@ -22,12 +22,9 @@ export default function EmptyState({
 }: EmptyStateProps) {
 	return (
 		<div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-			<Icon className="h-12 w-12 text-muted-foreground" />
+			<Icon className="text-muted-foreground h-12 w-12" />
 			<p className="text-muted-foreground text-sm">{message}</p>
-			<Link
-				href={actionHref as any}
-				className={cn(buttonVariants({ variant: "default" }))}
-			>
+			<Link href={actionHref as any} className={cn(buttonVariants({ variant: "default" }))}>
 				{actionLabel}
 			</Link>
 		</div>

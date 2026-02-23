@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { OfflineIndicator } from "./offline-indicator";
 import { ModeToggle } from "./mode-toggle";
 import { Separator } from "./ui/separator";
 import UserMenu from "./user-menu";
@@ -30,7 +31,7 @@ export default function Header() {
 							key={to}
 							href={to as any}
 							className={cn(
-								"rounded-md px-3 py-1.5 font-medium text-sm transition-colors",
+								"rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
 								pathname.startsWith(to)
 									? "bg-accent text-accent-foreground"
 									: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
@@ -44,7 +45,7 @@ export default function Header() {
 				{/* Mobile hamburger */}
 				<button
 					type="button"
-					className="rounded-md p-1.5 text-muted-foreground hover:bg-accent md:hidden"
+					className="text-muted-foreground hover:bg-accent rounded-md p-1.5 md:hidden"
 					onClick={() => setMobileOpen((v) => !v)}
 					aria-label="Toggle menu"
 				>
@@ -52,6 +53,7 @@ export default function Header() {
 				</button>
 
 				<div className="flex items-center gap-2">
+					<OfflineIndicator />
 					<ModeToggle />
 					<UserMenu />
 				</div>
@@ -66,7 +68,7 @@ export default function Header() {
 							href={to as any}
 							onClick={() => setMobileOpen(false)}
 							className={cn(
-								"rounded-md px-3 py-2 font-medium text-sm transition-colors",
+								"rounded-md px-3 py-2 text-sm font-medium transition-colors",
 								pathname.startsWith(to)
 									? "bg-accent text-accent-foreground"
 									: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",

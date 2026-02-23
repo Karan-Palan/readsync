@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { WifiOff, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import AIChatPanel from "@/components/reader/ai-chat-panel";
 import type { AIAction, Highlight } from "@/types/reader";
@@ -10,6 +10,7 @@ interface AIPanelProps {
 	highlight: Highlight;
 	action: AIAction;
 	chatMode?: boolean;
+	isOnline?: boolean;
 	onClose: () => void;
 	onResponseReceived: (highlightId: string, response: string) => void;
 	onHighlightCreated: (highlight: Highlight) => void;
@@ -25,6 +26,7 @@ export default function AIPanel({
 	highlight,
 	action,
 	chatMode,
+	isOnline = true,
 	onClose,
 	onResponseReceived,
 	onHighlightCreated,
@@ -38,6 +40,7 @@ export default function AIPanel({
 					highlight={highlight}
 					action={action}
 					chatMode={chatMode}
+					isOnline={isOnline}
 					onClose={onClose}
 					onResponseReceived={onResponseReceived}
 					onHighlightCreated={onHighlightCreated}
@@ -51,12 +54,24 @@ export default function AIPanel({
 					highlight={highlight}
 					action={action}
 					chatMode={chatMode}
+					isOnline={isOnline}
 					onClose={onClose}
 					onResponseReceived={onResponseReceived}
 					onHighlightCreated={onHighlightCreated}
 				/>
 			</div>
 		</>
+	);
+}
+
+// Offline placeholder
+
+function OfflinePlaceholder() {
+	return (
+		<div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+			<WifiOff className="text-muted-foreground h-8 w-8" />
+			<p className="text-muted-foreground text-sm">AI requires internet connection.</p>
+		</div>
 	);
 }
 
@@ -67,6 +82,7 @@ function DrawerVariant({
 	highlight,
 	action,
 	chatMode,
+	isOnline,
 	onClose,
 	onResponseReceived,
 	onHighlightCreated,
@@ -88,15 +104,12 @@ function DrawerVariant({
 		[width],
 	);
 
-	const onResizePointerMove = useCallback(
-		(e: React.PointerEvent<HTMLDivElement>) => {
-			if (!dragging.current) return;
-			const delta = startX.current - e.clientX;
-			const maxW = Math.round(window.innerWidth * 0.85);
-			setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
-		},
-		[],
-	);
+	const onResizePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+		if (!dragging.current) return;
+		const delta = startX.current - e.clientX;
+		const maxW = Math.round(window.innerWidth * 0.85);
+		setWidth(Math.max(MIN_WIDTH, Math.min(maxW, startWidth.current + delta)));
+	}, []);
 
 	const onResizePointerUp = useCallback(() => {
 		dragging.current = false;
@@ -104,12 +117,12 @@ function DrawerVariant({
 
 	return (
 		<div
-			className="fixed top-0 right-0 z-50 flex h-full flex-col border-l bg-card shadow-xl"
+			className="bg-card fixed top-0 right-0 z-50 flex h-full flex-col border-l shadow-xl"
 			style={{ width, maxWidth: "85vw" }}
 			data-ai-panel="true"
 		>
 			<div
-				className="absolute top-0 left-0 z-10 h-full w-3 cursor-col-resize touch-none select-none transition-colors hover:bg-primary/20 active:bg-primary/40"
+				className="hover:bg-primary/20 active:bg-primary/40 absolute top-0 left-0 z-10 h-full w-3 cursor-col-resize touch-none transition-colors select-none"
 				onPointerDown={onResizePointerDown}
 				onPointerMove={onResizePointerMove}
 				onPointerUp={onResizePointerUp}
@@ -117,14 +130,18 @@ function DrawerVariant({
 			/>
 
 			<PanelHeader onClose={onClose} />
-			<AIChatPanel
-				bookId={bookId}
-				highlight={highlight}
-				action={action}
-				chatMode={chatMode}
-				onResponseReceived={onResponseReceived}
-				onHighlightCreated={onHighlightCreated}
-			/>
+			{isOnline ? (
+				<AIChatPanel
+					bookId={bookId}
+					highlight={highlight}
+					action={action}
+					chatMode={chatMode}
+					onResponseReceived={onResponseReceived}
+					onHighlightCreated={onHighlightCreated}
+				/>
+			) : (
+				<OfflinePlaceholder />
+			)}
 		</div>
 	);
 }
@@ -136,6 +153,7 @@ function BottomSheetVariant({
 	highlight,
 	action,
 	chatMode,
+	isOnline,
 	onClose,
 	onResponseReceived,
 	onHighlightCreated,
@@ -174,7 +192,7 @@ function BottomSheetVariant({
 			<div className="fixed inset-0 z-40 bg-black/40" onClick={onClose} />
 
 			<div
-				className="fixed right-0 bottom-0 left-0 z-50 flex flex-col rounded-t-xl bg-card shadow-xl"
+				className="bg-card fixed right-0 bottom-0 left-0 z-50 flex flex-col rounded-t-xl shadow-xl"
 				style={{ height: `${heightVh}vh` }}
 				data-ai-panel="true"
 			>
@@ -184,19 +202,23 @@ function BottomSheetVariant({
 					onTouchMove={onHandleTouchMove}
 					onTouchEnd={onHandleTouchEnd}
 				>
-					<div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+					<div className="bg-muted-foreground/30 h-1 w-10 rounded-full" />
 				</div>
 
 				<PanelHeader onClose={onClose} />
 				<div className="min-h-0 flex-1 overflow-hidden">
-					<AIChatPanel
-						bookId={bookId}
-						highlight={highlight}
-						action={action}
-						chatMode={chatMode}
-						onResponseReceived={onResponseReceived}
-						onHighlightCreated={onHighlightCreated}
-					/>
+					{isOnline ? (
+						<AIChatPanel
+							bookId={bookId}
+							highlight={highlight}
+							action={action}
+							chatMode={chatMode}
+							onResponseReceived={onResponseReceived}
+							onHighlightCreated={onHighlightCreated}
+						/>
+					) : (
+						<OfflinePlaceholder />
+					)}
 				</div>
 			</div>
 		</>
@@ -208,12 +230,8 @@ function BottomSheetVariant({
 function PanelHeader({ onClose }: { onClose: () => void }) {
 	return (
 		<div className="flex items-center justify-between border-b px-4 py-3">
-			<h3 className="font-semibold text-sm">AI Assistant</h3>
-			<button
-				type="button"
-				onClick={onClose}
-				className="rounded-md p-1 hover:bg-accent"
-			>
+			<h3 className="text-sm font-semibold">AI Assistant</h3>
+			<button type="button" onClick={onClose} className="hover:bg-accent rounded-md p-1">
 				<X className="h-4 w-4" />
 			</button>
 		</div>

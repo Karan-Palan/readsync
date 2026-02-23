@@ -75,9 +75,7 @@ export const dashboardRouter = router({
 		const accountCreated = user.createdAt;
 		const daysSinceSignup = Math.max(
 			1,
-			Math.floor(
-				(now.getTime() - accountCreated.getTime()) / (1000 * 60 * 60 * 24),
-			),
+			Math.floor((now.getTime() - accountCreated.getTime()) / (1000 * 60 * 60 * 24)),
 		);
 		const booksPerDay = booksFinished / daysSinceSignup;
 		const projectedBooksPerYear = Math.round(booksPerDay * 365);

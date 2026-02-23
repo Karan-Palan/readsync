@@ -12,7 +12,7 @@ const groq = createOpenAI({
 	apiKey: process.env.GROQ_API_KEY,
 });
 
-const SUMMARY_MODEL = groq("openai/gpt-oss-120b"); // heavy model for book summaries
+const SUMMARY_MODEL = groq("meta-llama/llama-4-scout-17b-16e-instruct"); // model for book summaries
 const GENERAL_MODEL = groq("openai/gpt-oss-20b"); // lighter model for everything else
 
 const ACTION_PROMPTS = {
