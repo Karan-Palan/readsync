@@ -101,7 +101,13 @@ export default function EPUBReader({
 	const [showSearch, setShowSearch] = useState(false);
 	const [showSettings, setShowSettings] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [fontSize, setFontSize] = useState(100);
+	// Persist font size per book in localStorage
+	const [fontSize, setFontSize] = useState<number>(() => {
+		try {
+			const stored = localStorage.getItem(`fontSize-${book.id}`);
+			return stored ? Math.max(60, Math.min(200, Number(stored))) : 100;
+		} catch { return 100; }
+	});
 	const fontSizeRef = useRef(fontSize);
 	const [progress, setProgress] = useState(0);
 	const highlightColorMap = useRef<Map<string, string>>(new Map());
@@ -479,9 +485,10 @@ export default function EPUBReader({
 		};
 	}, [book.fileUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// Keep fontSizeRef in sync and apply to the renderer whenever it changes
+	// Keep fontSizeRef in sync, apply to renderer, and persist whenever it changes
 	useEffect(() => {
 		fontSizeRef.current = fontSize;
+		try { localStorage.setItem(`fontSize-${book.id}`, String(fontSize)); } catch {}
 		const v = folViewRef.current;
 		if (!v) return;
 		try {
@@ -490,7 +497,7 @@ export default function EPUBReader({
 				r.setStyles(`html { font-size: ${fontSize}% !important; }`);
 			}
 		} catch {}
-	}, [fontSize]);
+	}, [fontSize, book.id]);
 
 	// When the user toggles dark/light mode, update the already-loaded EPUB iframes
 	useEffect(() => {

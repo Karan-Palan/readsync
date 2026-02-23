@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, Moon, Sparkles, Sun } from "lucide-react";
+import { ArrowLeft, BookOpen, Maximize2, Minimize2, Moon, Sparkles, Sun } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -91,6 +91,27 @@ export default function Reader({
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	/** Populated by EPUBReader once the view is ready — allows programmatic navigation */
 	const navigateRef = useRef<((pos: unknown) => void) | null>(null);
+	const [isFullscreen, setIsFullscreen] = useState(false);
+
+	// Sync isFullscreen with the native Fullscreen API (Esc key, etc.)
+	useEffect(() => {
+		const handler = () => setIsFullscreen(!!document.fullscreenElement);
+		document.addEventListener("fullscreenchange", handler);
+		return () => document.removeEventListener("fullscreenchange", handler);
+	}, []);
+
+	const toggleFullscreen = useCallback(() => {
+		if (!document.fullscreenElement) {
+			document.documentElement.requestFullscreen().catch(() => {
+				// fallback: CSS-only fullscreen (e.g. iOS Safari)
+				setIsFullscreen((v) => !v);
+			});
+		} else {
+			document.exitFullscreen().catch(() => {
+				setIsFullscreen(false);
+			});
+		}
+	}, []);
 
 	const saveProgressMutation = useMutation(
 		trpc.book.saveProgress.mutationOptions(),
@@ -318,7 +339,8 @@ export default function Reader({
 					</div>
 				</div>
 			)}
-			{/* Top bar */}
+			{/* Top bar — hidden in fullscreen for distraction-free reading */}
+			{!isFullscreen && (
 			<header className="flex shrink-0 items-center justify-between border-b px-3 py-2 sm:px-4">
 				<button
 					type="button"
@@ -373,8 +395,17 @@ export default function Reader({
 						<span className="hidden sm:inline">Chapters</span>
 						<span className="text-xs sm:hidden">Ch.</span>
 					</button>
+					<button
+						type="button"
+						onClick={toggleFullscreen}
+						className="rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
+						title="Fullscreen (hide all chrome)"
+					>
+						<Maximize2 className="h-4 w-4" />
+					</button>
 				</div>
 			</header>
+			)}
 
 			{/* Reading area */}
 			<div className="relative min-h-0 flex-1">
@@ -497,11 +528,28 @@ export default function Reader({
 				)}
 			</div>
 
-			{/*  Mode selector bar  */}
+			{/*  Mode selector bar — hidden in fullscreen  */}
+			{!isFullscreen && (
 			<ReadingModeSelector
 				currentMode={currentMode}
 				onModeChange={setCurrentMode}
 			/>
+			)}
+
+			{/* Fullscreen exit button — floating bottom-center */}
+			{isFullscreen && (
+				<div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+					<button
+						type="button"
+						onClick={toggleFullscreen}
+						className="flex items-center gap-2 rounded-full border border-border/50 bg-background/80 px-4 py-2 text-muted-foreground text-sm shadow-lg backdrop-blur transition-opacity hover:text-foreground"
+						title="Exit fullscreen"
+					>
+						<Minimize2 className="h-4 w-4" />
+						<span>Exit fullscreen</span>
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
