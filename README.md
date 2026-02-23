@@ -1,14 +1,24 @@
-Tl;dr
+## Tl;dr
+
 Started praciticising speed reading after watching Tim Ferris's video. Found other speed reading methods, they do work!
-Apart from that, I was currently reading "Antifragile", and there were many instances where I didn't understand the whole context, or wanted to discuss an idea with AI
+Apart from that, I was currently reading "Antifragile", and there were many instances where I didn't understand the whole context, or wanted to discuss an idea with AI.
+
 So created this for personal use to solve those problems.
-Will be using it a month or so, if I find it better than reading on my Ipad, will do notion integration
+Will be using it a month or so, if I find it better than reading on my Ipad, will integrate notion and kindle
 
 # ReadSync
 
+> [!TIP]
+> Also available a PWA.
+
+> Android => Pop-up -> Download
+
+> IOS => Share -> Add to Home screen
+
+
 An AI-powered reading companion that helps you read smarter. Upload EPUBs and PDFs, track your reading progress, highlight passages, get AI-powered explanations and summaries, and monitor your reading habits — all in one place.
 
-Built with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack).
+Bootstrapped with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack).
 
 ## Features
 
